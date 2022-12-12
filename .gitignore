@@ -1,5 +1,4 @@
 # Project exclude paths
 node_modules
-dist
-lib-esm
+
 lib-cjs

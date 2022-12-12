@@ -1,0 +1,1 @@
+{"version":3,"file":"getMultisigTxs.js","sourceRoot":"","sources":["../../src/api/getMultisigTxs.ts"],"names":[],"mappings":"AAEA,MAAM,CAAC,OAAO,UAAU,cAAc,CAAC,GAAe;IACpD,OAAO,CAAC,OAAe,EAAE,KAAK,GAAG,CAAC,EAAE,MAAM,GAAG,CAAC,EAAE,EAAE,CAChD,GAAG,CAAC,cAAc,CAAC,OAAO,EAAE,EAAE,KAAK,EAAE,MAAM,EAAE,CAAC,CAAC;AACnD,CAAC"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"getMultisig.js","sourceRoot":"","sources":["../../src/api/getMultisig.ts"],"names":[],"mappings":"AAEA,MAAM,CAAC,OAAO,UAAU,WAAW,CAAC,GAAe;IACjD,OAAO,CAAC,OAAe,EAAE,EAAE,CAAC,GAAG,CAAC,WAAW,CAAC,OAAO,CAAC,CAAC;AACvD,CAAC"}
