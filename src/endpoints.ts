@@ -38,13 +38,13 @@ const devnetEndpoints = {
 };
 
 const testnetEndpoints = {
-  gateHost: "https://testnet-gate.decimalchain.com/api/rpc/",
+  gateHost: "https://testnet-gate.decimalchain.com/api/rpc/broadcast",
   nodeHost: "https://testnet-val.decimalchain.com/rpc/",
 };
 
 // for now does not know
 const mainnetEndpoints = {
-  gateHost: "https://mainnet-gate.decimalchain.com/api/rpc/",
+  gateHost: "https://mainnet-gate.decimalchain.com/api/rpc/broadcast",
   nodeHost: "https://mainnet-val.decimalchain.com/rpc/",
 };
 
