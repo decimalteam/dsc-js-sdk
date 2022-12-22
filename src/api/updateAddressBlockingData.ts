@@ -13,7 +13,7 @@ export default function updateAddressBlockingData(
     address: string,
     isBlocked: boolean,
     type: string,
-    reason?: object
+    reason?: string
   ) => {
     if (!address || isBlocked === null) {
       throw new Error("The address and isBlocked fields are required");
@@ -33,8 +33,8 @@ export default function updateAddressBlockingData(
         isBlocked,
         type,
         timestamp,
-        signature,
-        ...(reason && { reason }),
+        signature: JSON.stringify(signature),
+        reason,
       };
 
       return api.updateAddressBlockingData(address, payload);

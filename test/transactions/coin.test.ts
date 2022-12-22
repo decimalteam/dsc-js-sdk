@@ -57,7 +57,7 @@ describe('coin', () => {
       try {
         // Sdk.
         const { Wallet, Decimal, DecimalNetworks } = SDK;
-        const decimalWallet = new Wallet('twenty umbrella bless honey garden sunny vote cream another bacon youth twenty document shoe risk library van slight radar banana argue venture father master');
+        const decimalWallet = new Wallet('');
         const decimal = await Decimal.connect(DecimalNetworks.devnet);
         decimal.setWallet(decimalWallet);
         // await decimalWallet.getAndUseGeneratedWallets();

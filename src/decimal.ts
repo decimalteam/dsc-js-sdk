@@ -38,6 +38,7 @@ import {
   getRpcEndpoint,
   NETWORKS,
 } from "./endpoints";
+import updateAddressBlockingData from "./api/updateAddressBlockingData";
 const DEFAULT_ORDER_FIELD = "timestamp";
 const DEFAULT_ORDER_DIRECTION = "DESC";
 const DEFAULT_ORDER = `order[${DEFAULT_ORDER_FIELD}]=${DEFAULT_ORDER_DIRECTION}`;
@@ -309,6 +310,18 @@ export default class Decimal {
       this.apiInstance as DecimalApi,
       this.wallet,
     ])(limit, offset, type, q);
+  }
+
+  public updateAddressBlockingData(
+    address: string,
+    isBlocked: boolean,
+    type: string,
+    reason = "Комментарий не указан"
+  ) {
+    return updateAddressBlockingData.apply(this, [
+      this.apiInstance as DecimalApi,
+      this.wallet,
+    ])(address, isBlocked, type, reason);
   }
 
   public async getAddressBalances(
