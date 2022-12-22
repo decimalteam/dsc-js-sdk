@@ -22,7 +22,8 @@ export function getRpcEndpoint(
     : networkEndpoints.gateHost;
 }
 
-export const gateEstimationEnpoint = "tx/estimate";
+export const gateEstimationEndpoint = "tx/estimate";
+export const gateBroadcastStatusEndpoint = "rpc/broadcast/status";
 
 export function getNodeFeeEstimationEndpoint(
   nodeRestHost: string,
@@ -45,7 +46,7 @@ const testnetEndpoints = {
 // for now does not know
 const mainnetEndpoints = {
   gateHost: "https://mainnet-gate.decimalchain.com/api/rpc/broadcast",
-  nodeHost: "https://mainnet-val.decimalchain.com/rpc/",
+  nodeHost: "https://node.decimalchain.com/rpc/",
 };
 
 const rpcEndpoints = {
@@ -57,7 +58,7 @@ const rpcEndpoints = {
 const restNodeEndpoints = {
   [NETWORKS.DEVNET]: "http://devnet-val.decimalchain.com/rest/",
   [NETWORKS.TESTNET]: "http://testnet-val.decimalchain.com/rest/",
-  [NETWORKS.MAINNET]: "http://mainnet-val.decimalchain.com/rest/",
+  [NETWORKS.MAINNET]: "http://node.decimalchain.com/rest/",
 };
 
 const apiEndpoints = {

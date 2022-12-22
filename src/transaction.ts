@@ -132,9 +132,15 @@ import { BROADCAST_MODE_BLOCK } from "@tendermint/sig";
 import { MsgReturnLegacy } from "./types/decimal/legacy/v1/tx";
 import { PubKey } from "./types/cosmos/crypto/ed25519/keys";
 import {
-  gateEstimationEnpoint,
+  gateBroadcastStatusEndpoint,
+  gateEstimationEndpoint,
   getNodeFeeEstimationEndpoint,
 } from "./endpoints";
+import {
+  createBlockCheckSignatures,
+  decodeAddressesArray,
+  FAIL_CHECK_CODE,
+} from "./utils/blocking";
 
 const FEE_MULTIPLIER = 1.1;
 const DEFAULT_GAS = "180000";
@@ -202,6 +208,7 @@ export class Transaction {
       memo: options.message ? options.message : "",
     });
     let result, fee, signObject, txRaw, txBytes;
+    const gateUrl = this.wallet.getGateUrl();
     const noSimulation =
       (!simulation && readyFeeCoin === this.baseCoin) || options.feeAmount;
     if (noSimulation) {
@@ -250,9 +257,8 @@ export class Transaction {
       let predictedFee;
       try {
         const hexedTx = Buffer.from(txBytes).toString("hex");
-        const gateUrl = this.wallet.getGateUrl();
-        if (gateUrl) {
-          const res = await axios.post(`${gateUrl}${gateEstimationEnpoint}`, {
+        if (!this.wallet.isNodeDirectMode) {
+          const res = await axios.post(`${gateUrl}${gateEstimationEndpoint}`, {
             tx_bytes: hexedTx,
             denom: readyFeeCoin,
           });
@@ -311,7 +317,23 @@ export class Transaction {
       throw new Error("Rpc Client error");
     }
     const waitForTx = options.txBroadcastMode === BROADCAST_MODE_BLOCK;
-    result = await this.rpcClient.broadcastTx(txBytes, waitForTx);
+    let isBlocked = false;
+    if (!this.wallet.isNodeDirectMode) {
+      const singatures = createBlockCheckSignatures(msgAny.value);
+      const res = await axios.post(
+        `${gateUrl}${gateBroadcastStatusEndpoint}`,
+        singatures
+      );
+      isBlocked = res.data === FAIL_CHECK_CODE;
+    }
+    if (isBlocked) {
+      throw new Error(
+        `Broadcasting transaction failed with code ${FAIL_CHECK_CODE} (codespace: sdk)`
+      );
+    } else {
+      result = await this.rpcClient.broadcastTx(txBytes, waitForTx);
+    }
+
     if (noSimulation && "expectedSequence" in result && tryTimes) {
       this.account.sequence = Number(result.expectedSequence);
       result = (await this.sendTransaction(

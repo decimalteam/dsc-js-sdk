@@ -1,24 +1,24 @@
-import SDK from '../../dist/index'
+// import SDK from '../../dist/index';
 // import SDK from "../../lib-esm/"
+ import SDK from "../../src/index"
+
 // import { Wallet, Decimal, DecimalNetworks } from "../../dist/index"
 // @ts-ignore
-import info from "../_commonInfo"
 import {multiSendCoin, createCoin, updateCoin} from "../../src/interfaces/transactionsMockData"
 import { voteOptionToJSON } from 'cosmjs-types/cosmos/gov/v1beta1/gov';
-import { clientMsgSendCoin } from '../../src/interfaces/clientInterfaces';
+import { clientMsgMultiSendCoin, clientMsgSendCoin } from '../../src/interfaces/clientInterfaces';
 import BigNumber from 'bignumber.js';
-import { coinsTestnet } from '../coins'
 // import { coinsTestnet } from "../coins"
 jest.setTimeout(60000)
 let i = 0;
 describe('coin', () => {
 
-    test('send', async() => {
+    test.skip('send', async() => {
       try {
         // Sdk.
         const { Wallet, Decimal, DecimalNetworks } = SDK;
-        const decimalWallet = new Wallet(info.menmonics.validator[0]);
-        const decimal = await Decimal.connect(DecimalNetworks.devnet, true);
+        const decimalWallet = new Wallet('hold liquid enhance slim clerk frame grape welcome hybrid tower window grab bottom cluster cry tonight need depart table april good jar suspect napkin');
+        const decimal = await Decimal.connect(DecimalNetworks.devnet);
         decimal.setWallet(decimalWallet);
         // await decimalWallet.getAndUseGeneratedWallets();
         // decimalWallet.generateAndSwitchAccount(2, 1);
@@ -38,6 +38,53 @@ describe('coin', () => {
         
         let sender = await decimal.transactionSender();
         const res1 = await sender.sendCoin(sendCoin, options);
+        console.log(res1)
+        // decimalWallet.switchAccount(0);
+        // sender = await decimal.transactionSender();
+        // const res2 = await sender.sendCoin(sendCoin, options);
+        // console.log(res2);
+        // const res2 = await sender.sendCoin(sendCoin, options, true);
+        // console.log(res1 === res2);
+        // expect(res.transactionHash.length > 0).toBeTruthy();
+
+      } catch (e) {
+        console.log(e)
+      }
+
+    });
+
+    test('multisend', async() => {
+      try {
+        // Sdk.
+        const { Wallet, Decimal, DecimalNetworks } = SDK;
+        const decimalWallet = new Wallet('twenty umbrella bless honey garden sunny vote cream another bacon youth twenty document shoe risk library van slight radar banana argue venture father master');
+        const decimal = await Decimal.connect(DecimalNetworks.devnet);
+        decimal.setWallet(decimalWallet);
+        // await decimalWallet.getAndUseGeneratedWallets();
+        // decimalWallet.generateAndSwitchAccount(2, 1);
+        console.log(decimalWallet);
+        // const memo = 'some send';
+        const options = {
+          // feeCoin: "AWSMCNN",
+          feeCoin: "",
+          message: "",
+          txBroadcastMode: "sync",
+        }
+        const sendCoin: clientMsgMultiSendCoin[] = [
+          {
+            to: "d01ykrttqa27eruxt3ve5ym27qq66r4qssgqthpcd",
+            coin: "del",
+            amount: "100",
+          },
+          {
+            to: "d01ykrttqa27eruxt3ve5ym27qq66r4qssgqthpcd",
+            coin: "del",
+            amount: "100",
+          }
+        ];
+        
+        let sender = await decimal.transactionSender();
+        const res1 = await sender.multiSendCoin(sendCoin, options);
         console.log(res1)
         // decimalWallet.switchAccount(0);
         // sender = await decimal.transactionSender();
@@ -153,33 +200,33 @@ describe('coin', () => {
   });
 
 //   //
-  test.skip('create', async() => {
-    try {
-      const { Wallet, Decimal, DecimalNetworks } = SDK;
-      const decimalWallet = new Wallet(info.menmonics.validator[0]);
-      const decimal = await Decimal.connect(DecimalNetworks.devnet, true);
-      decimal.setWallet(decimalWallet);
-      const options = {
-        feeCoin: "",
-        message: "sdas",
-        txBroadcastMode: "sync",
-      }
-      const sender = await decimal.transactionSender();
+  // test.skip('create', async() => {
+  //   try {
+  //     const { Wallet, Decimal, DecimalNetworks } = SDK;
+  //     const decimalWallet = new Wallet(info.menmonics.validator[0]);
+  //     const decimal = await Decimal.connect(DecimalNetworks.devnet, true);
+  //     decimal.setWallet(decimalWallet);
+  //     const options = {
+  //       feeCoin: "",
+  //       message: "sdas",
+  //       txBroadcastMode: "sync",
+  //     }
+  //     const sender = await decimal.transactionSender();
       
-      for (let i = 0; i < coinsTestnet.length; i++) {
-        const data = {
-          ...coinsTestnet[i],
-          identity: '',
-        }
-        // console.log(sendCoin)
-        const res = await sender.createCoin(data, options);
-        console.log(res);
-        console.log(i);
-      }
-    } catch (e) {
-      console.log(e)
-    }
-  });
+  //     for (let i = 0; i < coinsTestnet.length; i++) {
+  //       const data = {
+  //         ...coinsTestnet[i],
+  //         identity: '',
+  //       }
+  //       // console.log(sendCoin)
+  //       const res = await sender.createCoin(data, options);
+  //       console.log(res);
+  //       console.log(i);
+  //     }
+  //   } catch (e) {
+  //     console.log(e)
+  //   }
+  // });
 //   //
 //   // test('update', async() => {
 //   //   try {

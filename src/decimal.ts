@@ -56,6 +56,7 @@ export default class Decimal {
   private readonly rpcInstance: Client | undefined;
   private readonly apiInstance: DecimalApi;
   private readonly gateUrl: string;
+  private readonly isNodeDirectMode: boolean;
   private readonly nodeRestUrl: string;
   private readonly network: NETWORKS;
   private wallet: Wallet | null = null;
@@ -80,6 +81,7 @@ export default class Decimal {
       const apiInstance = new DecimalApi(gateUrl);
       return new Decimal(
         network,
+        isNodeDirectMode,
         rpcInstance,
         apiInstance,
         gateUrl,
@@ -92,12 +94,14 @@ export default class Decimal {
   }
   private constructor(
     network: NETWORKS,
+    isNodeDirectMode: boolean,
     rpcInstance: Client | undefined,
     apiInstance: DecimalApi,
     gateUrl: string,
     nodeRestUrl: string
   ) {
     this.network = network;
+    this.isNodeDirectMode = isNodeDirectMode;
     this.rpcInstance = rpcInstance;
     this.apiInstance = apiInstance;
     this.gateUrl = gateUrl;
@@ -119,6 +123,7 @@ export default class Decimal {
   }
 
   public setWallet(wallet: Wallet) {
+    wallet.setNodeDirectMode(this.isNodeDirectMode);
     wallet.setGateUrl(this.gateUrl);
     wallet.setNodeRestUrl(this.nodeRestUrl);
     this.wallet = wallet;

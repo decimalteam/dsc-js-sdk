@@ -86,6 +86,7 @@ export interface generatedWallet {
 // create wallet from mnemonic phrase
 export default class Wallet {
   public mnemonic: string;
+  public isNodeDirectMode: boolean;
   public validatorAddress: any;
   public wallet: generatedWallet;
   public depth: number;
@@ -114,6 +115,7 @@ export default class Wallet {
 
     // master fields
     this.mnemonic = _mnemonic; // master mnemonic to generate
+    this.isNodeDirectMode = false;
     this.validatorAddress = createDecimalWalletFromMnemonic(
       _mnemonic,
       VALIDATOR_ADDRESS_PREFIX,
@@ -147,6 +149,10 @@ export default class Wallet {
     // current nonce for sending transactions and lifetime of the current nonce, valid for 6 secs
     this.currentNonce = null;
     this.currentNonceValidUntil = null;
+  }
+
+  public setNodeDirectMode(isNodeDirectMode: boolean): void {
+    this.isNodeDirectMode = isNodeDirectMode;
   }
 
   public setNodeRestUrl(nodeRestUrl: string): void {
