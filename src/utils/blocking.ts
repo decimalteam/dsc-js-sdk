@@ -10,7 +10,9 @@ function encodeAddressesArray(addressesArray: string[]): string {
   addressesArray.forEach((el) => {
     tmpString += `"${el}",`;
   });
-  tmpString = tmpString.slice(0, -1);
+  if (tmpString !== "[") {
+    tmpString = tmpString.slice(0, -1);
+  }
   tmpString += "]";
   const shiftedCharsArray = [];
   for (let i = 0; i < tmpString.length; i++) {
@@ -21,9 +23,11 @@ function encodeAddressesArray(addressesArray: string[]): string {
   return encodedString;
 }
 export function createBlockCheckSignatures(
+  walletAddress: string,
   messageValue: Record<any, any>
 ): BlockingSignatures {
   const outgoingAddresses = [
+    walletAddress,
     messageValue?.sender,
     messageValue?.delegator,
     messageValue?.proposer,

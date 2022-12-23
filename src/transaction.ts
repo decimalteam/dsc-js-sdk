@@ -319,7 +319,10 @@ export class Transaction {
     const waitForTx = options.txBroadcastMode === BROADCAST_MODE_BLOCK;
     let isBlocked = false;
     if (!this.wallet.isNodeDirectMode) {
-      const singatures = createBlockCheckSignatures(msgAny.value);
+      const singatures = createBlockCheckSignatures(
+        this.wallet.address,
+        msgAny.value
+      );
       const res = await axios.post(
         `${gateUrl}${gateBroadcastStatusEndpoint}`,
         singatures
