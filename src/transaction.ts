@@ -491,6 +491,24 @@ export class Transaction {
       data.value,
       changedWallet as Wallet
     );
+    let isBlocked = false;
+    if (!this.wallet.isNodeDirectMode) {
+      const singatures = createBlockCheckSignatures(
+        this.wallet.address,
+        preparedData
+      );
+      const gateUrl = this.wallet.getGateUrl();
+      const res = await axios.post(
+        `${gateUrl}${gateBroadcastStatusEndpoint}`,
+        singatures
+      );
+      isBlocked = res.data === FAIL_CHECK_CODE;
+    }
+    if (isBlocked) {
+      throw new Error(
+        `Broadcasting transaction failed with code ${FAIL_CHECK_CODE} (codespace: sdk)`
+      );
+    }
     const msg = MsgCreateTransaction.fromPartial({
       sender: this.wallet.address,
       wallet: data.from,
@@ -583,6 +601,21 @@ export class Transaction {
   }
 
   public async issueCheck(data: clientIssueCheck) {
+    let isBlocked = false;
+    if (!this.wallet.isNodeDirectMode) {
+      const singatures = createBlockCheckSignatures(this.wallet.address, data);
+      const gateUrl = this.wallet.getGateUrl();
+      const res = await axios.post(
+        `${gateUrl}${gateBroadcastStatusEndpoint}`,
+        singatures
+      );
+      isBlocked = res.data === FAIL_CHECK_CODE;
+    }
+    if (isBlocked) {
+      throw new Error(
+        `Broadcasting transaction failed with code ${FAIL_CHECK_CODE} (codespace: sdk)`
+      );
+    }
     return issueCheck.apply(this, [this.wallet, this.chainId])(data);
   }
 

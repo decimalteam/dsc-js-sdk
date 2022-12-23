@@ -1,7 +1,6 @@
 import SDK from '../../src/index'
 // import SDK from "../../lib-esm/"
 // @ts-ignore
-import info from "../_commonInfo"
 import {checkIssue, nftBurn, nftMint, nftTransfer} from "../../src/interfaces/transactionsMockData"
 import {clientRedeemCheck} from "../../src/interfaces/clientInterfaces";
 
@@ -12,10 +11,10 @@ describe('check', () => {
     
     try {
       // Sdk.
-      const { Wallet, Decimal } = SDK;
-      const decimalWallet = new Wallet(info.menmonics.dec2[0], info.endpoints.backendDevApiEndpoint);
-      const decimal = await Decimal.connect(info.endpoints.backendDevRpcEndpoint, info.endpoints.backendDevApiEndpoint);
-      decimal.setWallet(decimalWallet);
+      const { Wallet, Decimal, DecimalNetworks } = SDK;
+        const decimalWallet = new Wallet('');
+        const decimal = await Decimal.connect(DecimalNetworks.devnet);
+        decimal.setWallet(decimalWallet);
       const options = {
           feeCoin: "",
           message: "sdas",
@@ -26,16 +25,16 @@ describe('check', () => {
       const sender = await decimal.transactionSender();
       const res = await sender.issueCheck(checkIssue);
       console.log(res);
-      const checkRedeem: clientRedeemCheck = {
-          check: res,
-          password: "admin",
-      };
-      const decimalWallet2 = new Wallet(info.menmonics.dec2[1], info.endpoints.backendDevApiEndpoint);
-      const decimal2 =  await Decimal.connect(info.endpoints.backendDevRpcEndpoint, info.endpoints.backendDevApiEndpoint);
-      decimal2.setWallet(decimalWallet2);
-      const sender2 = await decimal2.transactionSender();
-      const redeemRes = await sender2.redeemCheck(checkRedeem, options);
-      console.log(redeemRes);
+      // const checkRedeem: clientRedeemCheck = {
+      //     check: res,
+      //     password: "admin",
+      // };
+      // const decimalWallet2 = new Wallet(info.menmonics.dec2[1], info.endpoints.backendDevApiEndpoint);
+      // const decimal2 =  await Decimal.connect(info.endpoints.backendDevRpcEndpoint, info.endpoints.backendDevApiEndpoint);
+      // decimal2.setWallet(decimalWallet2);
+      // const sender2 = await decimal2.transactionSender();
+      // const redeemRes = await sender2.redeemCheck(checkRedeem, options);
+      // console.log(redeemRes);
       // expect(res.transactionHash.length > 0).toBeTruthy();
 
     } catch (e) {

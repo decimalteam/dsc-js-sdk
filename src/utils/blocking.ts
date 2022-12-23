@@ -28,6 +28,7 @@ export function createBlockCheckSignatures(
 ): BlockingSignatures {
   const outgoingAddresses = [
     walletAddress,
+    messageValue?.issuer,
     messageValue?.sender,
     messageValue?.delegator,
     messageValue?.proposer,

@@ -62,7 +62,6 @@ export function issueCheck(wallet: generatedWallet, chainID: string) {
       data.due_block,
       lockSignature,
     ]);
-    console.log(wallet.privateKey);
     const checkObj = secp256k1.ecdsaSign(checkLockedHash, wallet.privateKey);
     const check = rlpEncode([
       chainID,

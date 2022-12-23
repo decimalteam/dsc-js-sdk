@@ -2,7 +2,6 @@ import SDK from '../../src/index'
 // import SDK from "../../lib-esm/"
 
 // @ts-ignore
-import info from "../_commonInfo"
 import { createWallet, sendCoin } from "../../src/interfaces/transactionsMockData"
 import { clientMultisigCreateTx, clientMultisigSignTx } from '../../src/interfaces/clientInterfaces'
 import txTypesNew from '../../src/txTypesNew'
@@ -17,18 +16,22 @@ const options = {
     sendTxDirectly: true,
 }
 describe('multisig', () => {
-  test.skip('create', async() => {
+  test('create', async() => {
     try {
       // Sdk.
-      const { Wallet, Decimal } = SDK;
-      const decimalWallet = new Wallet(info.menmonics.multisigDev, info.endpoints.backendDevApiEndpoint);
-      const decimal = await Decimal.connect(info.endpoints.backendDevRpcEndpoint, info.endpoints.backendDevApiEndpoint);
+      const { Wallet, Decimal, DecimalNetworks } = SDK;
+      const decimalWallet = new Wallet('');
+      const decimal = await Decimal.connect(DecimalNetworks.devnet);
       decimal.setWallet(decimalWallet);
       console.log(decimalWallet)
       const sender = await decimal.transactionSender();
-      const sendCoinMsg = sendCoin;
+      const sendCoinMsg = {
+        to: "d0184qe86tyhurv5fxlxgvcwa6znfg3ugk8e4sqgw",
+        coin: "del",
+        amount: "10000",
+      };
       const mulsisigSend: clientMultisigCreateTx = {
-        from: 'dx12e6q0jrcu9h3jss9ydmw6ywl9xe4e92v4snjlr',
+        from: 'd01tsr90d4gyjl9whk69rkrsx3yeacj9qv7h3amj5',
         type: txTypesNew.COIN_SEND,
         value: sendCoinMsg,
       }
@@ -40,7 +43,7 @@ describe('multisig', () => {
     }
   });
 
-  test('sign', async() => {
+  test.skip('sign', async() => {
     try {
       // Sdk.
       const { Wallet, Decimal } = SDK;
