@@ -35,6 +35,7 @@ export const createCoin: clientMsgCreateCoin = {
   reserve: "1000",
   ticker: "loltestaaa",
   title: "testingasdd",
+  minVolume: "100",
 };
 
 export const multiSendCoin: clientMsgMultiSendCoin[] = [

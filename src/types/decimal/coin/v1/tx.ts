@@ -14,6 +14,11 @@ export interface MsgCreateCoin {
   initialReserve: string;
   limitVolume: string;
   identity: string;
+  /**
+   * min_volume defines optional minimal allowed supply for the coin.
+   * NOTE: when value is zero it means that the coin does not support minimal supply limitations.
+   */
+  minVolume: string;
 }
 
 /** MsgCreateCoinResponse defines the Msg/CreateCoin response type. */
@@ -26,6 +31,11 @@ export interface MsgUpdateCoin {
   denom: string;
   limitVolume: string;
   identity: string;
+  /**
+   * min_volume defines optional minimal allowed supply for the coin.
+   * NOTE: when value is zero it means that the coin does not support minimal supply limitations.
+   */
+  minVolume: string;
 }
 
 /** MsgUpdateCoinResponse defines the Msg/UpdateCoin response type. */
@@ -123,6 +133,7 @@ function createBaseMsgCreateCoin(): MsgCreateCoin {
     initialReserve: "",
     limitVolume: "",
     identity: "",
+    minVolume: "",
   };
 }
 
@@ -151,6 +162,9 @@ export const MsgCreateCoin = {
     }
     if (message.identity !== "") {
       writer.uint32(66).string(message.identity);
+    }
+    if (message.minVolume !== "") {
+      writer.uint32(74).string(message.minVolume);
     }
     return writer;
   },
@@ -186,6 +200,9 @@ export const MsgCreateCoin = {
         case 8:
           message.identity = reader.string();
           break;
+        case 9:
+          message.minVolume = reader.string();
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -204,6 +221,7 @@ export const MsgCreateCoin = {
       initialReserve: isSet(object.initialReserve) ? String(object.initialReserve) : "",
       limitVolume: isSet(object.limitVolume) ? String(object.limitVolume) : "",
       identity: isSet(object.identity) ? String(object.identity) : "",
+      minVolume: isSet(object.minVolume) ? String(object.minVolume) : "",
     };
   },
 
@@ -217,6 +235,7 @@ export const MsgCreateCoin = {
     message.initialReserve !== undefined && (obj.initialReserve = message.initialReserve);
     message.limitVolume !== undefined && (obj.limitVolume = message.limitVolume);
     message.identity !== undefined && (obj.identity = message.identity);
+    message.minVolume !== undefined && (obj.minVolume = message.minVolume);
     return obj;
   },
 
@@ -230,6 +249,7 @@ export const MsgCreateCoin = {
     message.initialReserve = object.initialReserve ?? "";
     message.limitVolume = object.limitVolume ?? "";
     message.identity = object.identity ?? "";
+    message.minVolume = object.minVolume ?? "";
     return message;
   },
 };
@@ -274,7 +294,7 @@ export const MsgCreateCoinResponse = {
 };
 
 function createBaseMsgUpdateCoin(): MsgUpdateCoin {
-  return { sender: "", denom: "", limitVolume: "", identity: "" };
+  return { sender: "", denom: "", limitVolume: "", identity: "", minVolume: "" };
 }
 
 export const MsgUpdateCoin = {
@@ -290,6 +310,9 @@ export const MsgUpdateCoin = {
     }
     if (message.identity !== "") {
       writer.uint32(34).string(message.identity);
+    }
+    if (message.minVolume !== "") {
+      writer.uint32(42).string(message.minVolume);
     }
     return writer;
   },
@@ -313,6 +336,9 @@ export const MsgUpdateCoin = {
         case 4:
           message.identity = reader.string();
           break;
+        case 5:
+          message.minVolume = reader.string();
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -327,6 +353,7 @@ export const MsgUpdateCoin = {
       denom: isSet(object.denom) ? String(object.denom) : "",
       limitVolume: isSet(object.limitVolume) ? String(object.limitVolume) : "",
       identity: isSet(object.identity) ? String(object.identity) : "",
+      minVolume: isSet(object.minVolume) ? String(object.minVolume) : "",
     };
   },
 
@@ -336,6 +363,7 @@ export const MsgUpdateCoin = {
     message.denom !== undefined && (obj.denom = message.denom);
     message.limitVolume !== undefined && (obj.limitVolume = message.limitVolume);
     message.identity !== undefined && (obj.identity = message.identity);
+    message.minVolume !== undefined && (obj.minVolume = message.minVolume);
     return obj;
   },
 
@@ -345,6 +373,7 @@ export const MsgUpdateCoin = {
     message.denom = object.denom ?? "";
     message.limitVolume = object.limitVolume ?? "";
     message.identity = object.identity ?? "";
+    message.minVolume = object.minVolume ?? "";
     return message;
   },
 };

@@ -103,6 +103,7 @@ export function updateCoinData(
     denom: data.ticker,
     limitVolume: getAmountToUNI(data.maxSupply),
     identity: data.identity,
+    minVolume: data.minVolume ? getAmountToUNI(data.minVolume) : "0",
   };
 }
 
@@ -119,6 +120,7 @@ export function createCoinData(
     initialReserve: getAmountToUNI(data.reserve),
     limitVolume: getAmountToUNI(data.maxSupply),
     identity: data.identity,
+    minVolume: data.minVolume ? getAmountToUNI(data.minVolume) : "0",
   };
 }
 

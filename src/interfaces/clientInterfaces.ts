@@ -12,12 +12,14 @@ export interface clientMsgCreateCoin {
   reserve: string;
   identity: string;
   crr: string;
+  minVolume?: string;
 }
 
 export interface clientMsgUpdateCoin {
   maxSupply: string;
   identity: string;
   ticker: string;
+  minVolume?: string;
 }
 
 export interface clientMsgMultiSendCoin {

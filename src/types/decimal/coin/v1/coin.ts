@@ -29,6 +29,11 @@ export interface Coin {
    * NOTE: actual values are stored as CoinVR records in KVStore.
    */
   reserve: string;
+  /**
+   * min_volume defines optional minimal allowed supply for the coin.
+   * NOTE: when value is zero it means that the coin does not support minimal supply limitations.
+   */
+  minVolume: string;
 }
 
 /** Check defines the redeemed check. */
@@ -62,7 +67,17 @@ export interface CoinVR {
 }
 
 function createBaseCoin(): Coin {
-  return { denom: "", title: "", creator: "", crr: 0, limitVolume: "", identity: "", volume: "", reserve: "" };
+  return {
+    denom: "",
+    title: "",
+    creator: "",
+    crr: 0,
+    limitVolume: "",
+    identity: "",
+    volume: "",
+    reserve: "",
+    minVolume: "",
+  };
 }
 
 export const Coin = {
@@ -90,6 +105,9 @@ export const Coin = {
     }
     if (message.reserve !== "") {
       writer.uint32(66).string(message.reserve);
+    }
+    if (message.minVolume !== "") {
+      writer.uint32(74).string(message.minVolume);
     }
     return writer;
   },
@@ -125,6 +143,9 @@ export const Coin = {
         case 8:
           message.reserve = reader.string();
           break;
+        case 9:
+          message.minVolume = reader.string();
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -143,6 +164,7 @@ export const Coin = {
       identity: isSet(object.identity) ? String(object.identity) : "",
       volume: isSet(object.volume) ? String(object.volume) : "",
       reserve: isSet(object.reserve) ? String(object.reserve) : "",
+      minVolume: isSet(object.minVolume) ? String(object.minVolume) : "",
     };
   },
 
@@ -156,6 +178,7 @@ export const Coin = {
     message.identity !== undefined && (obj.identity = message.identity);
     message.volume !== undefined && (obj.volume = message.volume);
     message.reserve !== undefined && (obj.reserve = message.reserve);
+    message.minVolume !== undefined && (obj.minVolume = message.minVolume);
     return obj;
   },
 
@@ -169,6 +192,7 @@ export const Coin = {
     message.identity = object.identity ?? "";
     message.volume = object.volume ?? "";
     message.reserve = object.reserve ?? "";
+    message.minVolume = object.minVolume ?? "";
     return message;
   },
 };
