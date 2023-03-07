@@ -69,7 +69,7 @@ export default class DecimalApi {
   //
   public async getAddress(address: string, params: any) {
     const { data } = await this.request(
-      `/address/${address}`,
+      `/address/${address}/info`,
       params,
       "get",
       this.gateUrl
