@@ -79,11 +79,17 @@ import Wallet from "../wallet";
 const encoder = new TextEncoder();
 import txTypesNew from "../txTypesNew";
 import { MsgReturnLegacy } from "src/types/decimal/legacy/v1/tx";
+import { encodeCosmosAccountAddress } from "./walletUtils";
 
 export function sendCoinData(
   data: clientMsgSendCoin,
   wallet: generatedWallet
 ): MsgSendCoin {
+
+  if(data.to.startsWith('0x')){
+    data.to = encodeCosmosAccountAddress(data.to)
+  }
+
   return {
     sender: wallet.address,
     recipient: data.to,
