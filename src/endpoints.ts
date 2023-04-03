@@ -8,6 +8,10 @@ export function getApiEndpoint(network: NETWORKS): string {
   return apiEndpoints[network];
 }
 
+export function getWeb3Endpoint(network: NETWORKS): string {
+  return web3Endpoints[network];
+}
+
 export function getRestNodeEndpoint(network: NETWORKS): string {
   return restNodeEndpoints[network];
 }
@@ -63,6 +67,12 @@ const restNodeEndpoints = {
 
 const apiEndpoints = {
   [NETWORKS.DEVNET]: "https://devnet-gate.decimalchain.com/api/",
+  [NETWORKS.TESTNET]: "https://testnet-gate.decimalchain.com/api/",
+  [NETWORKS.MAINNET]: "https://mainnet-gate.decimalchain.com/api/",
+};
+
+const web3Endpoints = {
+  [NETWORKS.DEVNET]: "https://devnet-val.decimalchain.com/web3/",
   [NETWORKS.TESTNET]: "https://testnet-gate.decimalchain.com/api/",
   [NETWORKS.MAINNET]: "https://mainnet-gate.decimalchain.com/api/",
 };

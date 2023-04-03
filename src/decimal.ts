@@ -35,10 +35,11 @@ import deleteAddressbookItem from "./api/deleteAddressbookItem";
 import {
   getApiEndpoint,
   getRestNodeEndpoint,
-  getRpcEndpoint,
+  getRpcEndpoint, getWeb3Endpoint,
   NETWORKS,
 } from "./endpoints";
 import updateAddressBlockingData from "./api/updateAddressBlockingData";
+import DecimalContract from "./contract";
 const DEFAULT_ORDER_FIELD = "timestamp";
 const DEFAULT_ORDER_DIRECTION = "DESC";
 const DEFAULT_ORDER = `order[${DEFAULT_ORDER_FIELD}]=${DEFAULT_ORDER_DIRECTION}`;
@@ -56,6 +57,7 @@ export interface CustomNodeEndpoints {
 export default class Decimal {
   private readonly rpcInstance: Client | undefined;
   private readonly apiInstance: DecimalApi;
+  private readonly contractInstance: DecimalContract;
   private readonly gateUrl: string;
   private readonly isNodeDirectMode: boolean;
   private readonly nodeRestUrl: string;
@@ -105,6 +107,10 @@ export default class Decimal {
     this.isNodeDirectMode = isNodeDirectMode;
     this.rpcInstance = rpcInstance;
     this.apiInstance = apiInstance;
+    this.contractInstance = new DecimalContract(
+      getWeb3Endpoint(network),
+      getApiEndpoint(network)
+    );
     this.gateUrl = gateUrl;
     this.nodeRestUrl = nodeRestUrl;
   }
@@ -115,6 +121,10 @@ export default class Decimal {
   }
   public getApiInstance() {
     return this.apiInstance;
+  }
+
+  public getEvmInstance() {
+    return this.contractInstance;
   }
   public getTxTypes() {
     return txTypesNew;
@@ -128,6 +138,7 @@ export default class Decimal {
     wallet.setGateUrl(this.gateUrl);
     wallet.setNodeRestUrl(this.nodeRestUrl);
     this.wallet = wallet;
+    this.contractInstance.setAddressFrom(wallet.evmAddress);
   }
   public async transactionSender(
     baseCoin = this.getNetworkBaseCoin()
@@ -169,45 +180,38 @@ export default class Decimal {
   }
 
   public createAddressbookItem(payload: AddressBookItem) {
-    return createAddressbookItem.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])(payload);
+    return createAddressbookItem.apply(this, [this.apiInstance, this.wallet])(
+      payload
+    );
   }
 
   public updateAddressbookItem(itemId: number, payload: AddressBookItem) {
-    return updateAddressbookItem.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])(itemId, payload);
+    return updateAddressbookItem.apply(this, [this.apiInstance, this.wallet])(
+      itemId,
+      payload
+    );
   }
 
   public deleteAddressbookItem(itemId: number) {
-    return deleteAddressbookItem.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])(itemId);
+    return deleteAddressbookItem.apply(this, [this.apiInstance, this.wallet])(
+      itemId
+    );
   }
 
   // return legacy
   public requestLegacy() {
-    return requestLegacy.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])();
+    return requestLegacy.apply(this, [this.apiInstance, this.wallet])();
   }
 
   // multisigs
   public getMultisigsByAddress(address: string) {
-    return getMultisigsByAddress.apply(this, [this.apiInstance as DecimalApi])(
-      address
-    );
+    return getMultisigsByAddress.apply(this, [this.apiInstance])(address);
   }
   public getMultisig(address: string) {
-    return getMultisig.apply(this, [this.apiInstance as DecimalApi])(address);
+    return getMultisig.apply(this, [this.apiInstance])(address);
   }
   public getMultisigTxs(address: string, limit = 1, offset = 0) {
-    return getMultisigTxs.apply(this, [this.apiInstance as DecimalApi])(
+    return getMultisigTxs.apply(this, [this.apiInstance])(
       address,
       limit,
       offset
@@ -215,28 +219,23 @@ export default class Decimal {
   }
   // stakes
   public getStakesByAddress(address: string, status: string) {
-    return getStakesByAddress.apply(this, [this.apiInstance as DecimalApi])(
+    return getStakesByAddress.apply(this, [this.apiInstance])(address, status);
+  }
+  public getValidator(address: string) {
+    return getValidator.apply(this, [this.apiInstance])(address);
+  }
+  // nft
+  public getNft(id: number) {
+    return getNft.apply(this, [this.apiInstance, this.wallet])(id);
+  }
+  public getNftStakesByAddress(address: string, status: DelegationStatus) {
+    return getNftStakesByAddress.apply(this, [this.apiInstance, this.wallet])(
       address,
       status
     );
   }
-  public getValidator(address: string) {
-    return getValidator.apply(this, [this.apiInstance as DecimalApi])(address);
-  }
-  // nft
-  public getNft(id: number) {
-    return getNft.apply(this, [this.apiInstance as DecimalApi, this.wallet])(
-      id
-    );
-  }
-  public getNftStakesByAddress(address: string, status: DelegationStatus) {
-    return getNftStakesByAddress.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])(address, status);
-  }
   public getNfts(address: string, limit = 10, offset = 0, query: any = null) {
-    return getNfts.apply(this, [this.apiInstance as DecimalApi, this.wallet])(
+    return getNfts.apply(this, [this.apiInstance, this.wallet])(
       address,
       limit,
       offset,
@@ -244,10 +243,12 @@ export default class Decimal {
     );
   }
   public getNftTxes(id: number, limit = 10, offset = 0, order = DEFAULT_ORDER) {
-    return getNftTxes.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])(id, limit, offset, order);
+    return getNftTxes.apply(this, [this.apiInstance, this.wallet])(
+      id,
+      limit,
+      offset,
+      order
+    );
   }
   public getNftsTxes(
     address: string,
@@ -255,14 +256,16 @@ export default class Decimal {
     offset = 0,
     order = DEFAULT_ORDER
   ) {
-    return getNftsTxes.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])(address, limit, offset, order);
+    return getNftsTxes.apply(this, [this.apiInstance, this.wallet])(
+      address,
+      limit,
+      offset,
+      order
+    );
   }
   // coins
   public getCoin(symbol: any) {
-    return getCoin.apply(this, [this.apiInstance as DecimalApi])(symbol);
+    return getCoin.apply(this, [this.apiInstance])(symbol);
   }
   public async checkCoinExists(symbol: any): Promise<boolean> {
     try {
@@ -275,30 +278,28 @@ export default class Decimal {
     }
   }
   public getMyCoins(limit: number, offset: number) {
-    return getMyCoins.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])(limit, offset);
+    return getMyCoins.apply(this, [this.apiInstance, this.wallet])(
+      limit,
+      offset
+    );
   }
   public getMyTransactions(limit = 10, offset = 0, types: any, coins: any) {
-    return getMyTransactions.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])(limit, offset, types, coins);
-  }
-  public getCoinsList(limit = 10, offset = 0, query: any) {
-    return getCoinsList.apply(this, [this.apiInstance as DecimalApi])(
+    return getMyTransactions.apply(this, [this.apiInstance, this.wallet])(
       limit,
       offset,
-      query
+      types,
+      coins
     );
+  }
+  public getCoinsList(limit = 10, offset = 0, query: any) {
+    return getCoinsList.apply(this, [this.apiInstance])(limit, offset, query);
   }
   // addresses
   public getAddress(address: string, txLimit = 10) {
-    return getAddress.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])(address, txLimit);
+    return getAddress.apply(this, [this.apiInstance, this.wallet])(
+      address,
+      txLimit
+    );
   }
   public getBlockedAddresses(
     limit = 10,
@@ -306,10 +307,12 @@ export default class Decimal {
     type?: object,
     q?: object
   ) {
-    return getBlockedAddresses.apply(this, [
-      this.apiInstance as DecimalApi,
-      this.wallet,
-    ])(limit, offset, type, q);
+    return getBlockedAddresses.apply(this, [this.apiInstance, this.wallet])(
+      limit,
+      offset,
+      type,
+      q
+    );
   }
 
   public updateAddressBlockingData(
@@ -319,7 +322,7 @@ export default class Decimal {
     reason = "Комментарий не указан"
   ) {
     return updateAddressBlockingData.apply(this, [
-      this.apiInstance as DecimalApi,
+      this.apiInstance,
       this.wallet,
     ])(address, isBlocked, type, reason);
   }
@@ -341,5 +344,9 @@ export default class Decimal {
     address: string
   ): Promise<AddressNftBalance[] | undefined> {
     return this.apiInstance?.getAddressNftsBalances(address, this.wallet);
+  }
+
+  public async getContract(address: string): Promise<DecimalContract> {
+    return this.contractInstance?.getContract(address);
   }
 }

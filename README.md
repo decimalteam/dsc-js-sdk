@@ -219,6 +219,22 @@ const res = await decimal.requestLegacy(); // try to get your legacy
 */
 ```
 
+### EVM Contract
+
+#### Get instance contract
+```js
+// Work only with verification contract
+const evm = await decimal.getContract('0x7d398c1076d8666679e2e5ef794f91519bf15133'); // try to contract data
+
+/* 
+the return instance of Contract with ABI-Json and method
+for execute direct action for contract user evm.contract
+user direct action evm.contract.methods.myFunction(args).call(options) - this is for get contract data and customize data 
+user direct action evm.contract.methods.myFunction(args).send(options) - this is for send transactions and customize data
+
+*/
+```
+
 
 ## Api calls
 
