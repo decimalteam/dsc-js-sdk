@@ -15,10 +15,9 @@ describe('evm', () => {
       const decimalWallet = new Wallet(mnemonic);
       const decimal = await Decimal.connect(NETWORKS.DEVNET);
       decimal.setWallet(decimalWallet)
-      const constract = await decimal.getContract('0x7d398c1076d8666679e2e5ef794f91519bf15133');
-      // constract.setAddressFrom()
-      const action = await constract.call('decimals')
-      expect(await action == 18).toBeTruthy();
+      const evm = await decimal.getContract('0x9e714d1a41d68b50fd9f2475002bc257f1f773a4');
+      const action = await evm.send('mint', '0x444532f6bdd4fd087e36bfa0c9c359e92b1e0e74', 'test', 'https://galaxyonline.io/images/redesign/station-alpha.png')
+      expect(await action.status).toBeTruthy();
     } catch (e) {
       console.log(e)
     }

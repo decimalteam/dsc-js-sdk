@@ -229,9 +229,15 @@ const evm = await decimal.getContract('0x7d398c1076d8666679e2e5ef794f91519bf1513
 /* 
 the return instance of Contract with ABI-Json and method
 for execute direct action for contract user evm.contract
-user direct action evm.contract.methods.myFunction(args).call(options) - this is for get contract data and customize data 
-user direct action evm.contract.methods.myFunction(args).send(options) - this is for send transactions and customize data
+user direct action evm.call(action, args) - this is for get contract data and customize data 
+user direct action evm.send(action, args) - this is for send transactions and customize data
 
+
+example: 
+await evm.call("name")
+await evm.call("balanceOf", "0x7d398c1076d8666679e2e5ef794f91519bf15133")
+
+const action = await evm.send('mint', '0x444532f6bdd4fd087e36bfa0c9c359e92b1e0e74', 'test', 'https://image.io/images/image.png')
 */
 ```
 

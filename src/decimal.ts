@@ -35,7 +35,8 @@ import deleteAddressbookItem from "./api/deleteAddressbookItem";
 import {
   getApiEndpoint,
   getRestNodeEndpoint,
-  getRpcEndpoint, getWeb3Endpoint,
+  getRpcEndpoint,
+  getWeb3Endpoint,
   NETWORKS,
 } from "./endpoints";
 import updateAddressBlockingData from "./api/updateAddressBlockingData";
@@ -138,7 +139,10 @@ export default class Decimal {
     wallet.setGateUrl(this.gateUrl);
     wallet.setNodeRestUrl(this.nodeRestUrl);
     this.wallet = wallet;
-    this.contractInstance.setAddressFrom(wallet.evmAddress);
+    if (wallet.evmAddress != undefined) {
+      this.contractInstance.setAddressFrom(wallet.evmAddress);
+    }
+    this.contractInstance.setPrivateKey(wallet.privateKey);
   }
   public async transactionSender(
     baseCoin = this.getNetworkBaseCoin()
