@@ -9,6 +9,7 @@ import {
   verifyAddress,
   createPublicKey,
   txEncoderDecoder,
+  encodePubKey,
 } from "./utils/walletUtils";
 
 const Sdk = { Wallet, Decimal, TX_TYPE, DecimalNetworks };
@@ -24,4 +25,5 @@ export {
   verifyAddress,
   createPublicKey,
   txEncoderDecoder,
+  encodePubKey,
 };

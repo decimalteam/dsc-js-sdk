@@ -278,6 +278,11 @@ export function createPublicKey(pubKey: Uint8Array): PubKey {
   return PubKey.decode(pubKey);
 }
 
+export function encodePubKey(pubKeyCompressed: PubKey): any {
+  const encoderDecoder = new EncoderDecoder();
+  return encoderDecoder.encodePubKey(pubKeyCompressed);
+}
+
 export function txEncoderDecoder(msgAny: any, memo: string): Uint8Array {
   const txEncoderDecoder = new EncoderDecoder();
   return txEncoderDecoder.encodeTxBody({
