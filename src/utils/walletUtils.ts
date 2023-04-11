@@ -6,6 +6,8 @@ import * as CryptoJS from "crypto-js";
 import { decode as rlpDecode } from "rlp";
 import { publicKeyConvert } from "secp256k1";
 import Wallet from "src/wallet";
+import { PubKey } from "../types/ethermint/crypto/v1/ethsecp256k1/keys";
+import { EncoderDecoder } from "./encoderDecoder";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sortobject = require("deep-sort-object");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -262,7 +264,7 @@ export function getWalletAddressFromSignature(
     // getting wallet address from recovered public key
     const pubKey = new Uint8Array(pubKeyRecovered.encodeCompressed("bites"));
     const { cosmosAccountAddress } = encodeAddresses(pubKey);
-    console.log("address from utils: ", cosmosAccountAddress);
+    // console.log("address from utils: ", cosmosAccountAddress);
 
     return cosmosAccountAddress;
   } catch (e) {
@@ -270,4 +272,16 @@ export function getWalletAddressFromSignature(
 
     return null;
   }
+}
+
+export function createPublicKey(pubKey: Uint8Array): PubKey {
+  return PubKey.decode(pubKey);
+}
+
+export function txEncoderDecoder(msgAny: any, memo: string): Uint8Array {
+  const txEncoderDecoder = new EncoderDecoder();
+  return txEncoderDecoder.encodeTxBody({
+    messages: [msgAny],
+    memo: memo,
+  });
 }
