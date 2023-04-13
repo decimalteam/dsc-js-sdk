@@ -274,11 +274,11 @@ export function getWalletAddressFromSignature(
   }
 }
 
-export function createPublicKey(pubKey: Uint8Array): PubKey {
+export const createPublicKey = (pubKey: Uint8Array) => {
   return PubKey.fromPartial({
     key: pubKey,
   });
-}
+};
 
 export function encodePubKey(pubKeyCompressed: PubKey): any {
   const encoderDecoder = new EncoderDecoder();
