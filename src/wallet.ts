@@ -11,6 +11,9 @@ import {
   getAndUseGeneratedWallets,
   getTimestamp,
   sendAndSaveGeneratedWallets,
+  encodePubKey,
+  createPublicKey,
+  txEncoderDecoder,
 } from "./utils/walletUtils";
 
 // constants
@@ -171,12 +174,12 @@ export default class Wallet {
     return this.gateUrl;
   }
   // get private key in hex
-  public getPrivateKeyString() {
+  public getPrivateKeyString(): string {
     return this.privateKey.toString();
   }
 
   // get public key in hex
-  public getPublicKeyString() {
+  public getPublicKeyString(): string {
     return this.publicKey.toString();
   }
 
@@ -398,16 +401,31 @@ export default class Wallet {
     }
   }
 
-  public updateNonce(nonce: number | null) {
+  public updateNonce(nonce: number | null): void {
     this.currentNonce = nonce;
     this.currentNonceValidUntil = nonce ? getTimestamp() : null;
   }
 
-  public encodeCosmosAccountAddress(address: string, prefix = "d0") {
+  public static encodeCosmosAccountAddress(
+    address: string,
+    prefix = "d0"
+  ): string {
     return encodeCosmosAccountAddress(address, prefix);
   }
 
-  public decodeCosmosAccountAddress(address: string) {
+  public static decodeCosmosAccountAddress(address: string): string | null {
     return decodeCosmosAccountAddress(address);
+  }
+
+  public static createPublicKey(pubKey: Uint8Array): PubKey {
+    return createPublicKey(pubKey);
+  }
+
+  public static encodePubKey(pubKeyCompressed: PubKey): any {
+    return encodePubKey(pubKeyCompressed);
+  }
+
+  public static txEncoderDecoder(msgAny: any, memo: string): Uint8Array {
+    return txEncoderDecoder(msgAny, memo);
   }
 }
