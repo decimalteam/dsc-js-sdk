@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, Method } from "axios";
 
 import Contract from "web3-eth-contract";
-import { AbiItem } from "web3-utils";
+import { AbiInput, AbiItem } from "web3-utils";
 import Web3 from "web3";
 import { TransactionReceipt } from "web3-core";
 
@@ -49,16 +49,27 @@ export default class DecimalContract {
     });
   }
 
-  public async getContract(address: string): Promise<DecimalContract> {
-    const { data } = await this.request(
-      `/evm-contracts/${address}`,
-      {},
-      "get",
-      this.gateUrl
-    );
+  public async getContract(
+    address: string,
+    jsonInterface?: AbiItem[]
+  ): Promise<DecimalContract> {
+    if (jsonInterface) {
+      this.jsonInterface = jsonInterface;
+    } else {
+      const { data } = await this.request(
+        `/evm-contracts/${address}`,
+        {},
+        "get",
+        this.gateUrl
+      );
+      this.jsonInterface = data.result.abi;
+    }
 
-    this.jsonInterface = data.result.abi;
-    this.contract = new this.web3.eth.Contract(data.result.abi, address);
+    if (!this.jsonInterface) {
+      throw new Error("Contract abi is not set");
+    }
+
+    this.contract = new this.web3.eth.Contract(this.jsonInterface, address);
     return this;
   }
 
@@ -105,7 +116,7 @@ export default class DecimalContract {
   public async send(
     action: string,
     ...params: any[]
-  ): Promise<TransactionReceipt> {
+  ): Promise<{ decode: any; transaction: TransactionReceipt }> {
     const functionData = this.contract?.methods[action](...params);
     const encode = functionData.encodeABI();
     const gasEstimate = await functionData.estimateGas({
@@ -116,10 +127,30 @@ export default class DecimalContract {
       throw new Error("Contract is undefined");
     }
 
-    return await this.createRawTransaction(
+    const trx = await this.createRawTransaction(
       this.contract.options.address,
       encode,
       gasEstimate
     );
+
+    let decode = {} as any;
+
+    if (this.jsonInterface) {
+      for (const acc of this.jsonInterface) {
+        if (acc.type == "event") {
+          const signature = this.web3.eth.abi.encodeEventSignature(acc);
+
+          if (signature == trx.logs[0].topics[0]) {
+            decode = this.web3.eth.abi.decodeLog(
+              acc.inputs as AbiInput[],
+              trx.logsBloom,
+              trx.logs[0].topics.slice(1)
+            );
+          }
+        }
+      }
+    }
+
+    return { decode: decode, transaction: trx };
   }
 }

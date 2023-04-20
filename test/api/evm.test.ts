@@ -17,7 +17,7 @@ describe('evm', () => {
       decimal.setWallet(decimalWallet)
       const evm = await decimal.getContract('0x9e714d1a41d68b50fd9f2475002bc257f1f773a4');
       const action = await evm.send('mint', '0x444532f6bdd4fd087e36bfa0c9c359e92b1e0e74', 'test', 'https://galaxyonline.io/images/redesign/station-alpha.png')
-      expect(await action.status).toBeTruthy();
+      expect(action.transaction.status).toBeTruthy();
     } catch (e) {
       console.log(e)
     }

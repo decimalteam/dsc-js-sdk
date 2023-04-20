@@ -177,6 +177,9 @@ export default class Wallet {
   public getPrivateKeyString(): string {
     return this.privateKey.toString();
   }
+  public getPrivateKeyHex(): string {
+    return "0x" + Buffer.from(this.getPrivateKey().key).toString("hex");
+  }
 
   // get public key in hex
   public getPublicKeyString(): string {
