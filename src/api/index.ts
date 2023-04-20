@@ -66,6 +66,16 @@ export default class DecimalApi {
       return null;
     }
   }
+  // evm
+  public async getEvmBalance(address: string) {
+    const { data } = await this.request(
+      `/evm-accounts/${address}/balance`,
+      null,
+      "get",
+      this.gateUrl
+    );
+    return data.result;
+  }
   //
   public async getAddress(address: string, params: any) {
     const { data } = await this.request(

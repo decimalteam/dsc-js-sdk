@@ -41,6 +41,7 @@ import {
 } from "./endpoints";
 import updateAddressBlockingData from "./api/updateAddressBlockingData";
 import DecimalContract from "./contract";
+import getEvmAccountBalance from "./api/getEvm";
 const DEFAULT_ORDER_FIELD = "timestamp";
 const DEFAULT_ORDER_DIRECTION = "DESC";
 const DEFAULT_ORDER = `order[${DEFAULT_ORDER_FIELD}]=${DEFAULT_ORDER_DIRECTION}`;
@@ -175,6 +176,10 @@ export default class Decimal {
 
   public verifyAddress(address: string, prefix = "d0") {
     return verifyAddress(address, prefix);
+  }
+
+  public getEvmAccountBalance(address: string) {
+    return this.apiInstance.getEvmBalance(address);
   }
 
   // API

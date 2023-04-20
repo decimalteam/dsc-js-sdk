@@ -22,6 +22,18 @@ describe('evm', () => {
       console.log(e)
     }
   });
+  test('get balance of evm', async() => {
+    try {
+      const { Wallet, Decimal } = SDK;
+      const decimalWallet = new Wallet(mnemonic);
+      const decimal = await Decimal.connect(NETWORKS.DEVNET);
+      decimal.setWallet(decimalWallet)
+      const evm = await decimal.getEvmAccountBalance('0x9e714d1a41d68b50fd9f2475002bc257f1f773a4');
+      console.log(evm);
+    } catch (e) {
+      console.log(e)
+    }
+  });
 
 });
 
