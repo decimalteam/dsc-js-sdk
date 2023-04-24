@@ -935,4 +935,17 @@ export class Transaction {
       gas: DEFAULT_GAS,
     };
   }
+
+  public static createRawTx(
+    bodyBytes: Uint8Array,
+    authInfoBytes: Uint8Array,
+    signatures: Uint8Array[]
+  ): Uint8Array {
+    const txRaw = TxRaw.fromPartial({
+      bodyBytes,
+      authInfoBytes,
+      signatures,
+    });
+    return TxRaw.encode(txRaw).finish();
+  }
 }
