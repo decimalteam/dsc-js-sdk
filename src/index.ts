@@ -8,8 +8,16 @@ import {
   makeSignBytes,
   makeSignDoc,
 } from "@cosmjs/proto-signing";
+import { EncoderDecoder } from "./utils/encoderDecoder";
 
-const Sdk = { Wallet, Decimal, TX_TYPE, DecimalNetworks, PubKey };
+const Sdk = {
+  Wallet,
+  Decimal,
+  TX_TYPE,
+  DecimalNetworks,
+  PubKey,
+  EncoderDecoder,
+};
 export default Sdk;
 export {
   Wallet,
