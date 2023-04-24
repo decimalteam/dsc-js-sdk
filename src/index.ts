@@ -9,6 +9,7 @@ import {
   makeSignDoc,
 } from "@cosmjs/proto-signing";
 import { EncoderDecoder } from "./utils/encoderDecoder";
+import { MsgDelegate, MsgUndelegate } from "./types/validator/v1/tx";
 
 const Sdk = {
   Wallet,
@@ -17,6 +18,8 @@ const Sdk = {
   DecimalNetworks,
   PubKey,
   EncoderDecoder,
+  MsgDelegate,
+  MsgUndelegate,
 };
 export default Sdk;
 export {
