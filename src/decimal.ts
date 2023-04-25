@@ -181,6 +181,13 @@ export default class Decimal {
     return this.apiInstance.getEvmBalance(address);
   }
 
+  public rpcApi() {
+    if (!this.rpcInstance) {
+      throw new Error("Decimal client is disconnected");
+    }
+    return this.rpcInstance;
+  }
+
   // API
   // addressbook
   public getAddressbook() {
