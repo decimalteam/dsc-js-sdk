@@ -1,8 +1,20 @@
 /* eslint-disable */
 import Long from "long";
 import * as _m0 from "protobufjs/minimal";
+import {MsgReturnLegacy} from "../../../../decimal/legacy/v1/tx";
 
 export const protobufPackage = "ethermint.crypto.v1.ethsecp256k1";
+
+/**
+ * PubKey defines a type alias for an ecdsa.PublicKey that implements
+ * Tendermint's PubKey interface. It represents the 33-byte compressed public
+ * key format.
+ */
+export interface ExtensionOptionsWeb3Tx {
+  typedDataChainID: number;
+  feePayer: string;
+  feePayerSig: Uint8Array;
+}
 
 /**
  * PubKey defines a type alias for an ecdsa.PublicKey that implements
@@ -20,6 +32,80 @@ export interface PubKey {
 export interface PrivKey {
   key: Uint8Array;
 }
+
+function longToNumber(long: Long): number {
+  if (long.gt(Number.MAX_SAFE_INTEGER)) {
+    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+  }
+  return long.toNumber();
+}
+
+function createBaseWeb3Tx(): ExtensionOptionsWeb3Tx {
+  return { typedDataChainID: 0, feePayer: '', feePayerSig: new Uint8Array() };
+}
+
+export const ExtensionOptionsWeb3Tx = {
+  encode(message: ExtensionOptionsWeb3Tx, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.typedDataChainID !== 0) {
+      writer.uint32(10).int64(message.typedDataChainID);
+    }
+    if (message.feePayer !== "") {
+      writer.uint32(10).string(message.feePayer);
+    }
+    if (message.feePayerSig.length !== 0) {
+      writer.uint32(18).bytes(message.feePayerSig);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ExtensionOptionsWeb3Tx {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWeb3Tx();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.typedDataChainID = longToNumber(reader.int64() as Long);
+          break;
+        case 2:
+          message.feePayer = reader.string();
+          break;
+        case 3:
+          message.feePayerSig = reader.bytes();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ExtensionOptionsWeb3Tx {
+    return {
+      typedDataChainID: isSet(object.typedDataChainID) ? Number(object.typedDataChainID) : 0,
+      feePayer: isSet(object.feePayer) ? String(object.feePayer) : "",
+      feePayerSig: isSet(object.feePayerSig) ? bytesFromBase64(object.feePayerSig) : new Uint8Array(),
+    };
+  },
+
+  toJSON(message: ExtensionOptionsWeb3Tx): unknown {
+    const obj: any = {};
+    message.typedDataChainID !== undefined && (obj.typedDataChainID = Math.round(message.typedDataChainID));
+    message.feePayer !== undefined && (obj.sender = message.feePayer);
+    message.feePayerSig !== undefined &&
+    (obj.feePayerSig = base64FromBytes(message.feePayerSig));
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ExtensionOptionsWeb3Tx>, I>>(object: I): ExtensionOptionsWeb3Tx {
+    const message = createBaseWeb3Tx();
+    message.feePayer = object.feePayer ?? "";
+    message.feePayerSig = object.feePayerSig ?? new Uint8Array();
+    return message;
+  },
+};
 
 function createBasePubKey(): PubKey {
   return { key: new Uint8Array() };

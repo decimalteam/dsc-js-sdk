@@ -19,7 +19,7 @@ import {
   MsgUpdateCoin,
 } from "../types/decimal/coin/v1/tx";
 import { PubKey as PubKeyED } from "../types/cosmos/crypto/ed25519/keys";
-import { PubKey } from "../types/ethermint/crypto/v1/ethsecp256k1/keys";
+import {ExtensionOptionsWeb3Tx, PubKey} from "../types/ethermint/crypto/v1/ethsecp256k1/keys";
 import {
   MsgCreateTransaction,
   MsgCreateWallet,
@@ -129,6 +129,7 @@ export function isTxBodyEncodeObject(
   );
 }
 
+export const web3TxUrl = "/ethermint.types.v1.ExtensionOptionsWeb3Tx";
 export const pubKeyTypeUrl = "/ethermint.crypto.v1.ethsecp256k1.PubKey";
 export const pubKeyValidatorTypeUrl = "/cosmos.crypto.ed25519.PubKey";
 
@@ -189,6 +190,7 @@ export class EncoderDecoder {
     this.types.set(txTypesNew.NFT_CANCEL_UNDELEGATE, MsgCancelUndelegationNFT);
     // LEGACY
     this.types.set(txTypesNew.REOWN_LEGACY, MsgReturnLegacy);
+    this.types.set(txTypesNew.REOWN_LEGACY, MsgReturnLegacy);
     // KEYS
     this.types.set(pubKeyValidatorTypeUrl, PubKeyED);
   }
@@ -233,6 +235,13 @@ export class EncoderDecoder {
     return {
       typeUrl: pubKeyTypeUrl,
       value: PubKey.encode(pubKeyCompressed).finish(),
+    };
+  }
+
+  public encodeWeb3Tx(web3Tx: ExtensionOptionsWeb3Tx) {
+    return {
+      typeUrl: web3TxUrl,
+      value: ExtensionOptionsWeb3Tx.encode(web3Tx).finish(),
     };
   }
 
