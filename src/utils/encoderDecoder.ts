@@ -173,6 +173,7 @@ export class EncoderDecoder {
     this.types.set(txTypesNew.VALIDATOR_SET_ONLINE, MsgSetOnline);
     this.types.set(txTypesNew.VALIDATOR_SET_OFFLINE, MsgSetOffline);
     this.types.set(txTypesNew.VALIDATOR_DELEGATE, MsgDelegate);
+    this.types.set(txTypesNew.VALIDATOR_DELEGATE_COSMOS, MsgDelegate);
     this.types.set(txTypesNew.VALIDATOR_UNBOND, MsgUndelegate);
     this.types.set(txTypesNew.VALIDATOR_REDELEGATE, MsgRedelegate);
     this.types.set(

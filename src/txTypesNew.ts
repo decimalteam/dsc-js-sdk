@@ -11,6 +11,7 @@ export default {
   COIN_ISSUE_CHECK: "coin/issue_check",
   VALIDATOR_CANDIDATE: "/decimal.validator.v1.MsgCreateValidator",
   VALIDATOR_DELEGATE: "/decimal.validator.v1.MsgDelegate",
+  VALIDATOR_DELEGATE_COSMOS: "cosmos-sdk/MsgDelegate",
   VALIDATOR_REDELEGATE: "/decimal.validator.v1.MsgRedelegate",
   VALIDATOR_CANCEL_REDELEGATE: "/decimal.validator.v1.MsgCancelRedelegation",
   VALIDATOR_CANCEL_UNDELEGATE: "/decimal.validator.v1.MsgCancelUndelegation",
