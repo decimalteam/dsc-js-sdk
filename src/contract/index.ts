@@ -77,6 +77,13 @@ export default class DecimalContract {
     return this.contract?.methods[action](...params).call();
   }
 
+  public getContractObject(): Contract {
+    if (!this.contract) {
+      throw new Error("Contract is not set");
+    }
+    return this.contract;
+  }
+
   public async estimateGas(action: string, ...params: any[]): Promise<any> {
     return this.contract?.methods[action](...params).estimateGas({
       from: this.addressFrom,
