@@ -4,7 +4,7 @@ import TX_TYPE from "./txTypesNew";
 import { DecimalNetworks } from "./networks";
 import { PubKey } from "./types/ethermint/crypto/v1/ethsecp256k1/keys";
 import { EncoderDecoder } from "./utils/encoderDecoder";
-import * as TxValidatorType from "./types/validator/v1/tx";
+import { MsgRedelegate, MsgUndelegate, MsgDelegate } from "./types/validator/v1/tx";
 import { Transaction } from "./transaction";
 
 const Sdk = {
@@ -15,7 +15,9 @@ const Sdk = {
   PubKey,
   EncoderDecoder,
   Transaction,
-  TxValidatorType
+  MsgRedelegate,
+  MsgUndelegate,
+  MsgDelegate
 };
 export default Sdk;
 export {
