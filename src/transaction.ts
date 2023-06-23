@@ -141,6 +141,12 @@ import {
   decodeAddressesArray,
   FAIL_CHECK_CODE,
 } from "./utils/blocking";
+import {
+  createEIP712Payload,
+  generateMessageEip712,
+  generateTypes,
+  MSG_DELEGATE_TYPES, MSG_REDELEGATE_TYPES, MSG_UNBOND_TYPES,
+} from "./utils/eip712";
 
 const FEE_MULTIPLIER = 1.1;
 const DEFAULT_GAS = "180000";
@@ -246,7 +252,8 @@ export class Transaction {
         this.wallet,
         this.account,
         this.chainId,
-        fee
+        fee,
+        simulation
       );
       txRaw = TxRaw.fromPartial({
         bodyBytes: signObject.signDoc.bodyBytes,
@@ -305,7 +312,8 @@ export class Transaction {
       this.wallet,
       this.account,
       this.chainId,
-      fee
+      fee,
+      simulation
     );
     txRaw = TxRaw.fromPartial({
       bodyBytes: signObject.signDoc.bodyBytes,
@@ -678,13 +686,19 @@ export class Transaction {
   public async delegate(
     data: clientMsgDelegate,
     options: txOptions,
-    simulation = false
-  ): Promise<SendTransactionResponse> {
+    simulation = false,
+    generate = false
+  ): Promise<
+    SendTransactionResponse | { typeUrl: string; value: MsgDelegate }
+  > {
     const msg = MsgDelegate.fromPartial(delegateData(data, this.wallet));
     const msgAny = {
       typeUrl: txTypesNew.VALIDATOR_DELEGATE,
       value: msg,
     };
+
+    if (generate) return msgAny;
+
     const result = await this.sendTransaction(msgAny, options, simulation);
     return result;
   }
@@ -692,13 +706,17 @@ export class Transaction {
   public async unbond(
     data: clientMsgUndelegate,
     options: txOptions,
-    simulation = false
-  ): Promise<SendTransactionResponse> {
+    simulation = false,
+    generate = false
+  ): Promise<
+    SendTransactionResponse | { typeUrl: string; value: MsgUndelegate }
+  > {
     const msg = MsgUndelegate.fromPartial(unbondData(data, this.wallet));
     const msgAny = {
       typeUrl: txTypesNew.VALIDATOR_UNBOND,
       value: msg,
     };
+    if (generate) return msgAny;
     const result = await this.sendTransaction(msgAny, options, simulation);
     return result;
   }
@@ -722,13 +740,17 @@ export class Transaction {
   public async redelegate(
     data: clientRedelegationData,
     options: txOptions,
-    simulation = false
-  ): Promise<SendTransactionResponse> {
+    simulation = false,
+    generate = false
+  ): Promise<
+    SendTransactionResponse | { typeUrl: string; value: MsgRedelegate }
+  > {
     const msg = MsgRedelegate.fromPartial(redelegateData(data, this.wallet));
     const msgAny = {
       typeUrl: txTypesNew.VALIDATOR_REDELEGATE,
       value: msg,
     };
+    if (generate) return msgAny;
     const result = await this.sendTransaction(msgAny, options, simulation);
     return result;
   }
@@ -947,5 +969,73 @@ export class Transaction {
       signatures,
     });
     return TxRaw.encode(txRaw).finish();
+  }
+
+  public async delegateEip712(
+    data: clientMsgDelegate,
+    options: txOptions
+  ): Promise<any> {
+    const types = generateTypes(MSG_DELEGATE_TYPES);
+    const message = delegateData(data, this.wallet);
+    const fee = (await this.delegate(data, options, true, false)) as ClientFee;
+    return createEIP712Payload(
+      types,
+      this.account,
+      this.chainId,
+      options,
+      {
+        amount: fee.amount,
+        denom: fee.coin,
+        gas: DEFAULT_GAS,
+      },
+      message
+    );
+  }
+
+  public async unbondEip712(
+    data: clientMsgUndelegate,
+    options: txOptions
+  ): Promise<any> {
+    const types = generateTypes(MSG_UNBOND_TYPES);
+    const message = unbondData(data, this.wallet);
+    const fee = (await this.unbond(data, options, true, false)) as ClientFee;
+    return createEIP712Payload(
+      types,
+      this.account,
+      this.chainId,
+      options,
+      {
+        amount: fee.amount,
+        denom: fee.coin,
+        gas: DEFAULT_GAS,
+      },
+      message
+    );
+  }
+
+  public async redelegateEip712(
+    data: clientRedelegationData,
+    options: txOptions
+  ): Promise<any> {
+    const types = generateTypes(MSG_REDELEGATE_TYPES);
+    const message = redelegateData(data, this.wallet);
+    const fee = (await this.redelegate(
+      data,
+      options,
+      true,
+      false
+    )) as ClientFee;
+    return createEIP712Payload(
+      types,
+      this.account,
+      this.chainId,
+      options,
+      {
+        amount: fee.amount,
+        denom: fee.coin,
+        gas: DEFAULT_GAS,
+      },
+      message
+    );
   }
 }

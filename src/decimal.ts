@@ -159,7 +159,7 @@ export default class Decimal {
       console.error("Account not found");
       account = {
         address: this.wallet.address,
-        pubkey: PubKey.fromPartial({ key: this.wallet.publicKey }),
+        pubkey: PubKey.fromPartial({key: this.wallet.publicKey}),
         accountNumber: 0,
         sequence: 0,
       };

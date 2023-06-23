@@ -105,41 +105,58 @@ export default class Wallet {
   public currentNonce: number | null;
   public currentNonceValidUntil: any;
 
-  public constructor(mnemonic: string) {
-    // current mnemonic
-    const _mnemonic = mnemonic || generateMnemonic();
-
-    if (!validateMnemonic(_mnemonic)) {
-      throw new Error("Invalid mnemonic");
-    }
-
-    // generate master wallet
-    const wallet = createDecimalWalletFromMnemonic(_mnemonic);
-
-    // master fields
-    this.mnemonic = _mnemonic; // master mnemonic to generate
+  public constructor(
+    mnemonic: string,
+    address?: string | null,
+    publicKey?: Uint8Array | null
+  ) {
     this.isNodeDirectMode = false;
-    this.validatorAddress = createDecimalWalletFromMnemonic(
-      _mnemonic,
-      VALIDATOR_ADDRESS_PREFIX,
-      MASTER_DERIVATION_PATH
-    ).address; // do not need to change with derivation path update
-
-    // current wallet
-    this.wallet = wallet; // current wallet
     this.depth = 1; // current wallet depth
     this.id = 0; // current wallet account id
 
-    // current private, public keys, address
-    this.privateKey = wallet.privateKey; // current private key
-    this.publicKey = wallet.publicKey; // current public key
+    if (address && publicKey) {
+      this.mnemonic = "";
+      // readonly wallet
+      this.wallet = {
+        privateKey: new Uint8Array(),
+        publicKey,
+        address,
+        evmAddress: decodeCosmosAccountAddress(address) ?? address,
+        id: this.id,
+      }; // current wallet
+    } else {
+      // current mnemonic
+      const _mnemonic = mnemonic || generateMnemonic();
 
-    this.evmAddress = wallet.evmAddress; // current evm address
-    this.address = wallet.address; // current address
+      if (!validateMnemonic(_mnemonic)) {
+        throw new Error("Invalid mnemonic");
+      }
+
+      // generate master wallet
+      const wallet = createDecimalWalletFromMnemonic(_mnemonic);
+
+      // master fields
+      this.mnemonic = _mnemonic; // master mnemonic to generate
+      this.validatorAddress = createDecimalWalletFromMnemonic(
+        _mnemonic,
+        VALIDATOR_ADDRESS_PREFIX,
+        MASTER_DERIVATION_PATH
+      ).address; // do not need to change with derivation path update
+
+      // current wallet
+      this.wallet = wallet; // current wallet
+    }
+
+    // current private, public keys, address
+    this.privateKey = this.wallet.privateKey; // current private key
+    this.publicKey = this.wallet.publicKey; // current public key
+
+    this.evmAddress = this.wallet.evmAddress; // current evm address
+    this.address = this.wallet.address; // current address
 
     // is available proposal submit
     this.availableProposalSubmit = !!proposalAdresses.addresses.find(
-      (address) => address === wallet.address
+      (address) => address === this.wallet.address
     );
 
     // gate url
@@ -147,7 +164,7 @@ export default class Wallet {
     this.nodeRestUrl = "";
 
     // get generated wallets including master wallet
-    this.wallets = [wallet];
+    this.wallets = [this.wallet];
 
     // current nonce for sending transactions and lifetime of the current nonce, valid for 6 secs
     this.currentNonce = null;
@@ -193,9 +210,15 @@ export default class Wallet {
   }
 
   public getPublicKey(compressed = false): PubKey {
-    return PubKey.fromPartial({
-      key: publicKeyCreate(this.wallet.privateKey, compressed),
-    });
+    try {
+      return PubKey.fromPartial({
+        key: publicKeyCreate(this.wallet.privateKey, compressed),
+      });
+    } catch (e) {
+      return PubKey.fromPartial({
+        key: Buffer.from(this.wallet.publicKey),
+      });
+    }
   }
 
   // switch to account by id private method
@@ -349,7 +372,8 @@ export default class Wallet {
         this.gateUrl,
         masterWallet.address
       );
-
+      console.log(this.gateUrl)
+      console.log(ids)
       if (ids && ids.length) {
         this.wallets = [masterWallet];
         this.switchAccount(masterWallet.id);

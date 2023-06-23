@@ -14,7 +14,7 @@ jest.setTimeout(60000)
 let i = 0;
 describe('coin', () => {
 
-    test.skip('send', async() => {
+    test('send', async() => {
       try {
         // Sdk.
         const { Wallet, Decimal, DecimalNetworks } = SDK;

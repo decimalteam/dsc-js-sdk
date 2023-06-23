@@ -35,9 +35,9 @@ export async function signTransaction(
   fee: {
     gas: string;
     amount: any[];
-  }
+  },
+  simulation: boolean
 ): Promise<signTransactionData> {
-  const privKey = wallet.getPrivateKey();
   const pubKeyCompressed = wallet.getPublicKey(true);
   const encoderDecoder = new EncoderDecoder();
   const pubKeyEncoded = encoderDecoder.encodePubKey(pubKeyCompressed);
@@ -55,11 +55,12 @@ export async function signTransaction(
   );
   const signBytes = makeSignBytes(signDoc);
   const signHash = Buffer.from(keccak256(signBytes), "hex");
-  const signature = await Secp256k1.createSignature(signHash, privKey.key);
-  const signatureBytes = new Uint8Array([
-    ...signature.r(32),
-    ...signature.s(32),
-  ]);
+  let signatureBytes = new Uint8Array();
+  if (!simulation) {
+    const privKey = wallet.getPrivateKey();
+    const signature = await Secp256k1.createSignature(signHash, privKey.key);
+    signatureBytes = new Uint8Array([...signature.r(32), ...signature.s(32)]);
+  }
 
   const stdSignature = {
     pub_key: {
