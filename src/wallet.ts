@@ -372,8 +372,7 @@ export default class Wallet {
         this.gateUrl,
         masterWallet.address
       );
-      console.log(this.gateUrl)
-      console.log(ids)
+
       if (ids && ids.length) {
         this.wallets = [masterWallet];
         this.switchAccount(masterWallet.id);

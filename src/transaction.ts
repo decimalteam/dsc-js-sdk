@@ -981,7 +981,7 @@ export class Transaction {
     return createEIP712Payload(
       types,
       this.account,
-      this.chainId,
+      this.chainId.replace("decimal_", "").split("-")[0],
       options,
       {
         amount: fee.amount,
