@@ -136,17 +136,15 @@ import {
   gateEstimationEndpoint,
   getNodeFeeEstimationEndpoint,
 } from "./endpoints";
-import {
-  createBlockCheckSignatures,
-  decodeAddressesArray,
-  FAIL_CHECK_CODE,
-} from "./utils/blocking";
+import { createBlockCheckSignatures, FAIL_CHECK_CODE } from "./utils/blocking";
 import {
   createEIP712Payload,
-  generateMessageEip712,
   generateTypes,
-  MSG_DELEGATE_TYPES, MSG_REDELEGATE_TYPES, MSG_UNBOND_TYPES,
+  MSG_DELEGATE_TYPES,
+  MSG_REDELEGATE_TYPES,
+  MSG_UNBOND_TYPES,
 } from "./utils/eip712";
+import { makeAuthInfoBytes, makeSignDoc } from "@cosmjs/proto-signing";
 
 const FEE_MULTIPLIER = 1.1;
 const DEFAULT_GAS = "180000";
@@ -355,6 +353,85 @@ export class Transaction {
       )) as DeliverTxResponse | SequenceFailureResponse;
     }
     this.account.sequence++;
+
+    return result;
+  }
+
+  public async sendEip712(
+    msgAny: any,
+    options: txOptions,
+    signature: string,
+    tryTimes = 2
+  ): Promise<SendTransactionResponse> {
+    const pubKeyCompressed = this.wallet.getPublicKey(true);
+    const pubKeyEncoded = this.encoderDecoder.encodePubKey(pubKeyCompressed);
+    const chainIdNumber = this.chainId.replace("decimal_", "").split("-")[0];
+    const web3 = this.encoderDecoder.encodeWeb3Tx({
+      typedDataChainID: BigNumber(chainIdNumber).toNumber(),
+      feePayer: this.wallet.address,
+      feePayerSig: Buffer.from(signature, "hex"),
+    });
+
+    const readyFeeCoin = options.feeCoin
+      ? options.feeCoin.toLowerCase()
+      : this.baseCoin;
+    const txBodyBytes = this.encoderDecoder.encodeTxBody({
+      messages: [msgAny],
+      memo: options.message ? options.message : "",
+      extensionOptions: [web3],
+    });
+    let result;
+    const gateUrl = this.wallet.getGateUrl();
+
+    const authInfoDirect = makeAuthInfoBytes(
+      [{ pubkey: pubKeyEncoded, sequence: this.account.sequence }],
+      [
+        {
+          denom: readyFeeCoin,
+          amount: options.feeAmount ?? "",
+        },
+      ],
+      21000,
+      127
+    );
+
+    const signDocDirect = makeSignDoc(
+      txBodyBytes,
+      authInfoDirect,
+      this.chainId,
+      this.account.accountNumber
+    );
+
+    const txRaw = TxRaw.fromPartial({
+      bodyBytes: signDocDirect.bodyBytes,
+      authInfoBytes: signDocDirect.authInfoBytes,
+      signatures: [new Uint8Array()],
+    });
+    const txBytes = TxRaw.encode(txRaw).finish();
+
+    if (!this.rpcClient) {
+      throw new Error("Rpc Client error");
+    }
+    const waitForTx = options.txBroadcastMode === BROADCAST_MODE_BLOCK;
+    let isBlocked = false;
+    if (!this.wallet.isNodeDirectMode) {
+      const singatures = createBlockCheckSignatures(
+        this.wallet.address,
+        msgAny.value
+      );
+      const res = await axios.post(
+        `${gateUrl}${gateBroadcastStatusEndpoint}`,
+        singatures
+      );
+      isBlocked = res.data === FAIL_CHECK_CODE;
+    }
+    if (isBlocked) {
+      throw new Error(
+        `Broadcasting transaction failed with code ${FAIL_CHECK_CODE} (codespace: sdk)`
+      );
+    } else {
+      result = await this.rpcClient.broadcastTx(txBytes, waitForTx);
+    }
 
     return result;
   }
@@ -1002,7 +1079,7 @@ export class Transaction {
     return createEIP712Payload(
       types,
       this.account,
-      this.chainId,
+      this.chainId.replace("decimal_", "").split("-")[0],
       options,
       {
         amount: fee.amount,
@@ -1028,7 +1105,7 @@ export class Transaction {
     return createEIP712Payload(
       types,
       this.account,
-      this.chainId,
+      this.chainId.replace("decimal_", "").split("-")[0],
       options,
       {
         amount: fee.amount,

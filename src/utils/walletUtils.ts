@@ -52,7 +52,7 @@ export async function getAndUseGeneratedWallets(gateUrl: any, address: any) {
     const { data } = await axios.get(
       `${gateUrl}address/${address}/generated-wallets`
     );
-
+    console.log(data);
     return (data && data.result && data.result.generatedWallets) || [];
   } catch (e: any) {
     if (e.response && e.response.code && e.response.code !== 404) {
@@ -87,14 +87,12 @@ export async function sendAndSaveGeneratedWallets(
       signature,
     };
 
-    const {
-      data: { result = false },
-    } = await axios.put(
+    const { data } = await axios.put(
       `${gateUrl}address/${wallets[0].address}/generated-wallets`,
       payload
     );
-
-    return result;
+    console.log(data);
+    return false;
   } catch (e: any) {
     if (e.response && e.response.code && e.response.code !== 404) {
       console.error(e);
@@ -219,10 +217,8 @@ export const perpareTimestampAndSignature = (wallet: Wallet) => {
   const data: any = {
     timestamp,
   };
-  console.log(data);
   const msg = sortobject(data);
   const msgHash = sha3.keccak256(JSON.stringify(msg));
-  console.log(msgHash);
   // const key = ec.keyFromPrivate(wallet.wallets[0].privateKey);
   const signature = ec.sign(msgHash, wallet.privateKey, "hex", {
     canonical: true,
