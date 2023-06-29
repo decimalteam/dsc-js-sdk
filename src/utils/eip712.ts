@@ -1,5 +1,6 @@
 import { Account } from "../accounts";
 import { txOptions } from "../interfaces/clientInterfaces";
+import BigNumber from "bignumber.js";
 
 export function generateTypes(msgValues: object): any {
   const types = {
@@ -116,25 +117,6 @@ export function generateMessageEip712(
   };
 }
 
-export function createEIP712(
-  types: object,
-  chainId: number,
-  message: object
-): any {
-  return {
-    types,
-    primaryType: "Tx",
-    domain: {
-      name: "Cosmos Web3",
-      version: "1.0.0",
-      chainId,
-      verifyingContract: "cosmos",
-      salt: "0",
-    },
-    message,
-  };
-}
-
 export function createEIP712Payload(
   types: object,
   account: Account,
@@ -158,17 +140,17 @@ export function createEIP712Payload(
     feeObject,
     [message]
   );
-
+  const chainIdNumber = chainId.replace("decimal_", "").split("-")[0];
   return {
     types,
     primaryType: "Tx",
     domain: {
       name: "Cosmos Web3",
       version: "1.0.0",
-      chainId,
+      chainId: BigNumber(chainIdNumber).toNumber(),
       verifyingContract: "cosmos",
       salt: "0",
     },
-    messages,
+    message: messages,
   };
 }
