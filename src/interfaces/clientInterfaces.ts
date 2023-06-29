@@ -251,6 +251,7 @@ export interface clientReturnLegacy {
 export interface txOptions {
   feeCoin: string;
   feeAmount?: string;
+  feeGas?: number;
   baseCoinFeeEstimation?: boolean;
   message: string;
   txBroadcastMode: string;

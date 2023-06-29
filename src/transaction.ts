@@ -361,26 +361,37 @@ export class Transaction {
     msgAny: any,
     options: txOptions,
     signature: string,
+    web3Format: boolean,
     tryTimes = 2
   ): Promise<SendTransactionResponse> {
     const pubKeyCompressed = this.wallet.getPublicKey(true);
     const pubKeyEncoded = this.encoderDecoder.encodePubKey(pubKeyCompressed);
     const chainIdNumber = this.chainId.replace("decimal_", "").split("-")[0];
-    const web3 = this.encoderDecoder.encodeWeb3Tx({
-      typedDataChainID: BigNumber(chainIdNumber).toNumber(),
-      feePayer: this.wallet.address,
-      feePayerSig: Buffer.from(signature, "hex"),
-    });
-
     const readyFeeCoin = options.feeCoin
       ? options.feeCoin.toLowerCase()
       : this.baseCoin;
-    const txBodyBytes = this.encoderDecoder.encodeTxBody({
-      messages: [msgAny],
-      memo: options.message ? options.message : "",
-      extensionOptions: [web3],
-    });
-    let result;
+
+    let result, txBodyBytes;
+
+    if (web3Format) {
+      const web3 = this.encoderDecoder.encodeWeb3Tx({
+        typedDataChainID: BigNumber(chainIdNumber).toNumber(),
+        feePayer: this.wallet.address,
+        feePayerSig: Buffer.from(signature, "hex"),
+      });
+
+      txBodyBytes = this.encoderDecoder.encodeTxBody({
+        messages: [msgAny],
+        memo: options.message ? options.message : "",
+        extensionOptions: [web3],
+      });
+    } else {
+      txBodyBytes = this.encoderDecoder.encodeTxBody({
+        messages: [msgAny],
+        memo: options.message ? options.message : "",
+      });
+    }
+
     const gateUrl = this.wallet.getGateUrl();
 
     const authInfoDirect = makeAuthInfoBytes(
@@ -391,8 +402,8 @@ export class Transaction {
           amount: options.feeAmount ?? "",
         },
       ],
-      21000,
-      127
+      options.feeGas ?? 21000,
+      web3Format ? 127 : 1
     );
 
     const signDocDirect = makeSignDoc(
@@ -405,7 +416,9 @@ export class Transaction {
     const txRaw = TxRaw.fromPartial({
       bodyBytes: signDocDirect.bodyBytes,
       authInfoBytes: signDocDirect.authInfoBytes,
-      signatures: [new Uint8Array()],
+      signatures: [
+        web3Format ? new Uint8Array() : Buffer.from(signature, "base64"),
+      ],
     });
     const txBytes = TxRaw.encode(txRaw).finish();
 
@@ -1065,7 +1078,10 @@ export class Transaction {
         denom: fee.coin,
         gas: DEFAULT_GAS,
       },
-      message
+      {
+        type: txTypesNew.VALIDATOR_DELEGATE,
+        value: message,
+      }
     );
   }
 
