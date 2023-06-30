@@ -8,6 +8,7 @@ import type protobuf from "protobufjs";
 
 import txTypesNew from "../txTypesNew";
 import {
+  ExtOptionsWeb3Tx,
   MsgBurnCoin,
   MsgBuyCoin,
   MsgCreateCoin,
@@ -17,9 +18,10 @@ import {
   MsgSellCoin,
   MsgSendCoin,
   MsgUpdateCoin,
+  Web3Tx,
 } from "../types/decimal/coin/v1/tx";
 import { PubKey as PubKeyED } from "../types/cosmos/crypto/ed25519/keys";
-import {ExtensionOptionsWeb3Tx, PubKey} from "../types/ethermint/crypto/v1/ethsecp256k1/keys";
+import { PubKey } from "../types/ethermint/crypto/v1/ethsecp256k1/keys";
 import {
   MsgCreateTransaction,
   MsgCreateWallet,
@@ -239,19 +241,12 @@ export class EncoderDecoder {
     };
   }
 
-  public encodeWeb3Tx(web3Tx: ExtensionOptionsWeb3Tx) {
+  public encodeWeb3Tx(web3Tx: ExtOptionsWeb3Tx) {
     return {
       typeUrl: web3TxUrl,
-      value: ExtensionOptionsWeb3Tx.encode(web3Tx).finish(),
+      value: Web3Tx.encode(web3Tx).finish(),
     };
   }
-
-  // public encodeValidatorPubKey(pubKeyCompressed: PubKey) {
-  //   return {
-  //     typeUrl: pubKeyTypeUrl,
-  //     value: PublicKey.encode(pubKeyCompressed).finish(),
-  //   };
-  // }
 
   public encodeTxBody(txBodyFields: TxBodyValue): Uint8Array {
     const wrappedMessages = txBodyFields.messages.map((message) =>

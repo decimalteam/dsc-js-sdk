@@ -20,7 +20,7 @@ describe('legacy', () => {
       const { Wallet, Decimal, DecimalNetworks } = SDK;
       const publicKey = Buffer.from('023dba9bf34be051e02b9f3a1b1e888fde45746d8ae2ffbf7c3eeef83210e806b9')
       const decimalWallet = new Wallet('',
-          Wallet.encodeCosmosAccountAddress('0x211c2122721360BD32B80692229A2592D9Ea5C15', 'd0'),
+          Wallet.encodeCosmosAccountAddress('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', 'd0'),
           publicKey
       );
       const decimal = await Decimal.connect(DecimalNetworks.devnet);
@@ -28,18 +28,31 @@ describe('legacy', () => {
       // console.log(decimalWallet)
       const sender = await decimal.transactionSender();
       // console.log(sender);
-        const msg: clientRedelegationData = {
-            validatorFrom: "dxvaloper14elhyzmq95f98wrkvujtsr5cyudffp6qk9wmzm",
-            validatorTo: "dxvaloper1yvgq6uh35a395hexhxcde2zfpwwafzpaxvupmc",
-            coin: "del",
-            stake: "10",
+        const params = {
+            validatorAddress: "d0valoper1t4qx5x570wglgesc5g5gvf3a0n3jf9ngsn76pl",
+            stake: '1',
+            coin: 'del'
         }
     const options = {
         feeCoin: "",
         message: "",
         txBroadcastMode: "sync",
     }
-      const comision = await sender.redelegateEip712(msg, options);
+        const msgAny = await sender.delegate(params, {
+            feeCoin: 'del',
+            feeAmount: '3000000000000',
+            message: '',
+            txBroadcastMode: 'sync'
+        }, true, true)
+
+    const signature = 'cf3815fa9054cd4e5ef1dc03557777747d6d3458b54fae6ee77326c48224f0b077a076dccaa32f0bbe2e97c6c082a471743d174afe6afd4430dab56fbd533c011c'
+      const comision = await sender.sendEip712(msgAny, {
+          feeCoin: 'del',
+          feeAmount: '3000000000000000000',
+          feeGas: 21000,
+          message: '',
+          txBroadcastMode: 'sync'
+      }, signature.replace('0x', ''), true);
       console.log(comision)
 
     } catch (e) {

@@ -216,7 +216,7 @@ export default class Wallet {
       });
     } catch (e) {
       return PubKey.fromPartial({
-        key: Buffer.from(this.wallet.publicKey),
+        key: this.wallet.publicKey,
       });
     }
   }

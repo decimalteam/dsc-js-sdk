@@ -4,6 +4,70 @@ import { Coin } from "../../../cosmos/base/v1beta1/coin";
 
 export const protobufPackage = "decimal.coin.v1";
 
+export interface ExtOptionsWeb3Tx {
+  typedDataChainID: number;
+  feePayer: string;
+  feePayerSig: Uint8Array;
+}
+
+function createBaseWeb3Tx (): ExtOptionsWeb3Tx {
+  return { typedDataChainID: 0, feePayer: '', feePayerSig: new Uint8Array() }
+}
+
+function longToNumber (long: Long): number {
+  if (long.gt(Number.MAX_SAFE_INTEGER)) {
+    throw new globalThis.Error('Value is larger than Number.MAX_SAFE_INTEGER')
+  }
+  return long.toNumber()
+}
+
+export const Web3Tx = {
+  encode (message: ExtOptionsWeb3Tx, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.typedDataChainID !== 0) {
+      writer.uint32(8).int64(message.typedDataChainID)
+    }
+    if (message.feePayer !== '') {
+      writer.uint32(18).string(message.feePayer)
+    }
+    if (message.feePayerSig.length !== 0) {
+      writer.uint32(26).bytes(message.feePayerSig)
+    }
+    return writer
+  },
+
+  decode (input: _m0.Reader | Uint8Array, length?: number): ExtOptionsWeb3Tx {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    const end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseWeb3Tx()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.typedDataChainID = longToNumber(reader.int64() as Long)
+          break
+        case 2:
+          message.feePayer = reader.string()
+          break
+        case 3:
+          message.feePayerSig = reader.bytes()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ExtOptionsWeb3Tx>, I>> (object: I): ExtOptionsWeb3Tx {
+    const message = createBaseWeb3Tx()
+    message.typedDataChainID = object.typedDataChainID ?? 0
+    message.feePayer = object.feePayer ?? ''
+    message.feePayerSig = object.feePayerSig ?? new Uint8Array()
+    return message
+  }
+}
+
 /** MsgCreateCoin defines a SDK message for creating a new coin. */
 export interface MsgCreateCoin {
   sender: string;

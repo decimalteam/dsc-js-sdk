@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { fromBase64 } from "@cosmjs/encoding";
-import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import { Tx, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import BigNumber from "bignumber.js";
 
 import { Account } from "./accounts";
@@ -57,6 +57,7 @@ import {
   MsgSellAllCoin,
   MsgRedeemCheck,
   MsgBurnCoin,
+  Web3Tx,
 } from "./types/decimal/coin/v1/tx";
 import {
   createCoinData,
@@ -361,8 +362,7 @@ export class Transaction {
     msgAny: any,
     options: txOptions,
     signature: string,
-    web3Format: boolean,
-    tryTimes = 2
+    web3Format: boolean
   ): Promise<SendTransactionResponse> {
     const pubKeyCompressed = this.wallet.getPublicKey(true);
     const pubKeyEncoded = this.encoderDecoder.encodePubKey(pubKeyCompressed);
@@ -372,13 +372,14 @@ export class Transaction {
       : this.baseCoin;
 
     let result, txBodyBytes;
-
     if (web3Format) {
-      const web3 = this.encoderDecoder.encodeWeb3Tx({
-        typedDataChainID: BigNumber(chainIdNumber).toNumber(),
-        feePayer: this.wallet.address,
-        feePayerSig: Buffer.from(signature, "hex"),
-      });
+      const web3 = this.encoderDecoder.encodeWeb3Tx(
+        Web3Tx.fromPartial({
+          typedDataChainID: BigNumber(chainIdNumber).toNumber(),
+          feePayer: this.wallet.address,
+          feePayerSig: Buffer.from(signature, "hex"),
+        } as any)
+      );
 
       txBodyBytes = this.encoderDecoder.encodeTxBody({
         messages: [msgAny],
