@@ -18,9 +18,9 @@ describe('legacy', () => {
     try {
       // Sdk.
       const { Wallet, Decimal, DecimalNetworks } = SDK;
-      const publicKey = Buffer.from('023dba9bf34be051e02b9f3a1b1e888fde45746d8ae2ffbf7c3eeef83210e806b9')
+      const publicKey = Buffer.from('037c71d1855237853d90eb194790d9aee3c0ff25b0c5c4d74ea994f02a27f2b39a', 'hex')
       const decimalWallet = new Wallet('',
-          Wallet.encodeCosmosAccountAddress('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', 'd0'),
+          'd012vrppfv9rfnw43nmg4lrzzf4m5m7nek53urnnt',
           publicKey
       );
       const decimal = await Decimal.connect(DecimalNetworks.devnet);
@@ -40,16 +40,17 @@ describe('legacy', () => {
     }
         const msgAny = await sender.delegate(params, {
             feeCoin: 'del',
-            feeAmount: '3000000000000',
+            feeAmount: '2494000000000000000',
+            feeGas: 180000,
             message: '',
             txBroadcastMode: 'sync'
         }, true, true)
 
-    const signature = 'cf3815fa9054cd4e5ef1dc03557777747d6d3458b54fae6ee77326c48224f0b077a076dccaa32f0bbe2e97c6c082a471743d174afe6afd4430dab56fbd533c011c'
+    const signature = '54c7f45d2c755e2663674ff759ace086ae67af36bee18006b92b0d7fe99f7c1531074b234a00edbe07932d3e82db763d1426227d89c4534502294af5b1e5c77e1c'
       const comision = await sender.sendEip712(msgAny, {
           feeCoin: 'del',
-          feeAmount: '3000000000000000000',
-          feeGas: 21000,
+          feeAmount: '27940000000000000000',
+          feeGas: 180000,
           message: '',
           txBroadcastMode: 'sync'
       }, signature.replace('0x', ''), true);

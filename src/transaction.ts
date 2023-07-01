@@ -225,7 +225,7 @@ export class Transaction {
               amount: options.feeAmount,
             },
           ],
-          gas: DEFAULT_GAS,
+          gas: options.feeGas ? options.feeGas.toString() : DEFAULT_GAS,
         };
       } else {
         fee = this.getDefaultFee();
@@ -243,7 +243,7 @@ export class Transaction {
               amount: "0",
             },
           ],
-          gas: DEFAULT_GAS,
+          gas: options.feeGas ? options.feeGas.toString() : DEFAULT_GAS,
         };
       }
       signObject = await signTransaction(
