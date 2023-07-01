@@ -1070,7 +1070,16 @@ export class Transaction {
   ): Promise<any> {
     const types = generateTypes(MSG_DELEGATE_TYPES);
     const message = delegateData(data, this.wallet);
-    const fee = (await this.delegate(data, options, true, false)) as ClientFee;
+
+    let fee;
+    if (options.feeAmount) {
+      fee = {
+        amount: options.feeAmount,
+        coin: options.feeCoin,
+      };
+    } else {
+      fee = (await this.delegate(data, options, true, false)) as ClientFee;
+    }
     return createEIP712Payload(
       types,
       this.account,
