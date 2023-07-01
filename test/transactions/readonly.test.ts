@@ -49,7 +49,7 @@ describe('legacy', () => {
     const signature = '54c7f45d2c755e2663674ff759ace086ae67af36bee18006b92b0d7fe99f7c1531074b234a00edbe07932d3e82db763d1426227d89c4534502294af5b1e5c77e1c'
       const comision = await sender.sendEip712(msgAny, {
           feeCoin: 'del',
-          feeAmount: '27940000000000000000',
+          feeAmount: '28940000000000000000',
           feeGas: 180000,
           message: '',
           txBroadcastMode: 'sync'

@@ -364,8 +364,11 @@ export class Transaction {
     signature: string,
     web3Format: boolean
   ): Promise<SendTransactionResponse> {
-    const pubKeyCompressed = this.wallet.getPublicKey(true);
-    const pubKeyEncoded = this.encoderDecoder.encodePubKey(pubKeyCompressed);
+    const pubKeyCompressed = PubKey.fromPartial({
+      key: this.wallet.publicKey,
+    });
+    const encoderDecoder = new EncoderDecoder();
+    const pubKeyEncoded = encoderDecoder.encodePubKey(pubKeyCompressed);
     const chainIdNumber = this.chainId.replace("decimal_", "").split("-")[0];
     const readyFeeCoin = options.feeCoin
       ? options.feeCoin.toLowerCase()
@@ -380,7 +383,6 @@ export class Transaction {
           feePayerSig: Buffer.from(signature, "hex"),
         } as any)
       );
-
       txBodyBytes = this.encoderDecoder.encodeTxBody({
         messages: [msgAny],
         memo: options.message ? options.message : "",
@@ -1077,7 +1079,7 @@ export class Transaction {
       {
         amount: fee.amount,
         denom: fee.coin,
-        gas: DEFAULT_GAS,
+        gas: options.feeGas ? options.feeGas.toString() : DEFAULT_GAS,
       },
       {
         type: txTypesNew.VALIDATOR_DELEGATE,
@@ -1113,12 +1115,16 @@ export class Transaction {
   ): Promise<any> {
     const types = generateTypes(MSG_REDELEGATE_TYPES);
     const message = redelegateData(data, this.wallet);
-    const fee = (await this.redelegate(
-      data,
-      options,
-      true,
-      false
-    )) as ClientFee;
+    let fee;
+    if (options.feeAmount) {
+      fee = {
+        amount: options.feeAmount,
+        coin: options.feeCoin,
+      };
+    } else {
+      fee = (await this.redelegate(data, options, true, false)) as ClientFee;
+    }
+
     return createEIP712Payload(
       types,
       this.account,
