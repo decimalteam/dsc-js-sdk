@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { fromBase64 } from "@cosmjs/encoding";
-import { Tx, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import {SignDoc, Tx, TxRaw} from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import BigNumber from "bignumber.js";
 
 import { Account } from "./accounts";
@@ -362,8 +362,9 @@ export class Transaction {
     msgAny: any,
     options: txOptions,
     signature: string,
-    web3Format: boolean
-  ): Promise<SendTransactionResponse> {
+    web3Format: boolean,
+    generate: boolean
+  ): Promise<SendTransactionResponse | SignDoc> {
     const pubKeyCompressed = PubKey.fromPartial({
       key: this.wallet.publicKey,
     });
@@ -415,6 +416,10 @@ export class Transaction {
       this.chainId,
       this.account.accountNumber
     );
+
+    if (generate){
+      return signDocDirect
+    }
 
     const txRaw = TxRaw.fromPartial({
       bodyBytes: signDocDirect.bodyBytes,
