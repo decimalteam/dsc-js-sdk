@@ -85,9 +85,8 @@ export function sendCoinData(
   data: clientMsgSendCoin,
   wallet: generatedWallet
 ): MsgSendCoin {
-
-  if(data.to.startsWith('0x')){
-    data.to = encodeCosmosAccountAddress(data.to)
+  if (data.to.startsWith("0x")) {
+    data.to = encodeCosmosAccountAddress(data.to);
   }
 
   return {

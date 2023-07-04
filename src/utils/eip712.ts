@@ -37,6 +37,18 @@ export function generateTypes(msgValues: object): any {
   return types;
 }
 
+export const MSG_SEND_COIN_TYPES = {
+  MsgValue: [
+    { name: "sender", type: "string" },
+    { name: "recipient", type: "string" },
+    { name: "coin", type: "TypeCoin" },
+  ],
+  TypeCoin: [
+    { name: "denom", type: "string" },
+    { name: "amount", type: "string" },
+  ],
+};
+
 export const MSG_DELEGATE_TYPES = {
   MsgValue: [
     { name: "delegator", type: "string" },

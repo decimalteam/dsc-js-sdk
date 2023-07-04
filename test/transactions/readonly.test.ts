@@ -18,9 +18,9 @@ describe('legacy', () => {
     try {
       // Sdk.
       const { Wallet, Decimal, DecimalNetworks } = SDK;
-      const publicKey = Buffer.from('037c71d1855237853d90eb194790d9aee3c0ff25b0c5c4d74ea994f02a27f2b39a', 'hex')
+      const publicKey = Buffer.from('03a9050b2cc6e16cdf2964216186e3023102fb4dc62a6996568c11023574e6c4cf', 'hex')
       const decimalWallet = new Wallet('',
-          'd012vrppfv9rfnw43nmg4lrzzf4m5m7nek53urnnt',
+          'd01cjkth3lwg537xkn8tqvd3glf2zwdjw8rwt6vs6',
           publicKey
       );
       const decimal = await Decimal.connect(DecimalNetworks.devnet);
@@ -53,7 +53,7 @@ describe('legacy', () => {
           feeGas: 180000,
           message: '',
           txBroadcastMode: 'sync'
-      }, signature.replace('0x', ''), true);
+      }, "fXj+vmx7G75mqf0VKdtvKjNPuT+OtpZ9izCv+HtYosoPeKzyxs3kz6rTcqBoPhtEIbuY8+FR+AqTIwbAlUfMJg==", false, false);
       console.log(comision)
 
     } catch (e) {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { fromBase64 } from "@cosmjs/encoding";
-import {SignDoc, Tx, TxRaw} from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import { SignDoc, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import BigNumber from "bignumber.js";
 
 import { Account } from "./accounts";
@@ -48,51 +48,51 @@ import {
 } from "./interfaces/clientInterfaces";
 import txTypesNew from "./txTypesNew";
 import {
-  MsgCreateCoin,
-  MsgSendCoin,
-  MsgMultiSendCoin,
-  MsgUpdateCoin,
-  MsgBuyCoin,
-  MsgSellCoin,
-  MsgSellAllCoin,
-  MsgRedeemCheck,
   MsgBurnCoin,
+  MsgBuyCoin,
+  MsgCreateCoin,
+  MsgMultiSendCoin,
+  MsgRedeemCheck,
+  MsgSellAllCoin,
+  MsgSellCoin,
+  MsgSendCoin,
+  MsgUpdateCoin,
   Web3Tx,
 } from "./types/decimal/coin/v1/tx";
 import {
-  createCoinData,
-  sendCoinData,
-  multiSendCoinData,
-  createWalletData,
-  mintNftData,
-  transferNftData,
-  updateCoinData,
+  burnCoinData,
   burnNftData,
   buyCoinData,
-  sellCoinData,
-  sellAllCoinData,
+  cancelNftUnbondingData,
+  cancelRedelegationData,
+  cancelUnbondingData,
+  createCoinData,
+  createValidatorData,
+  createWalletData,
+  dataToProto,
+  delegateData,
+  editValidatorData,
+  mintNftData,
+  multiSendCoinData,
   multisigSignTxData,
-  nftUpdateReserveData,
+  nftCancelRedelegationData,
+  nftDelegateData,
   nftEditMetadata,
-  burnCoinData,
+  nftRedelegateData,
+  nftUnbondData,
+  nftUpdateReserveData,
+  redelegateData,
+  returnLegacyData,
+  sellAllCoinData,
+  sellCoinData,
+  sendCoinData,
+  setOfflineData,
+  setOnlineData,
   swapInitData,
   swapRedeemData,
-  delegateData,
+  transferNftData,
   unbondData,
-  cancelUnbondingData,
-  redelegateData,
-  cancelRedelegationData,
-  nftDelegateData,
-  nftUnbondData,
-  cancelNftUnbondingData,
-  nftRedelegateData,
-  nftCancelRedelegationData,
-  createValidatorData,
-  editValidatorData,
-  setOnlineData,
-  setOfflineData,
-  dataToProto,
-  returnLegacyData,
+  updateCoinData,
 } from "./utils/clientDataToProto";
 import { EncoderDecoder } from "./utils/encoderDecoder";
 import { signTransaction } from "./utils/signer";
@@ -143,6 +143,7 @@ import {
   generateTypes,
   MSG_DELEGATE_TYPES,
   MSG_REDELEGATE_TYPES,
+  MSG_SEND_COIN_TYPES,
   MSG_UNBOND_TYPES,
 } from "./utils/eip712";
 import { makeAuthInfoBytes, makeSignDoc } from "@cosmjs/proto-signing";
@@ -358,13 +359,11 @@ export class Transaction {
     return result;
   }
 
-  public async sendEip712(
+  public generateEip712SignDoc(
     msgAny: any,
     options: txOptions,
-    signature: string,
-    web3Format: boolean,
-    generate: boolean
-  ): Promise<SendTransactionResponse | SignDoc> {
+    signature: string
+  ): SignDoc {
     const pubKeyCompressed = PubKey.fromPartial({
       key: this.wallet.publicKey,
     });
@@ -375,26 +374,19 @@ export class Transaction {
       ? options.feeCoin.toLowerCase()
       : this.baseCoin;
 
-    let result, txBodyBytes;
-    if (web3Format) {
-      const web3 = this.encoderDecoder.encodeWeb3Tx(
-        Web3Tx.fromPartial({
-          typedDataChainID: BigNumber(chainIdNumber).toNumber(),
-          feePayer: this.wallet.address,
-          feePayerSig: Buffer.from(signature, "hex"),
-        } as any)
-      );
-      txBodyBytes = this.encoderDecoder.encodeTxBody({
-        messages: [msgAny],
-        memo: options.message ? options.message : "",
-        extensionOptions: [web3],
-      });
-    } else {
-      txBodyBytes = this.encoderDecoder.encodeTxBody({
-        messages: [msgAny],
-        memo: options.message ? options.message : "",
-      });
-    }
+    let result;
+    const web3 = this.encoderDecoder.encodeWeb3Tx(
+      Web3Tx.fromPartial({
+        typedDataChainID: BigNumber(chainIdNumber).toNumber(),
+        feePayer: this.wallet.address,
+        feePayerSig: Buffer.from(signature, "hex"),
+      } as any)
+    );
+    const txBodyBytes = this.encoderDecoder.encodeTxBody({
+      messages: [msgAny],
+      memo: options.message ? options.message : "",
+      extensionOptions: [web3],
+    });
 
     const gateUrl = this.wallet.getGateUrl();
 
@@ -407,66 +399,67 @@ export class Transaction {
         },
       ],
       options.feeGas ?? 21000,
-      web3Format ? 127 : 1
+      127
     );
 
-    const signDocDirect = makeSignDoc(
+    return makeSignDoc(
       txBodyBytes,
       authInfoDirect,
       this.chainId,
       this.account.accountNumber
     );
+  }
 
-    if (generate){
-      return signDocDirect
-    }
-
-    const txRaw = TxRaw.fromPartial({
-      bodyBytes: signDocDirect.bodyBytes,
-      authInfoBytes: signDocDirect.authInfoBytes,
-      signatures: [
-        web3Format ? new Uint8Array() : Buffer.from(signature, "base64"),
-      ],
+  public generateSignDoc(msgAny: any, options: txOptions): SignDoc {
+    const pubKeyCompressed = PubKey.fromPartial({
+      key: this.wallet.publicKey,
     });
-    const txBytes = TxRaw.encode(txRaw).finish();
+    const encoderDecoder = new EncoderDecoder();
+    const pubKeyEncoded = encoderDecoder.encodePubKey(pubKeyCompressed);
+    const readyFeeCoin = options.feeCoin
+      ? options.feeCoin.toLowerCase()
+      : this.baseCoin;
 
-    if (!this.rpcClient) {
-      throw new Error("Rpc Client error");
-    }
-    const waitForTx = options.txBroadcastMode === BROADCAST_MODE_BLOCK;
-    let isBlocked = false;
-    if (!this.wallet.isNodeDirectMode) {
-      const singatures = createBlockCheckSignatures(
-        this.wallet.address,
-        msgAny.value
-      );
-      const res = await axios.post(
-        `${gateUrl}${gateBroadcastStatusEndpoint}`,
-        singatures
-      );
-      isBlocked = res.data === FAIL_CHECK_CODE;
-    }
-    if (isBlocked) {
-      throw new Error(
-        `Broadcasting transaction failed with code ${FAIL_CHECK_CODE} (codespace: sdk)`
-      );
-    } else {
-      result = await this.rpcClient.broadcastTx(txBytes, waitForTx);
-    }
+    const txBodyBytes = this.encoderDecoder.encodeTxBody({
+      messages: [msgAny],
+      memo: options.message ? options.message : "",
+    });
 
-    return result;
+    const authInfoDirect = makeAuthInfoBytes(
+      [{ pubkey: pubKeyEncoded, sequence: this.account.sequence }],
+      [
+        {
+          denom: readyFeeCoin,
+          amount: options.feeAmount ?? "",
+        },
+      ],
+      options.feeGas ?? 21000,
+      1
+    );
+
+    return makeSignDoc(
+      txBodyBytes,
+      authInfoDirect,
+      this.chainId,
+      this.account.accountNumber
+    );
   }
 
   public async sendCoin(
     data: clientMsgSendCoin,
     options: txOptions,
-    simulation = false
-  ): Promise<SendTransactionResponse> {
+    simulation = false,
+    generate = false
+  ): Promise<
+    SendTransactionResponse | { typeUrl: string; value: MsgSendCoin }
+  > {
     const msg = MsgSendCoin.fromPartial(sendCoinData(data, this.wallet));
     const msgAny = {
       typeUrl: txTypesNew.COIN_SEND,
       value: msg,
     };
+    if (generate) return msgAny;
+
     const result = await this.sendTransaction(msgAny, options, simulation);
     return result;
   }
@@ -1056,7 +1049,7 @@ export class Transaction {
     };
   }
 
-  public static createRawTx(
+  public createRawTx(
     bodyBytes: Uint8Array,
     authInfoBytes: Uint8Array,
     signatures: Uint8Array[]
@@ -1069,7 +1062,52 @@ export class Transaction {
     return TxRaw.encode(txRaw).finish();
   }
 
-  public async delegateEip712(
+  public async sendRawTx(
+    txBodyRaw: Uint8Array,
+    txBroadcastMode: string
+  ): Promise<SendTransactionResponse> {
+    if (!this.rpcClient) {
+      throw new Error("Rpc Client error");
+    }
+    const waitForTx = txBroadcastMode === BROADCAST_MODE_BLOCK;
+
+    return await this.rpcClient.broadcastTx(txBodyRaw, waitForTx);
+  }
+
+  public async sendCoinEip712Data(
+    data: clientMsgSendCoin,
+    options: txOptions
+  ): Promise<any> {
+    const types = generateTypes(MSG_SEND_COIN_TYPES);
+    const message = sendCoinData(data, this.wallet);
+
+    let fee;
+    if (options.feeAmount) {
+      fee = {
+        amount: options.feeAmount,
+        coin: options.feeCoin,
+      };
+    } else {
+      fee = (await this.sendCoin(data, options, true, false)) as ClientFee;
+    }
+    return createEIP712Payload(
+      types,
+      this.account,
+      this.chainId,
+      options,
+      {
+        amount: fee.amount,
+        denom: fee.coin,
+        gas: options.feeGas ? options.feeGas.toString() : DEFAULT_GAS,
+      },
+      {
+        type: txTypesNew.VALIDATOR_DELEGATE,
+        value: message,
+      }
+    );
+  }
+
+  public async delegateEip712Data(
     data: clientMsgDelegate,
     options: txOptions
   ): Promise<any> {
@@ -1102,7 +1140,7 @@ export class Transaction {
     );
   }
 
-  public async unbondEip712(
+  public async unbondEip712Data(
     data: clientMsgUndelegate,
     options: txOptions
   ): Promise<any> {
@@ -1123,7 +1161,7 @@ export class Transaction {
     );
   }
 
-  public async redelegateEip712(
+  public async redelegateEip712Data(
     data: clientRedelegationData,
     options: txOptions
   ): Promise<any> {
