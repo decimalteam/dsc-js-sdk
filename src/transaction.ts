@@ -166,9 +166,9 @@ export class Transaction {
   private wallet: Wallet;
   private readonly rpcClient: Client | undefined;
   private readonly encoderDecoder: EncoderDecoder;
-  private readonly chainId: string;
+  public readonly chainId: string;
   private account: Account;
-  private readonly baseCoin: string;
+  public readonly baseCoin: string;
 
   private constructor(
     rpcClient: Client | undefined,
@@ -184,6 +184,15 @@ export class Transaction {
     this.account = account;
     this.baseCoin = baseCoin;
   }
+
+  public getAccount(): Account {
+    return this.account;
+  }
+
+  public getWallet(): Wallet {
+    return this.wallet;
+  }
+
   public static getInstance(
     rpcClient: Client | undefined,
     wallet: Wallet,
