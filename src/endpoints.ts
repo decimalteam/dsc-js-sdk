@@ -73,6 +73,6 @@ const apiEndpoints = {
 
 const web3Endpoints = {
   [NETWORKS.DEVNET]: "https://devnet-val.decimalchain.com/web3/",
-  [NETWORKS.TESTNET]: "https://testnet-gate.decimalchain.com/api/",
-  [NETWORKS.MAINNET]: "https://mainnet-gate.decimalchain.com/api/",
+  [NETWORKS.TESTNET]: "https://testnet-val.decimalchain.com/web3/",
+  [NETWORKS.MAINNET]: "https://node.decimalchain.com/web3/",
 };
