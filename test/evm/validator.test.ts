@@ -20,10 +20,7 @@ describe('Validators', () => {
         const newValidator: any = {
             operator_address: decimalWallet.evmAddress,
             reward_address: decimalWallet.evmAddress,
-            consensus_pubkey: {
-                "@type": '/cosmos.crypto.ed25519.PubKey',
-                key: decimalWallet.getPublicKeyString()
-            },
+            consensus_pubkey: decimalWallet.getPublicKeyString(),
             description: {
                 moniker: 'test-node-sgp1-01',
                 identity: '',

@@ -769,8 +769,6 @@ export default class DecimalEVM {
   private validationValidatorMeta(meta: ValidatorMeta) {
     if (meta.commission == undefined || meta.commission == null ||
         meta.consensus_pubkey == undefined || meta.consensus_pubkey == null ||
-        meta.consensus_pubkey["@type"] == undefined || meta.consensus_pubkey["@type"] == null ||
-        meta.consensus_pubkey.key == undefined || meta.consensus_pubkey.key == null ||
         meta.description == undefined || meta.description == null ||
         meta.description.details == undefined || meta.description.details == null ||
         meta.description.identity == undefined || meta.description.identity == null ||

@@ -1,10 +1,7 @@
 export interface ValidatorMeta {
     operator_address: string,
     reward_address: string,
-    consensus_pubkey: {
-        "@type": string,
-        key: string
-    },
+    consensus_pubkey: string,
     description: {
         moniker: string,
         identity: string,
