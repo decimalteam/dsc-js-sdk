@@ -6,6 +6,7 @@ import { DecimalContract } from "./interfaces/contracts";
 import { Token, AddressBalance } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
 import { NFTCollection, NFT } from "./interfaces/nfts";
+import fetch from "node-fetch";
 
 export default class Queries {
     private readonly network: NETWORKS;
