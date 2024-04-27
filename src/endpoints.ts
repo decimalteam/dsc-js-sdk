@@ -101,8 +101,8 @@ const subgraphEndpoints = {
   [NETWORKS.MAINNET]: "https://mainnet-thegraph.decimalchain.com/subgraphs/name/contract-center",
 };
 
-const ipfsEndpoints = {
-  [NETWORKS.DEVNET]: "https://devnet-nft-ipfs.decimalchain.com/",
+const ipfsEndpoints = { //TODO?
+  [NETWORKS.DEVNET]: "https://testnet-nft-ipfs.decimalchain.com/", 
   [NETWORKS.TESTNET]: "https://testnet-nft-ipfs.decimalchain.com/",
-  [NETWORKS.MAINNET]: "https://mainnet-nft-ipfs.decimalchain.com/",
+  [NETWORKS.MAINNET]: "https://testnet-nft-ipfs.decimalchain.com/",
 };

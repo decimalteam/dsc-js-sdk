@@ -1,6 +1,7 @@
 
 import FormData from 'form-data'
 import {Blob} from 'buffer';
+import fetch from "node-fetch";
 
 import {
     NETWORKS,
@@ -21,7 +22,7 @@ export default class IPFS {
         return {
             "name": name,
             "description": description,
-            "file_cid_media": "" //TODO rename file_cid_media -> image
+            "image": ""
         }
     }
     
