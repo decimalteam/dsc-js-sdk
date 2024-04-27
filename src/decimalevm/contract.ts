@@ -1,5 +1,5 @@
 
-import {ethers, HDNodeWallet, InterfaceAbi} from "ethers";
+import {ethers, Wallet as HDNodeWallet} from "ethers";
 import {
   NETWORKS,
 } from "../endpoints";
@@ -10,9 +10,9 @@ export default class DecimalContractEVM {
   private readonly network: NETWORKS;
   private readonly account: HDNodeWallet;
   public readonly contract: ethers.Contract;
-  public readonly abi: InterfaceAbi;
+  public readonly abi: ethers.ContractInterface;
   public readonly tx_hash: string | null;
-  private constructor(network: NETWORKS, account: HDNodeWallet, contract: ethers.Contract, abi: InterfaceAbi, tx_hash: string | null) {
+  private constructor(network: NETWORKS, account: HDNodeWallet, contract: ethers.Contract, abi: ethers.ContractInterface, tx_hash: string | null) {
     this.network = network
     this.account = account;
     this.contract = contract;
@@ -25,7 +25,7 @@ export default class DecimalContractEVM {
     apiEndpoint: string,
     account: HDNodeWallet,
     address: string,
-    jsonInterface?: InterfaceAbi
+    jsonInterface?: ethers.ContractInterface
   ): Promise<DecimalContractEVM> {
     let abi;
     let tx_hash = null;
@@ -112,7 +112,7 @@ export default class DecimalContractEVM {
   public parseLog(logs:any) {
     console.log(logs)
     return logs
-    .filter((log:any) => (ethers.getAddress(log.address) == ethers.getAddress(this.contract.target.toString())))
+    .filter((log:any) => (ethers.utils.getAddress(log.address) == ethers.utils.getAddress(this.contract.target.toString())))
     .map((log:any) => {
       try {
         return this.contract.interface.parseLog(log);
@@ -125,7 +125,7 @@ export default class DecimalContractEVM {
   public async getDefaultOptions() {
     let gasPrice = (await this.account.provider?.getFeeData())?.gasPrice!
     if (this.network == NETWORKS.TESTNET) {
-      gasPrice = gasPrice + BigInt(1)
+      gasPrice = gasPrice.add(1)
     }
     return {
       chainId: (await this.account.provider?.getNetwork())?.chainId,
@@ -136,18 +136,18 @@ export default class DecimalContractEVM {
   }
   
   public async populateTransaction(action: string, ...params: any[]) {
-    return await this.contract[action].populateTransaction(...params);
+    return await this.contract.populateTransaction[action](...params);
   }
 
-  public async signTransaction(tx: ethers.ContractTransaction) {
+  public async signTransaction(tx: ethers.providers.TransactionRequest) {
     return await this.account.signTransaction(tx);
   }
 
-  public async sendTransaction(signedTx: ethers.TransactionRequest) {
-    return await this.account.sendTransaction(signedTx).then(tx => tx.wait())
+  public async sendTransaction(tx: ethers.providers.TransactionRequest) {
+    return await this.account.sendTransaction(tx).then(tx => tx.wait())
   }
   public async sendSignedTransaction(signedTx: string) {
-    return await this.account.provider?.broadcastTransaction(signedTx).then(tx => tx.wait())
+    return await this.account.provider?.sendTransaction(signedTx).then(tx => tx.wait())
   }
 
 

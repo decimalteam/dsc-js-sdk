@@ -158,9 +158,9 @@ describe('Tokens', () => {
         const result  = await decimalEVM.createToken(newToken, reserve)
         const tokenAddress = result?.tokenAddress
 
-        const decimalWallet2 = new Wallet(mnemonic);
+        const decimalWallet2 = new Wallet(mnemonic2);
 
-        const decimalEVM2 = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+        const decimalEVM2 = new DecimalEVM(decimalWallet2, DecimalNetworks.devnet);
         await decimalEVM2.connect();
 
 

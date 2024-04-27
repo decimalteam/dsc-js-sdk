@@ -36,7 +36,7 @@ export default class Subgraph {
 
     public async getTokensByOwner(address: string, first: number, skip: number): Promise<Token[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { owner: "${verifyAddress}"}, first: ${first}, skip: ${skip})`
         return await this.query.getTokens(options)
     }
@@ -47,14 +47,14 @@ export default class Subgraph {
     }
 
     public async getTokenByAddress(address: string): Promise<Token> {
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { address: "${verifyAddress}"} )`
         return await this.query.getToken(options)
     }
     
     public async getAddressBalances(address: string, first: number, skip: number): Promise<AddressBalance[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { user: "${verifyAddress}"}, first: ${first}, skip: ${skip})`
         return await this.query.getAddressBalances(options)
     }
@@ -68,14 +68,14 @@ export default class Subgraph {
     
     public async getStakesByAddress(address: string, first: number, skip: number): Promise<Stake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { tokenType: ERC20, delegator: "${verifyAddress}" }, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
 
     public async getStakesByValidotor(address: string, first: number, skip: number): Promise<Stake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { tokenType: ERC20, validator: "${verifyAddress.toLowerCase()}" }, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
@@ -88,7 +88,7 @@ export default class Subgraph {
     
     public async getTransferStakesByAddress(address: string, first: number, skip: number): Promise<TransferStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { delegator: "${verifyAddress}", tokenType: ERC20}, first: ${first}, skip: ${skip})`
         return await this.query.getTransferStakes(options)
     }
@@ -101,7 +101,7 @@ export default class Subgraph {
 
     public async getWithdrawStakesByAddress(address: string, first: number, skip: number): Promise<WithdrawStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { delegator: "${verifyAddress}", tokenType: ERC20}, first: ${first}, skip: ${skip})`
         return await this.query.getWithdrawStakes(options)
     }
@@ -115,14 +115,14 @@ export default class Subgraph {
     
     public async getNFTStakesByAddress(address: string, first: number, skip: number): Promise<Stake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [ERC721, ERC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
 
     public async getNFTStakesByValidotor(address: string, first: number, skip: number): Promise<Stake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { validator: "${verifyAddress.toLowerCase()}", tokenType_in: [ERC721, ERC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
@@ -134,7 +134,7 @@ export default class Subgraph {
     }
     public async getTransferNFTStakesByAddress(address: string, first: number, skip: number): Promise<TransferStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [ERC721, ERC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getTransferStakes(options)
     }
@@ -145,7 +145,7 @@ export default class Subgraph {
     }
     public async getWithdrawNFTStakesByAddress(address: string, first: number, skip: number): Promise<WithdrawStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [ERC721, ERC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getWithdrawStakes(options) 
     }
@@ -156,7 +156,7 @@ export default class Subgraph {
     }
 
     public async getValidator(address: string): Promise<Validator> {
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         return await this.query.getValidator(verifyAddress)
     }
 
@@ -185,13 +185,13 @@ export default class Subgraph {
 
     public async getNftCollectionsByOwner(address:string, first: number, skip: number): Promise<NFTCollection[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { owner: "${verifyAddress}"}, first: ${first}, skip: ${skip})`
         return await this.query.getNftCollections(options)
     }
 
     public async getNftCollectionByAddress(address: string): Promise<Token> {
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { address: "${verifyAddress}"})`
         return await this.query.getNftCollection(options)
     }
@@ -204,20 +204,20 @@ export default class Subgraph {
 
     public async getNftsByCollection(address: string, first: number, skip: number): Promise<NFT[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { collection: "${verifyAddress.toLowerCase()}"}, first: ${first}, skip: ${skip})`
         return await this.query.getNfts(options)
     }
 
     public async getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFT[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { user: "${verifyAddress.toLowerCase()}"}, first: ${first}, skip: ${skip})`
         return await this.query.getNfts(options)
     }
 
     public async getNftCollectionType(address: string): Promise<string | null> {
-        const verifyAddress = ethers.getAddress(address)
+        const verifyAddress = ethers.utils.getAddress(address)
         const options = `(id: "${verifyAddress.toLowerCase()}" )`
         return await this.query.getNftCollectionType(options)
     }

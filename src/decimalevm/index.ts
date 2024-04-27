@@ -1,5 +1,5 @@
 
-import {ethers, HDNodeWallet} from "ethers";
+import { ethers, Wallet as HDNodeWallet } from "ethers";
 import {
     getWeb3Endpoint,
     getNewApiEndpoint,
@@ -23,13 +23,13 @@ export default class DecimalEVM {
   private readonly subgraph: Subgraph;
   private readonly ipfs: IPFS;
   private call?: Call;
-  public provider: ethers.JsonRpcProvider;
+  public provider: ethers.providers.JsonRpcProvider;
   public account: HDNodeWallet;
   private contarcts: { [address: string]: DecimalContractEVM } = {}
   private abis?: { 
-    token: ethers.InterfaceAbi,
-    erc721: ethers.InterfaceAbi,
-    erc1155: ethers.InterfaceAbi,
+    token: ethers.ContractInterface,
+    erc721: ethers.ContractInterface,
+    erc1155: ethers.ContractInterface,
   };
 
   private isNotConnected = new Error('DecimalEVM is not connected');
@@ -40,8 +40,8 @@ export default class DecimalEVM {
   ) {
       this.wallet = wallet;
       this.network = network;
-      this.provider = new ethers.JsonRpcProvider(getWeb3Endpoint(network));
-      this.account = HDNodeWallet.fromPhrase(this.wallet.mnemonic!).connect(this.provider);
+      this.provider = new ethers.providers.JsonRpcProvider(getWeb3Endpoint(network));
+      this.account = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!).connect(this.provider);
       this.apiUrl = getNewApiEndpoint(this.network);
       this.subgraph = new Subgraph(this.network)
       this.ipfs = new IPFS(this.network)
@@ -712,13 +712,13 @@ export default class DecimalEVM {
 
   //utils
   public parseEther(amount: string | number | bigint){
-    return ethers.parseEther(amount.toString()).toString()
+    return ethers.utils.parseEther(amount.toString()).toString()
   }
   public formatEther(amount: string | number | bigint){
-    return ethers.formatEther(amount.toString()).toString()
+    return ethers.utils.formatEther(amount.toString()).toString()
   }
   public getAddress(address: string){
-    return ethers.getAddress(address)
+    return ethers.utils.getAddress(address)
   }
 
   private async getNFTContract(address: string, typeNFT: TypeNFT) {
@@ -758,7 +758,7 @@ export default class DecimalEVM {
     return TokenType;
   }
 
-  public async connectToContract(address: string, abi?: ethers.InterfaceAbi): Promise<DecimalContractEVM> {
+  public async connectToContract(address: string, abi?: ethers.ContractInterface): Promise<DecimalContractEVM> {
     return await DecimalContractEVM.getContract(this.network, this.apiUrl, this.account, address, abi)
   }
 
@@ -783,8 +783,8 @@ export default class DecimalEVM {
   public async getFeeData() {
     const feeData = await this.provider.getFeeData()
     if (this.network != NETWORKS.TESTNET) return feeData
-    return <ethers.FeeData>{
-      gasPrice: feeData.gasPrice! + BigInt(1),
+    return <ethers.providers.FeeData>{
+      gasPrice: feeData.gasPrice!.add(1),
       maxFeePerGas: feeData.maxFeePerGas,
       maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
     }
