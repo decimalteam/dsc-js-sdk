@@ -60,57 +60,7 @@ describe('Contract', () => {
             const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
             const decimalWallet = new Wallet(mnemonic);
           
-            const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.testnet);
-            await decimalEVM.connect();
-
-            const newToken: any = {
-                tokenOwner: decimalWallet.evmAddress,
-                symbol: 'COStest'+Math.floor(Math.random() * 10000),
-                name: 'CosmosName',
-                crr: 50,
-                initialMint: decimalEVM.parseEther(1000),
-                minTotalSupply: decimalEVM.parseEther(1),
-                maxTotalSupply: decimalEVM.parseEther(5000000),
-                identity: 'asd',
-            }
-            const reserve = decimalEVM.parseEther(1000);
-
-            const contractAddress = decimalEVM.getDecimalContractAddress('token-center')
-
-            const contract = await decimalEVM.connectToContract(contractAddress, tokenCenterAbi)
-
-            const tokenAddressBySymbol = await contract.call("tokens(string)", newToken.symbol)
-            if (tokenAddressBySymbol != "0x0000000000000000000000000000000000000000") {
-
-                const options = {
-                    value: reserve
-                }
-                const gas = await contract.estimateGas("createToken((address,string,string,uint8,uint256,uint256,uint256,string))", newToken, options)
-    
-                const options2 = {
-                    value: reserve,
-                    gasLimit: 10000000,
-                    maxPriorityFeePerGas: 10000000
-                }
-                const result = await contract.call("createToken((address,string,string,uint8,uint256,uint256,uint256,string))", newToken, options2)
-                console.log(result)
-    
-                const events = await contract.parseLog(result.logs)
-                console.log(events)
-
-                console.log(`successfully`)
-            }
-        } catch (e) {
-            console.log(e)
-        }
-    });
-
-    test('send transaction', async() => {
-        try {
-            // Sdk.
-            const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
-            const decimalWallet = new Wallet(mnemonic);
-            const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.testnet);
+            const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
             await decimalEVM.connect();
 
             const newToken: any = {
@@ -128,15 +78,65 @@ describe('Contract', () => {
             const contractAddress = decimalEVM.getDecimalContractAddress('token-center')
 
             const contract = await decimalEVM.connectToContract(contractAddress, tokenCenterAbi)
-            console.log(contract)
+
+            const tokenAddressBySymbol = await contract.call("tokens(string)", newToken.symbol)
+            if (tokenAddressBySymbol == "0x0000000000000000000000000000000000000000") {
+
+                const options = {
+                    value: reserve
+                }
+                const gas = await contract.estimateGas("createToken", newToken, options)
+                console.log(gas)
+                const options2 = {
+                    value: reserve,
+                    gasLimit: 10000000,
+                    maxPriorityFeePerGas: 10000000
+                }
+                const result = await contract.call("createToken", newToken, options2)
+                console.log(result)
+                const events = await contract.parseLog(result.logs)
+                console.log(events)
+                console.log(`successfully`)
+            } else {
+                console.log(`token ${newToken.symbol} already exist`, tokenAddressBySymbol)
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    });
+
+    test('send transaction', async() => {
+        try {
+            // Sdk.
+            const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+            const decimalWallet = new Wallet(mnemonic);
+            const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+            await decimalEVM.connect();
+
+            const newToken: any = {
+                tokenOwner: decimalWallet.evmAddress,
+                symbol: 'COStest'+Math.floor(Math.random() * 10000),
+                name: 'CosmosName',
+                crr: 50,
+                initialMint: decimalEVM.parseEther(1000),
+                minTotalSupply: decimalEVM.parseEther(1),
+                maxTotalSupply: decimalEVM.parseEther(5000000),
+                identity: 'asd',
+            }
+            const reserve = decimalEVM.parseEther(1250);
+
+            const contractAddress = decimalEVM.getDecimalContractAddress('token-center')
+
+            const contract = await decimalEVM.connectToContract(contractAddress, tokenCenterAbi)
+
             const options = {
                 ...await contract.getDefaultOptions(),
                 value: reserve,
             }
-            
+            console.log(options)
             const populateTransaction = await contract.populateTransaction("createToken", newToken, options)
             console.log(populateTransaction)
-
+            populateTransaction.chainId = 20202020 //for ethres 5.5.1
             const signTransaction = await contract.signTransaction(populateTransaction)
             console.log(signTransaction)
 

@@ -8,7 +8,7 @@ import {
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
 import Call from "./call";
-import {TypeNFT, Token, NFTCollection} from "./call";
+import {TypeNFT, Token, NFTCollection, ValidotorStake} from "./call";
 import { TokenType } from "./interfaces/delegation";
 import { ValidatorMeta, ValidatorStatus } from "./interfaces/validator";
 import Subgraph from "../subgraph";
@@ -204,7 +204,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    switch (+TypeNFT[typeNFT]) {
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
       case TypeNFT.ERC721:
       case TypeNFT.ERC1155:
         throw new Error(`The ${typeNFT} type is not supported by the mintNFT() method. Try mintNFTWithDELReserve() or mintNFTWithTokenReserve()`)
@@ -221,7 +221,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    switch (+TypeNFT[typeNFT]) {
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
       //case TypeNFT.ERC721Standart:
       //case TypeNFT.ERC1155Standart:
       //  throw new Error(`The ${typeNFT} type is not supported by the mintNFTWithDELReserve() and mintNFTWithTokenReserve() methods. Try mintNFT()`)
@@ -238,7 +238,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    switch (+TypeNFT[typeNFT]) {
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
       //case TypeNFT.ERC721Standart:
       //case TypeNFT.ERC1155Standart:
       //  throw new Error(`The ${typeNFT} type is not supported by the mintNFTWithDELReserve() and mintNFTWithTokenReserve() methods. Try mintNFT()`)
@@ -255,7 +255,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    switch (+TypeNFT[typeNFT]) {
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
       //case TypeNFT.ERC721Standart:
       //case TypeNFT.ERC1155Standart:
       //  throw new Error(`The ${typeNFT} type is not supported by the addDELReserveNFT() and addTokenReserveNFT() methods.`)
@@ -271,7 +271,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    switch (+TypeNFT[typeNFT]) {
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
       //case TypeNFT.ERC721Standart:
       //case TypeNFT.ERC1155Standart:
       //  throw new Error(`The ${typeNFT} type is not supported by the addDELReserveNFT() and addTokenReserveNFT() methods.`)
@@ -287,7 +287,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    switch (+TypeNFT[typeNFT]) {
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
       //case TypeNFT.ERC721Standart:
       case TypeNFT.ERC721:
         return await this.call.transferNFT(nft.contract, from, to, tokenId, undefined, estimateGas)
@@ -318,7 +318,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT: TypeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    switch (+TypeNFT[typeNFT]) {
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
       //case TypeNFT.ERC721Standart:
       case TypeNFT.ERC721:
         return await this.call.burnNFT(nft.contract, tokenId, undefined, estimateGas)
@@ -410,23 +410,18 @@ export default class DecimalEVM {
     return await this.call.completeStakeNFT(index, estimateGas)
   }
 
-  public async addValidator(meta: ValidatorMeta, estimateGas?: boolean) {
+  public async addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
     const validator = meta.operator_address
     this.validationValidatorMeta(meta)
-    return await this.call.addValidator(validator, JSON.stringify(meta), estimateGas)
+    return await this.call.addValidatorWithToken(validator, JSON.stringify(meta), stake, estimateGas)
   }
 
-  public async addValidators(metas: ValidatorMeta[], estimateGas?: boolean) {
+  public async addValidatorWithETH(meta: ValidatorMeta, amount: string | number | bigint, estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
-    const validators = []
-    const validMeta = []
-    for(const meta of metas) {
-      this.validationValidatorMeta(meta)
-      validators.push(meta.operator_address)
-      validMeta.push(JSON.stringify(meta))
-    }
-    return await this.call.addValidators(validators, validMeta, estimateGas)
+    const validator = meta.operator_address
+    this.validationValidatorMeta(meta)
+    return await this.call.addValidatorWithETH(validator, JSON.stringify(meta), amount, estimateGas)
   }
 
   public async removeValidator(validator: string, estimateGas?: boolean) {
@@ -449,7 +444,7 @@ export default class DecimalEVM {
   public async getNftType(address: string): Promise<TypeNFT> {
     if (!this.call) throw this.isNotConnected;
     const type = await this.subgraph.getNftCollectionType(address)
-    if (type == null) throw new Error("The nft does not exist")
+    if (type == null) throw new Error("The nft collection does not exist")
     let typeNFT: TypeNFT = TypeNFT[type as keyof typeof TypeNFT]
     return typeNFT
   }
@@ -549,7 +544,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    switch (+TypeNFT[typeNFT]) {
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
       //case TypeNFT.ERC721Standart:
       case TypeNFT.ERC721:
         return await this.call.getTokenURINFT721(nft.contract, tokenId)
@@ -565,7 +560,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    switch (+TypeNFT[typeNFT]) {
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
       //case TypeNFT.ERC721Standart:
       case TypeNFT.ERC721:
         return await this.call.balanceOfNFT(nft.contract, account)
@@ -722,7 +717,7 @@ export default class DecimalEVM {
   }
 
   private async getNFTContract(address: string, typeNFT: TypeNFT) {
-    switch (+TypeNFT[typeNFT]) {
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
       //case TypeNFT.ERC721Standart:
       //  return await this.getContract(address)
       //case TypeNFT.ERC1155Standart:

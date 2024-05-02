@@ -12,15 +12,14 @@ describe('Validators', () => {
         // Sdk.
         const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
         const decimalWallet = new Wallet(mnemonic);
-        const decimalWallet2 = new Wallet(mnemonic2);
         
         const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
         await decimalEVM.connect();
-
+        
         const newValidator: any = {
             operator_address: decimalWallet.evmAddress,
             reward_address: decimalWallet.evmAddress,
-            consensus_pubkey: decimalWallet.getPublicKeyString(),
+            consensus_pubkey: Buffer.from(decimalWallet.getPublicKey().key.buffer).toString('base64'),
             description: {
                 moniker: 'test-node-sgp1-01',
                 identity: '',
@@ -30,27 +29,23 @@ describe('Validators', () => {
             },
             commission: '0.100000000000000000',
         }
-
-        const resultAdd = await decimalEVM.addValidator(newValidator)
-        const resultRemove = await decimalEVM.removeValidator(newValidator)
-
-        const arrayValidator:any[] = [];
-        arrayValidator.push(newValidator)
-        newValidator.operator_address = decimalWallet2.evmAddress
-        newValidator.consensus_pubkey.key = decimalWallet2.getPublicKeyString()
-
-        const resultAddBatch = await decimalEVM.addValidators(arrayValidator)
-
+        const tokenAddress = await decimalEVM.getAddressTokenBySymbol('COStest')
+        const stakeValidator: any = {
+          token: tokenAddress,
+          amount: decimalEVM.parseEther(10)
+        }
+        const resultAddWithToken = await decimalEVM.addValidatorWithToken(newValidator, stakeValidator)
         const pauseValidator = await decimalEVM.pauseValidator(newValidator.operator_address)
         const unpauseValidator = await decimalEVM.unpauseValidator(newValidator.operator_address)
-
         const getValidatorStatus = await decimalEVM.getValidatorStatus(newValidator.operator_address)
         const validatorIsActive = await decimalEVM.validatorIsActive(newValidator.operator_address)
         const validatorIsMember = await decimalEVM.validatorIsMember(newValidator.operator_address)
+        const resultRemove = await decimalEVM.removeValidator(newValidator)
+        const resultAddWithETH = await decimalEVM.addValidatorWithETH(newValidator, decimalEVM.parseEther(2))
 
+        console.log('5')
         console.log(`successfully 
             addValidator 
-            addValidators
             removeValidator
             pauseValidator
             unpauseValidator

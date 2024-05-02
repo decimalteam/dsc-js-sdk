@@ -41,6 +41,11 @@ export type NFTCollection = {
     allowMint: boolean;
 }
 
+export type ValidotorStake = {
+    token: string,
+    amount: ethers.BigNumberish;
+}
+
 export default class Call {
 
     private readonly network: NETWORKS;
@@ -491,14 +496,18 @@ export default class Call {
     }
 
     //master-validator
-    public async addValidator(validator: string, meta: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.masterValidator.contract.estimateGas.addValidator(validator, meta, await this.txOptions())
-        return await this.masterValidator.contract.addValidator(validator, meta, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    public async addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, estimateGas?: boolean) {
+        if (estimateGas) return await this.masterValidator.contract.estimateGas.addValidator(validator, meta, stake, await this.txOptions())
+        return await this.masterValidator.contract.addValidator(validator, meta, stake, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
-    public async addValidators(validators: string[], metas: string[], estimateGas?: boolean) {
-        if (estimateGas) return await this.masterValidator.contract.estimateGas.addValidators(validators, metas, await this.txOptions())
-        return await this.masterValidator.contract.addValidators(validators, metas, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    public async addValidatorWithETH(validator: string, meta: string, amount: string | number | bigint, estimateGas?: boolean) {
+        const stake: ValidotorStake = {
+            token: ethers.constants.AddressZero,
+            amount: '0'
+        }
+        if (estimateGas) return await this.masterValidator.contract.estimateGas.addValidator(validator, meta, stake, await this.txOptions({value: amount}))
+        return await this.masterValidator.contract.addValidator(validator, meta, stake, await this.txOptions({value: amount})).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     public async removeValidator(validator: string, estimateGas?: boolean) {

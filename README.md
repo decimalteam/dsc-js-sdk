@@ -516,7 +516,7 @@ if (stakesFrozenFiltered.length > 0) {
 
 ## Validators
 
-#### Add new validator
+#### Add new validator with DEL stake
 ```js
 const newValidator: any = {
     operator_address: decimalWallet.evmAddress,
@@ -531,67 +531,30 @@ const newValidator: any = {
     },
     commission: '0.100000000000000000',
 }
-await decimalEVM.addValidator(newValidator)
+await decimalEVM.addValidatorWithETH(newValidator, decimalEVM.parseEther(2))
 ```
 
-
-#### Add new validator
+#### Add new validator with token stake
 ```js
 const newValidator: any = {
     operator_address: decimalWallet.evmAddress,
     reward_address: decimalWallet.evmAddress,
-    consensus_pubkey: {
-        "@type": '/cosmos.crypto.ed25519.PubKey',
-        key: decimalWallet.getPublicKeyString()
-    },
+    consensus_pubkey: decimalWallet.getPublicKeyString(),
     description: {
         moniker: 'test-node-sgp1-01',
-        identity: '3c0583a86a7fc4995f23b38b15852fd4',
+        identity: '',
         website: 'decimalchain.com',
-        security_contact: 'test@test.test',
+        security_contact: '',
         details: 'Declaring validator on test-node-sgp1-01'
     },
     commission: '0.100000000000000000',
 }
-await decimalEVM.addValidator(newValidator)
-```
-
-
-#### Add new validators
-```js
-const newValidator: any = {
-    operator_address: decimalWallet1.evmAddress,
-    reward_address: decimalWallet1.evmAddress,
-    consensus_pubkey: {
-        "@type": '/cosmos.crypto.ed25519.PubKey',
-        key: decimalWallet1.getPublicKeyString()
-    },
-    description: {
-        moniker: 'test-node-sgp1-01',
-        identity: '3c0583a86a7fc4995f23b38b15852fd4',
-        website: 'decimalchain.com',
-        security_contact: 'test@test.test',
-        details: 'Declaring validator on test-node-sgp1-01'
-    },
-    commission: '0.100000000000000000',
+const tokenAddress = await decimalEVM.getAddressTokenBySymbol('COStest')
+const stakeValidator: any = {
+  token: tokenAddress,
+  amount: decimalEVM.parseEther(10)
 }
-const newValidator2: any = {
-    operator_address: decimalWallet2.evmAddress,
-    reward_address: decimalWallet2.evmAddress,
-    consensus_pubkey: {
-        "@type": '/cosmos.crypto.ed25519.PubKey',
-        key: decimalWallet2.getPublicKeyString()
-    },
-    description: {
-        moniker: 'test-node-sgp1-01',
-        identity: '3c0583a86a7fc4995f23b38b15852fd4',
-        website: 'decimalchain.com',
-        security_contact: 'test@test.test',
-        details: 'Declaring validator on test-node-sgp1-01'
-    },
-    commission: '0.100000000000000000',
-}
-await decimalEVM.addValidators([newValidator, newValidator2])
+await decimalEVM.addValidatorWithToken(newValidator, stakeValidator)
 ```
 
 #### Pause validator
@@ -1249,4 +1212,88 @@ const result = await tokenCenter.isTokenExists(tokenAddress)
   delegation-nft
   master-validator
 */
+```
+
+## Contracts function
+
+#### Verify contract
+```js
+const contractCode = `...`
+const contractAddress = '0x21786df4741ab50cdfec064ad9aeef84898a86a4'
+
+const compiler = 'solc-linux-amd64-v0.8.20+commit.a1b79de6'
+const optimizer = "true"
+const runs = "100"
+const evm_version = "paris"
+const contract = await decimalEVM.verifyСontract(contractAddress, contractCode, compiler, optimizer, runs, evm_version)
+```
+
+#### Call to verify contract
+```js
+  const contractAddress = '0x3c546e3eb206c0be7d3c9b85c81cd98700fd3db6'
+  const contract = await decimalEVM.connectToContract(contractAddress)
+  const owner = await contract.call("owner()")
+  console.log(owner)
+```
+
+#### Call write fuction to verify contract
+```js
+const contractAddress = '0x3c546e3eb206c0be7d3c9b85c81cd98700fd3db6'
+const contract = await decimalEVM.connectToContract(contractAddress)
+
+const newToken: any = {
+    tokenOwner: decimalWallet.evmAddress,
+    symbol: 'COStest'+Math.floor(Math.random() * 10000),
+    name: 'CosmosName',
+    crr: 50,
+    initialMint: decimalEVM.parseEther(1000),
+    minTotalSupply: decimalEVM.parseEther(1),
+    maxTotalSupply: decimalEVM.parseEther(5000000),
+    identity: 'asd',
+}
+const reserve = decimalEVM.parseEther(1250);
+
+const options = {
+    ...await contract.getDefaultOptions(),
+    value: reserve,
+}
+
+const tx = await contract.call("createToken", newToken, options)
+```
+
+#### Send signed transaction
+```js
+const newToken: any = {
+    tokenOwner: decimalWallet.evmAddress,
+    symbol: 'COStest'+Math.floor(Math.random() * 10000),
+    name: 'CosmosName',
+    crr: 50,
+    initialMint: decimalEVM.parseEther(1000),
+    minTotalSupply: decimalEVM.parseEther(1),
+    maxTotalSupply: decimalEVM.parseEther(5000000),
+    identity: 'asd',
+}
+const reserve = decimalEVM.parseEther(1250);
+
+const contractAddress = decimalEVM.getDecimalContractAddress('token-center')
+
+const contract = await decimalEVM.connectToContract(contractAddress, tokenCenterAbi)
+
+const options = {
+    ...await contract.getDefaultOptions(),
+    value: reserve,
+}
+
+const populateTransaction = await contract.populateTransaction("createToken", newToken, options)
+populateTransaction.chainId = 20202020 //for ethres 5.5.1
+
+const signTransaction = await contract.signTransaction(populateTransaction)
+
+//send signed populateTransaction
+const sendTransaction = await contract.sendSignedTransaction(signTransaction)
+console.log(sendTransaction)
+
+// or send just populateTransaction
+//const sendTransaction = await contract.sendTransaction(populateTransaction)
+//console.log(sendTransaction)
 ```

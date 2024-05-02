@@ -106,13 +106,12 @@ export default class DecimalContractEVM {
   }
 
   public async estimateGas(action: string, ...params: any[]) {
-    return await this.contract[action].estimateGas(...params);
+    return await this.contract.estimateGas[action](...params);
   }
 
   public parseLog(logs:any) {
-    console.log(logs)
     return logs
-    .filter((log:any) => (ethers.utils.getAddress(log.address) == ethers.utils.getAddress(this.contract.target.toString())))
+    .filter((log:any) => (ethers.utils.getAddress(log.address) == ethers.utils.getAddress(this.contract.address)))
     .map((log:any) => {
       try {
         return this.contract.interface.parseLog(log);
@@ -128,7 +127,6 @@ export default class DecimalContractEVM {
       gasPrice = gasPrice.add(1)
     }
     return {
-      chainId: (await this.account.provider?.getNetwork())?.chainId,
       gasLimit: BigInt(500000),
       gasPrice: gasPrice,
       nonce: await this.account.provider?.getTransactionCount(this.account.address, 'latest'),
