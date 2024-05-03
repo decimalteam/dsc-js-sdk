@@ -188,7 +188,7 @@ export default class DecimalEVM {
   public async approveNFT721(nftCollectionAddress: string, to: string, tokenId: string | number | bigint, estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftCollectionAddress) 
-    if (/*typeNFT.toString() != TypeNFT[TypeNFT.ERC721Standart] && */ typeNFT.toString() != TypeNFT[TypeNFT.ERC721]) throw new Error(`Only for ERC721 and ERC721Standart`);
+    if (/*typeNFT != TypeNFT.ERC721Standart && */ typeNFT != TypeNFT.ERC721) throw new Error(`Only for ERC721 and ERC721Standart`);
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     return await this.call.approveNFT721(nft.contract, to, tokenId, estimateGas)
   }
@@ -303,7 +303,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    if (/*typeNFT.toString() != TypeNFT[TypeNFT.ERC1155Standart] &&*/ typeNFT.toString() != TypeNFT[TypeNFT.ERC1155]) throw new Error(`Only for ERC1155 and ERC1155Standart`);
+    if (/*typeNFT != TypeNFT.ERC1155Standart &&*/ typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC1155 and ERC1155Standart`);
     return await this.call.transferBatchNFT1155(nft.contract, from, to, tokenIds, amounts, estimateGas)
   }
 
@@ -381,28 +381,28 @@ export default class DecimalEVM {
   public async delegateERC721(validator:string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC721]) throw new Error(`Only for ERC721`);
+    if (typeNFT != TypeNFT.ERC721) throw new Error(`Only for ERC721`);
     return await this.call.delegateERC721(validator, nftAddress, tokenId, sign, estimateGas)
   }
 
   public async delegateERC1155(validator:string, nftAddress: string, tokenId: string | number | bigint, amount:string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC1155]) throw new Error(`Only for ERC1155`);
+    if (typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC1155`);
     return await this.call.delegateERC1155(validator, nftAddress, tokenId, amount, sign, estimateGas)
   }
 
   public async transferStakeNFT(validator:string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?:string | number | bigint, estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC721] && typeNFT.toString() != TypeNFT[TypeNFT.ERC1155]) throw new Error(`Only for ERC721 and ERC1155`);
+    if (typeNFT != TypeNFT.ERC721 && typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC721 and ERC1155`);
     return await this.call.transferStakeNFT(validator, nftAddress, tokenId, newValidator, amount, estimateGas)
   }
 
   public async withdrawStakeNFT(validator:string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC721] && typeNFT.toString() != TypeNFT[TypeNFT.ERC1155]) throw new Error(`Only for ERC721 and ERC1155`);
+    if (typeNFT != TypeNFT.ERC721 && typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC721 and ERC1155`);
     return await this.call.withdrawStakeNFT(validator, nftAddress, tokenId, amount, estimateGas)
   }
   public async completeStakeNFT(index:string| number, estimateGas?: boolean) {
@@ -513,7 +513,7 @@ export default class DecimalEVM {
   public async getApprovedNFT721(address: string, tokenId: string | number | bigint) {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(address)
-    if (/*typeNFT.toString() != TypeNFT[TypeNFT.ERC721Standart] &&*/ typeNFT.toString() != TypeNFT[TypeNFT.ERC721]) throw new Error(`Only for ERC721 and ERC721Standart`);
+    if (/*typeNFT != TypeNFT.ERC721Standart &&*/ typeNFT != TypeNFT.ERC721) throw new Error(`Only for ERC721 and ERC721Standart`);
     const nft = await this.getNFTContract(address, typeNFT)
     return await this.call.getApprovedNFT721(nft.contract, tokenId) 
   }
@@ -535,7 +535,7 @@ export default class DecimalEVM {
   public async ownerOfNFT721(address: string, tokenId: string | number | bigint) {
     if (!this.call) throw this.isNotConnected;
     const typeNFT = await this.getNftType(address)
-    if (/*typeNFT.toString() != TypeNFT[TypeNFT.ERC721Standart] &&*/ typeNFT.toString() != TypeNFT[TypeNFT.ERC721]) throw new Error(`Only for ERC721 and ERC721Standart`);
+    if (/*typeNFT != TypeNFT.ERC721Standart &&*/ typeNFT != TypeNFT.ERC721) throw new Error(`Only for ERC721 and ERC721Standart`);
     const nft = await this.getNFTContract(address, typeNFT)
     return await this.call.ownerOfNFT721(nft.contract, tokenId) 
   }
@@ -584,36 +584,28 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC1155]) throw new Error(`Only for ERC1155`);
+    if (typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC1155`);
     return await this.call.getRateNFT1155(nft.contract, tokenId) 
   }
 
   public async calcReserveNFT1155(address: string, tokenId: string | number | bigint, quantity:string | number | bigint) {
     const rate = await this.getRateNFT1155(address, tokenId)
-    return (rate*BigInt(quantity)).toString()
+    return (BigInt(rate) * BigInt(quantity)).toString()
   }
 
   public async getReserveNFT(address: string, tokenId: string | number | bigint) {
     if (!this.call) throw this.isNotConnected;
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC721] && typeNFT.toString() != TypeNFT[TypeNFT.ERC1155]) throw new Error(`Only for ERC721 and ERC1155`);
+    if (typeNFT != TypeNFT.ERC721 && typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC721 and ERC1155`);
     return await this.call.getReserveNFT(nft.contract, tokenId) 
   }
   
-  public async getTypeReserveNFT(address: string, tokenId: string | number | bigint) {
-    if (!this.call) throw this.isNotConnected;
-    const typeNFT: TypeNFT = await this.getNftType(address)
-    const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC721] && typeNFT.toString() != TypeNFT[TypeNFT.ERC1155]) throw new Error(`Only for ERC721 and ERC1155`);
-    return await this.call.getTypeReserveNFT(nft.contract, tokenId) 
-  }
-
   public async getRefundableNFT(address: string) {
     if (!this.call) throw this.isNotConnected;
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC721] && typeNFT.toString() != TypeNFT[TypeNFT.ERC1155]) throw new Error(`Only for ERC721 and ERC1155`);
+    if (typeNFT != TypeNFT.ERC721 && typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC721 and ERC1155`);
     return await this.call.getRefundableNFT(nft.contract) 
   }
 
@@ -621,7 +613,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC1155]) throw new Error(`Only for ERC1155`);
+    if (typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC1155`);
     return await this.call.getSupplyNFT1155(nft.contract, tokenId) 
   }
 
@@ -678,7 +670,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC721]) throw new Error(`Only for ERC721`);
+    if (typeNFT != TypeNFT.ERC721) throw new Error(`Only for ERC721`);
     return await this.call.getSignPermitERC721(nft.contract, spender, tokenId)
   }
 
@@ -686,7 +678,7 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT.toString() != TypeNFT[TypeNFT.ERC1155]) throw new Error(`Only for ERC1155`);
+    if (typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC1155`);
     return await this.call.getSignPermitERC1155(nft.contract, spender)
   }
 
@@ -717,7 +709,7 @@ export default class DecimalEVM {
   }
 
   private async getNFTContract(address: string, typeNFT: TypeNFT) {
-    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
+    switch (typeNFT as TypeNFT) {
       //case TypeNFT.ERC721Standart:
       //  return await this.getContract(address)
       //case TypeNFT.ERC1155Standart:

@@ -5,7 +5,8 @@ jest.setTimeout(2000000)
 const mnemonic = 'dutch clap mystery cost crush yellow unfair race like casual pole genre local zero liberty vibrant assist banana pact network churn pause finger dirt';
 const mnemonic2 = 'concert kid human author paddle rather outdoor wood slab wrap pioneer genuine ghost eight visa weather hybrid either route fortune alone seven nerve black';
 
-var addressERC721Standart: string, addressERC1155Standart: string, addressERC721: string, addressERC1155: string, reserveTokenAddress: string;
+//var addressERC721Standart: string, addressERC1155Standart: string;
+var addressERC721: string, addressERC1155: string;
 
 describe('NFTs', () => {
 
@@ -136,7 +137,7 @@ describe('NFTs', () => {
           maxTotalSupply: decimalEVM.parseEther(5000000),
           identity: 'asd',
         }
-        const reserve = decimalEVM.parseEther(1000);
+        const reserve = decimalEVM.parseEther(1250);
         const {tokenAddress} = await decimalEVM.createToken(newToken, reserve)
 
         //mint with approve
@@ -224,9 +225,9 @@ describe('NFTs', () => {
         
         const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
         await decimalEVM.connect();
-        await decimalEVM.disableMintNFT(addressERC721Standart) //ERC721Standart
+        //await decimalEVM.disableMintNFT(addressERC721Standart) //ERC721Standart
         await decimalEVM.disableMintNFT(addressERC721) //ERC721
-        await decimalEVM.disableMintNFT(addressERC1155Standart) //ERC1155Standart
+        //await decimalEVM.disableMintNFT(addressERC1155Standart) //ERC1155Standart
         await decimalEVM.disableMintNFT(addressERC1155) //ERC1155
         console.log(`successfully disableMintNFT`)
       } catch (e) {
@@ -244,9 +245,9 @@ describe('NFTs', () => {
 
         const tokenId = 0
         const amount = 10
-        await decimalEVM.burnNFT(addressERC721Standart, tokenId) //ERC721Standart
+        //await decimalEVM.burnNFT(addressERC721Standart, tokenId) //ERC721Standart
         await decimalEVM.burnNFT(addressERC721, tokenId) //ERC721
-        await decimalEVM.burnNFT(addressERC1155Standart, tokenId, amount) //ERC1155Standart
+        //await decimalEVM.burnNFT(addressERC1155Standart, tokenId, amount) //ERC1155Standart
         await decimalEVM.burnNFT(addressERC1155, tokenId, amount) //ERC1155
         console.log(`successfully burn`)
       } catch (e) {
@@ -264,9 +265,9 @@ describe('NFTs', () => {
         await decimalEVM.connect();
 
         const baseURI = 'https://example.com/'
-        await decimalEVM.setBaseURINFT(addressERC721Standart, baseURI) //ERC721Standart
+        //await decimalEVM.setBaseURINFT(addressERC721Standart, baseURI) //ERC721Standart
         await decimalEVM.setBaseURINFT(addressERC721, baseURI) //ERC721
-        await decimalEVM.setBaseURINFT(addressERC1155Standart, baseURI) //ERC1155Standart
+        //await decimalEVM.setBaseURINFT(addressERC1155Standart, baseURI) //ERC1155Standart
         await decimalEVM.setBaseURINFT(addressERC1155, baseURI) //ERC1155
         console.log(`successfully setBaseURINFT`)
       } catch (e) {
@@ -285,9 +286,9 @@ describe('NFTs', () => {
 
         const tokenId = 0
         const tokenURI = 'image.png'
-        await decimalEVM.setTokenURINFT(addressERC721Standart, tokenId, tokenURI) //ERC721Standart
+        //await decimalEVM.setTokenURINFT(addressERC721Standart, tokenId, tokenURI) //ERC721Standart
         await decimalEVM.setTokenURINFT(addressERC721, tokenId, tokenURI) //ERC721
-        await decimalEVM.setTokenURINFT(addressERC1155Standart, tokenId, tokenURI) //ERC1155Standart
+        //await decimalEVM.setTokenURINFT(addressERC1155Standart, tokenId, tokenURI) //ERC1155Standart
         await decimalEVM.setTokenURINFT(addressERC1155, tokenId, tokenURI) //ERC1155
         console.log(`successfully setTokenURINFT`)
       } catch (e) {
@@ -346,14 +347,14 @@ describe('NFTs', () => {
         //transfer
         const to = decimalWallet2.evmAddress!
 
-        await decimalEVM.approveForAllNFT(addressERC721Standart, to, true) //ERC721Standart
+        //await decimalEVM.approveForAllNFT(addressERC721Standart, to, true) //ERC721Standart
         await decimalEVM.approveForAllNFT(addressERC721, to, true) //ERC721
-        await decimalEVM.approveForAllNFT(addressERC1155Standart, to, true) //ERC1155Standart
+        //await decimalEVM.approveForAllNFT(addressERC1155Standart, to, true) //ERC1155Standart
         await decimalEVM.approveForAllNFT(addressERC1155, to, true) //ERC1155
 
-        if (await decimalEVM.isApprovedForAllNFT(addressERC721Standart, owner, to) != true) throw new Error("fail approveForAllNFT") //ERC721Standart
+        //if (await decimalEVM.isApprovedForAllNFT(addressERC721Standart, owner, to) != true) throw new Error("fail approveForAllNFT") //ERC721Standart
         if (await decimalEVM.isApprovedForAllNFT(addressERC721, owner, to) !== true) throw new Error("fail approveForAllNFT") //ERC721
-        if (await decimalEVM.isApprovedForAllNFT(addressERC1155Standart, owner, to) !== true) throw new Error("fail approveForAllNFT") //ERC1155Standart
+        //if (await decimalEVM.isApprovedForAllNFT(addressERC1155Standart, owner, to) !== true) throw new Error("fail approveForAllNFT") //ERC1155Standart
         if (await decimalEVM.isApprovedForAllNFT(addressERC1155, owner, to) !== true) throw new Error("fail approveForAllNFT") //ERC1155
         console.log(`successfully approveForAllNFT`)
       } catch (e) {
@@ -424,7 +425,6 @@ describe('NFTs', () => {
           resultSupportsInterfaceNFT,
           resultRateNFT1155,
           resultReserveNFT,
-          resultTypeReserveNFT,
           resultSupplyNFT1155
         ] = await Promise.all([
           decimalEVM.getTokenURINFT(addressERC721, resultERC721.tokenId),// erc721, erc721Standart, erc1155, erc1155Standart
@@ -434,7 +434,6 @@ describe('NFTs', () => {
           decimalEVM.supportsInterfaceNFT(addressERC721, "0x01ffc9a7"), // erc721, erc721Standart, erc1155, erc1155Standart
           decimalEVM.getRateNFT1155(addressERC1155, resultERC1155.tokenId), // erc1155
           decimalEVM.getReserveNFT(addressERC721, resultERC721.tokenId), // erc721, erc1155
-          decimalEVM.getTypeReserveNFT(addressERC721, resultERC721.tokenId), // erc721, erc1155
           decimalEVM.getSupplyNFT1155(addressERC1155, resultERC1155.tokenId), // erc1155Standart, erc1155
         ])
 
@@ -446,7 +445,6 @@ describe('NFTs', () => {
           resultSupportsInterfaceNFT ${resultSupportsInterfaceNFT}
           resultRateNFT1155 ${resultRateNFT1155}
           resultReserveNFT ${resultReserveNFT}
-          resultTypeReserveNFT ${resultTypeReserveNFT}
           resultSupplyNFT1155 ${resultSupplyNFT1155}
         `)
       } catch (e) {

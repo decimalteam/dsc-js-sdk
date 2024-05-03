@@ -748,17 +748,12 @@ const tokenId = 0
 const result = await decimalEVM.getReserveNFT(nftCollectionAddress, tokenId)
 /* the output example:
 {
-  amount: 1000000000000000000n,
-  token: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8'
+  token: '0x0000000000000000000000000000000000000000',
+  amount: '1000000000000000000',
+  reserveType: 'ERC1155'
 }
 if token is 0x0000000000000000000000000000000000000000, then is DEL reserve
 */
-```
-
-#### Get reserve NFT
-```js
-const tokenId = 0
-const result = await decimalEVM.getTypeReserveNFT(nftCollectionAddress, tokenId)
 ```
 
 #### Get status refundable the reserve after burning the NFT

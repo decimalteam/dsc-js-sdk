@@ -11,7 +11,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetDecimalContracts = await subgraph.getDecimalContracts()
         console.log(resultGetDecimalContracts)
@@ -21,7 +21,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultValidators = await subgraph.getValidators()
         console.log(resultValidators)
@@ -42,7 +42,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetTokens = await subgraph.getTokens(1000, 0)
         console.log(resultGetTokens)
@@ -53,7 +53,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const symbol = 'SBT_TOKEN'
         const resultBySymbol = await subgraph.getTokenBySymbol(symbol)
@@ -69,7 +69,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetStakes = await subgraph.getStakes(1000, 0)
         console.log(resultGetStakes)
@@ -85,7 +85,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetTransferStakes = await subgraph.getTransferStakes(1000, 0)
         console.log(resultGetTransferStakes)
@@ -98,7 +98,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetTransferStakes = await subgraph.getWithdrawStakes(1000, 0)
         console.log(resultGetTransferStakes)
@@ -111,7 +111,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const result = await subgraph.getAddressBalances(Account, 1000, 0)
         console.log(result)
@@ -121,7 +121,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const query = `{
             tokens {
@@ -135,7 +135,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const result = await subgraph.getSumAmountToPenalty()
         console.log(result)
@@ -145,7 +145,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetNftCollections = await subgraph.getNftCollections(1000, 0)
         console.log(resultGetNftCollections)
@@ -163,7 +163,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetNfts = await subgraph.getNfts(1000, 0)
         console.log(resultGetNfts)
@@ -181,7 +181,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetNFTStakes = await subgraph.getNFTStakes(1000, 0)
         console.log(resultGetNFTStakes)
@@ -197,7 +197,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetTransferStakes = await subgraph.getTransferNFTStakes(1000, 0)
         console.log(resultGetTransferStakes)
@@ -210,7 +210,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetTransferStakes = await subgraph.getWithdrawNFTStakes(1000, 0)
         console.log(resultGetTransferStakes)
@@ -223,7 +223,7 @@ describe('Subgraph', () => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
-        const subgraph = new Subgraph(DecimalNetworks.testnet)
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
 
         const resultGetNftCollectionType = await subgraph.getNftCollectionType("0x15ea2325268864227d7eaf6a4b76cafbeec3050d")
         console.log(resultGetNftCollectionType)

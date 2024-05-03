@@ -405,18 +405,18 @@ export default class Call {
         }
     }
     public async addDELReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas["addReserve(uint256)"](tokenId, await this.txOptions({ value: amountReserve}))
-        return await contract["addReserve(uint256)"](tokenId, await this.txOptions({ value: amountReserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155
+        if (estimateGas) return await contract.estimateGas.addReserveByETH(tokenId, await this.txOptions({ value: amountReserve}))
+        return await contract.addReserveByETH(tokenId, await this.txOptions({ value: amountReserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155
     }
 
     public async addTokenReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign === undefined) {
-            if (estimateGas) return await contract.estimateGas["addReserve(uint256,uint256)"](tokenId, amountReserve, await this.txOptions())
-            return await contract["addReserve(uint256,uint256)"](tokenId, amountReserve, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155 (for approve)
+            if (estimateGas) return await contract.estimateGas.addReserve(tokenId, amountReserve, await this.txOptions())
+            return await contract.addReserve(tokenId, amountReserve, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155 (for approve)
         } else {
             const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await contract.estimateGas["addReserve(uint256,uint256,uint256,uint8,bytes32,bytes32)"](tokenId, amountReserve, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await contract["addReserve(uint256,uint256,uint256,uint8,bytes32,bytes32)"](tokenId, amountReserve, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155 (for permit)
+            if (estimateGas) return await contract.estimateGas.addReserveByPermit(tokenId, amountReserve, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            return await contract.addReserveByPermit(tokenId, amountReserve, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155 (for permit)
         }
     }
 
@@ -614,11 +614,9 @@ export default class Call {
     //nft 721 && 1155
     public async getReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint) {
         const result = await contract.getReserve(tokenId)
-        return {amount: result[0], token: result[1]};
+        return {token: result[0], amount: result[1].toString(), reserveType: TypeNFT[result[2] as keyof typeof TypeNFT]};
     }
-    public async getTypeReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint) {
-        return await contract.getTypeReserve(tokenId);
-    }
+
     public async getRefundableNFT(contract: ethers.Contract) {
         return await contract.getRefundable();
     }
@@ -646,7 +644,7 @@ export default class Call {
         return await contract.rate(tokenId);
     }
     public async getSupplyNFT1155(contract: ethers.Contract, tokenId: string | number | bigint) {
-        return await contract.supply(tokenId);
+        return await contract['totalSupply(uint256)'](tokenId);
     }
 
     //delegation 
