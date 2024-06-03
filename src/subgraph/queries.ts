@@ -91,6 +91,7 @@ export default class Queries {
                 token {
                     address
                     symbol
+                    identity
                 }
             }
         }`)

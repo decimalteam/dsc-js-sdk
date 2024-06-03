@@ -57,21 +57,46 @@ export default class DecimalEVM {
   public async connect() {
     const contracts = await this.subgraph.getDecimalContracts()
 
-    const contractCenter = await this.initFromImplementation(contracts, 'contract-center')
-    const tokenCenter = await this.initFromImplementation(contracts, 'token-center')
-    const delegation = await this.initFromImplementation(contracts, 'delegation')
-    const nftCenter = await this.initFromImplementation(contracts, 'nft-center')
-    const delegationNft = await this.initFromImplementation(contracts, 'delegation-nft')
-    const masterValidator = await this.initFromImplementation(contracts, 'master-validator')
+    const [
+			contractCenter,
+			tokenCenter,
+			delegation,
+			nftCenter,
+			delegationNft,
+      masterValidator
+		] = await Promise.all([
+			this.initFromImplementation(contracts, 'contract-center'),
+			this.initFromImplementation(contracts, 'token-center'),
+			this.initFromImplementation(contracts, 'delegation'),
+			this.initFromImplementation(contracts, 'nft-center'),
+      this.initFromImplementation(contracts, 'delegation-nft'),
+			this.initFromImplementation(contracts, 'master-validator'),
+		])
 
-    const tokenImplAddress = await tokenCenter.contract.implementation()
-    const erc721ImplAddress = await nftCenter.contract.implementation(TypeNFT.ERC721)
-    const erc1155ImplAddress = await nftCenter.contract.implementation(TypeNFT.ERC1155)
+    const [
+			tokenImplAddress,
+			erc721ImplAddress,
+			erc1155ImplAddress,
+		] = await Promise.all([
+			tokenCenter.contract.implementation(),
+			nftCenter.contract.implementation(TypeNFT.ERC721),
+			nftCenter.contract.implementation(TypeNFT.ERC1155),
+		])
+
+    const [
+			tokenImpl,
+			erc721Impl,
+			erc1155Impl,
+		] = await Promise.all([
+			this.getContract(tokenImplAddress),
+			this.getContract(erc721ImplAddress),
+			this.getContract(erc1155ImplAddress),
+		])
 
     this.abis = {
-      token: (await this.getContract(tokenImplAddress)).abi,
-      erc721: (await this.getContract(erc721ImplAddress)).abi,
-      erc1155: (await this.getContract(erc1155ImplAddress)).abi
+      token: tokenImpl.abi,
+      erc721: erc721Impl.abi,
+      erc1155: erc1155Impl.abi
     }
 
     this.call = new Call(
@@ -440,6 +465,11 @@ export default class DecimalEVM {
   }
 
   // view function
+
+  public async getBalance(address: string) {
+    if (!this.call) throw this.isNotConnected;
+    return await this.provider.getBalance(address)
+  }
 
   public async getNftType(address: string): Promise<TypeNFT> {
     if (!this.call) throw this.isNotConnected;

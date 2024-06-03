@@ -591,6 +591,15 @@ const resultFeeForApproveToken = estimateGas*feeData.gasPrice
 
 ## Viewing functions
 
+### Network
+
+#### Get balance
+```js
+const address = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
+const amountWei = await decimalEVM.getBalance(address) // The result is provided in Wei format
+const amountETH = decimalEVM.parseEther(amountWei);   // ETH format
+```
+
 ### Token
 
 #### Check Token exists
@@ -872,7 +881,7 @@ const subgraph = new Subgraph(DecimalNetworks.testnet)
 
 // In queries where `first` and `skip` is mentioned, you need to specify their value. `first` and `skip` parameter can be used to paginate
 // The `first` argument must be between 0 and 1000
-// The `skip` argument must be between 1 and 999999999
+// The `skip` argument must be between 0 and 999999999
 ```
 
 #### Get Decimal contracts

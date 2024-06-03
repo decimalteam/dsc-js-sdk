@@ -18,5 +18,6 @@ export interface AddressBalance {
     token: {
         address: string;
         symbol: string;
+        identity: string;
     };
 }
