@@ -597,7 +597,7 @@ const resultFeeForApproveToken = estimateGas*feeData.gasPrice
 ```js
 const address = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
 const amountWei = await decimalEVM.getBalance(address) // The result is provided in Wei format
-const amountETH = decimalEVM.parseEther(amountWei);   // ETH format
+const amountETH = decimalEVM.formatEther(amountWei);   // ETH format
 ```
 
 ### Token
@@ -1180,10 +1180,10 @@ const amountWei = decimalEVM.parseEther(amountETH);    // 1000000000000000000 we
 #### Convert Wei to ETH
 ```js
 const amountWei = BigInt(10000000000000000000000) // amount Wei (string | number | bigint)
-const amountETH = decimalEVM.parseEther(amountWei);   // 10000 ETH
+const amountETH = decimalEVM.formatEther(amountWei);   // 10000 ETH
 
 //const amountWei = '20000000000000' // amount Wei (string | number | bigint)
-//const amountETH = decimalEVM.parseEther(amountWei);   // 0.00002 ETH
+//const amountETH = decimalEVM.formatEther(amountWei);   // 0.00002 ETH
 ```
 
 #### Address to a checksum address

@@ -1,5 +1,5 @@
 
-import { ethers, Wallet as HDNodeWallet } from "ethers";
+import { BigNumberish, ethers, Wallet as HDNodeWallet } from "ethers";
 import {
     getWeb3Endpoint,
     getNewApiEndpoint,
@@ -728,11 +728,13 @@ export default class DecimalEVM {
   }
 
   //utils
-  public parseEther(amount: string | number | bigint){
+  public parseEther(amount: string | number | bigint | BigNumberish){
     return ethers.utils.parseEther(amount.toString()).toString()
   }
-  public formatEther(amount: string | number | bigint){
-    return ethers.utils.formatEther(amount.toString()).toString()
+  public formatEther(amount: string | number | bigint | BigNumberish){
+    const amountETH = ethers.utils.formatEther(amount.toString()).toString()
+    const decimals = amountETH.split(".")[1]
+    return decimals == "0" ? amountETH.split(".")[0] : amountETH
   }
   public getAddress(address: string){
     return ethers.utils.getAddress(address)

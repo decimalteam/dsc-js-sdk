@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { ethers, Wallet as HDNodeWallet } from "ethers";
+import { BigNumberish, ethers, Wallet as HDNodeWallet } from "ethers";
 import { NETWORKS } from "../endpoints";
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
@@ -204,8 +204,8 @@ export default class DecimalEVM {
     getValidatorStatus(validator: string): Promise<ValidatorStatus>;
     validatorIsActive(validator: string): Promise<any>;
     validatorIsMember(validator: string): Promise<any>;
-    parseEther(amount: string | number | bigint): string;
-    formatEther(amount: string | number | bigint): string;
+    parseEther(amount: string | number | bigint | BigNumberish): string;
+    formatEther(amount: string | number | bigint | BigNumberish): string;
     getAddress(address: string): string;
     private getNFTContract;
     getDecimalContractAddress(contract: string): string;
