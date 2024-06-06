@@ -22,6 +22,11 @@ export default class DecimalEVM {
     private getContract;
     connect(): Promise<void>;
     private initFromImplementation;
+    multiCall(callDatas: {
+        target: string;
+        iface: string;
+        params: any;
+    }[], estimateGas?: boolean): Promise<any>;
     sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{

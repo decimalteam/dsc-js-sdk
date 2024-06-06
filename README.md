@@ -605,6 +605,26 @@ const feeData = await decimalEVM.getFeeData()
 const resultFeeForApproveToken = estimateGas*feeData.gasPrice
 ```
 
+## Multicall
+```js
+//Form an array of calls
+//target - the address of the target contract for the call
+//iface - interface of the function you need
+//params - input data for calling the function
+const callDatas = [{
+    target: "0xBEc675cA5ACdB12eAE9F31909C96C6c8961F8C69",
+    iface: "function transfer(address to, uint amount)",
+    params: ["0x0000000000000000000000000000000000000001", decimalEVM.parseEther("1.0")]
+},
+{
+    target: "0xBEc675cA5ACdB12eAE9F31909C96C6c8961F8C69",
+    iface: "function transfer(address to, uint amount)",
+    params: ["0x0000000000000000000000000000000000000002", decimalEVM.parseEther("1.0")]
+}]
+
+const tx = await decimalEVM.multiCall(callDatas)
+console.log(tx)
+```
 
 ## Viewing functions
 

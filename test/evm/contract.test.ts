@@ -155,5 +155,28 @@ describe('Contract', () => {
             console.log(e)
         }
     });
+
+    test('multicall', async() => {
+        const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+        const decimalWallet = new Wallet(mnemonic);
+        
+        const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+        await decimalEVM.connect();
+        console.log(decimalWallet.evmAddress)
+
+        const callDatas = [{
+            target: "0xBEc675cA5ACdB12eAE9F31909C96C6c8961F8C69",
+            iface: "function transfer(address to, uint amount)",
+            params: ["0x0000000000000000000000000000000000000001", decimalEVM.parseEther("1.0")]
+        },
+        {
+            target: "0xBEc675cA5ACdB12eAE9F31909C96C6c8961F8C69",
+            iface: "function transfer(address to, uint amount)",
+            params: ["0x0000000000000000000000000000000000000002", decimalEVM.parseEther("1.0")]
+        }]
+
+        const tx = await decimalEVM.multiCall(callDatas)
+        console.log(tx)
+    })
     
 })

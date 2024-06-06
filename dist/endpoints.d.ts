@@ -9,6 +9,7 @@ export declare function getWeb3Endpoint(network: NETWORKS): string;
 export declare function getRestNodeEndpoint(network: NETWORKS): string;
 export declare function getSubgraphEndpoint(network: NETWORKS): string;
 export declare function getIpfsEndpoints(network: NETWORKS): string;
+export declare function getMultiCallAddresses(network: NETWORKS): string;
 export declare function getRpcEndpoint(network: NETWORKS, isNodeDirectMode: boolean): string;
 export declare const gateEstimationEndpoint = "tx/estimate";
 export declare const gateBroadcastStatusEndpoint = "rpc/broadcast/status";

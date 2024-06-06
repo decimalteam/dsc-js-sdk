@@ -57,6 +57,7 @@ export default class Call {
     private readonly nftCenter: DecimalContractEVM;
     private readonly delegationNft: DecimalContractEVM;
     private readonly masterValidator: DecimalContractEVM;
+    private readonly multiCall: DecimalContractEVM;
 
     public constructor(
         network: NETWORKS,
@@ -68,6 +69,7 @@ export default class Call {
         nftCenter: DecimalContractEVM,
         delegationNft: DecimalContractEVM,
         masterValidator: DecimalContractEVM,
+        multiCall: DecimalContractEVM,
     ) {
         this.network = network
         this.provider = provider;
@@ -78,6 +80,7 @@ export default class Call {
         this.nftCenter = nftCenter;
         this.delegationNft = delegationNft;
         this.masterValidator = masterValidator;
+        this.multiCall = multiCall;
     }
 
     private async txOptions(options?:any | undefined) {
@@ -103,6 +106,15 @@ export default class Call {
     }
     
     // -----------write functions----------
+
+    //multicall
+    public async multicall(calls: {target: string; callData: string;}[], estimateGas?: boolean) {
+        if (estimateGas) {
+            return await this.multiCall.contract.estimateGas.aggregate(calls)
+        }
+        await this.multiCall.contract.callStatic.aggregate(calls)
+        return await this.multiCall.contract.aggregate(calls).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
 
     //token-center
     public async createToken(token:Token, reserve: string | number | bigint, estimateGas?: boolean) {

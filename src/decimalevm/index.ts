@@ -4,6 +4,7 @@ import {
     getWeb3Endpoint,
     getNewApiEndpoint,
     NETWORKS,
+    getMultiCallAddresses,
 } from "../endpoints";
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
@@ -14,6 +15,9 @@ import { ValidatorMeta, ValidatorStatus } from "./interfaces/validator";
 import Subgraph from "../subgraph";
 import { DecimalContract } from "../subgraph/interfaces/contracts";
 import IPFS from "./ipfs";
+import {
+	abi as multiCallAbi
+} from "./abi/Multicall.json";
 
 export default class DecimalEVM {
 
@@ -63,7 +67,8 @@ export default class DecimalEVM {
 			delegation,
 			nftCenter,
 			delegationNft,
-      masterValidator
+      masterValidator,
+      contractMulticall,
 		] = await Promise.all([
 			this.initFromImplementation(contracts, 'contract-center'),
 			this.initFromImplementation(contracts, 'token-center'),
@@ -71,6 +76,7 @@ export default class DecimalEVM {
 			this.initFromImplementation(contracts, 'nft-center'),
       this.initFromImplementation(contracts, 'delegation-nft'),
 			this.initFromImplementation(contracts, 'master-validator'),
+      this.getContract(getMultiCallAddresses(this.network), multiCallAbi),
 		])
 
     const [
@@ -109,6 +115,7 @@ export default class DecimalEVM {
       nftCenter,
       delegationNft,
       masterValidator,
+      contractMulticall
     )
   }
 
@@ -120,6 +127,28 @@ export default class DecimalEVM {
   }
 
   // write function
+  public async multiCall(callDatas: {
+    target: string;
+    iface: string;
+    params: any;
+  }[], estimateGas?: boolean) {
+    if (!this.call) throw this.isNotConnected;
+    let calls: {
+      target: string;
+      callData: string;
+    }[] = [];
+    for (let i = 0; i < callDatas.length; i++) {
+      if (callDatas[i].target.length != callDatas[i].iface.length) throw Error('Number of length does not match targets and ifaces');
+      const iFace = new ethers.utils.Interface([callDatas[i].iface]);
+      const data = iFace.encodeFunctionData(iFace.functions[Object.keys(iFace.functions)[0]].name, callDatas[i].params)
+      calls.push({
+        target: callDatas[i].target,
+        callData: data
+      })
+    }
+    return await this.call.multicall(calls, estimateGas)
+  }
+
   public async sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
     if (estimateGas) {

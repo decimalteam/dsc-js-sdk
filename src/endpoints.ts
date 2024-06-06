@@ -28,6 +28,10 @@ export function getIpfsEndpoints(network: NETWORKS): string {
   return ipfsEndpoints[network];
 }
 
+export function getMultiCallAddresses(network: NETWORKS): string {
+  return multicallAddresses[network];
+}
+
 export function getRpcEndpoint(
   network: NETWORKS,
   isNodeDirectMode: boolean
@@ -105,4 +109,10 @@ const ipfsEndpoints = { //TODO?
   [NETWORKS.DEVNET]: "https://testnet-nft-ipfs.decimalchain.com/", 
   [NETWORKS.TESTNET]: "https://testnet-nft-ipfs.decimalchain.com/",
   [NETWORKS.MAINNET]: "https://testnet-nft-ipfs.decimalchain.com/",
+};
+
+const multicallAddresses = { //TODO
+  [NETWORKS.DEVNET]: "0x6DA1B119532b971fa58c30A7568FA74d44f3aE72", 
+  [NETWORKS.TESTNET]: "",
+  [NETWORKS.MAINNET]: "0x949d1A0757803C51F2EfFFEb5472C861A898B8E8",
 };

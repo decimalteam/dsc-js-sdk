@@ -46,9 +46,14 @@ export default class Call {
     private readonly nftCenter;
     private readonly delegationNft;
     private readonly masterValidator;
-    constructor(network: NETWORKS, provider: ethers.providers.JsonRpcProvider, account: HDNodeWallet, contractCenter: DecimalContractEVM, tokenCenter: DecimalContractEVM, delegation: DecimalContractEVM, nftCenter: DecimalContractEVM, delegationNft: DecimalContractEVM, masterValidator: DecimalContractEVM);
+    private readonly multiCall;
+    constructor(network: NETWORKS, provider: ethers.providers.JsonRpcProvider, account: HDNodeWallet, contractCenter: DecimalContractEVM, tokenCenter: DecimalContractEVM, delegation: DecimalContractEVM, nftCenter: DecimalContractEVM, delegationNft: DecimalContractEVM, masterValidator: DecimalContractEVM, multiCall: DecimalContractEVM);
     private txOptions;
     private parseLog;
+    multicall(calls: {
+        target: string;
+        callData: string;
+    }[], estimateGas?: boolean): Promise<any>;
     createToken(token: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{
         tx: null;
         tokenAddress: null;
