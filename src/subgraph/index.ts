@@ -6,7 +6,7 @@ import {
 import { DecimalContract } from "./interfaces/contracts";
 import { Token, AddressBalance } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
-import { NFTCollection, NFT } from "./interfaces/nfts";
+import { NFTCollection, NFTToken } from "./interfaces/nfts";
 
 export default class Subgraph {
 
@@ -186,33 +186,33 @@ export default class Subgraph {
     public async getNftCollectionsByOwner(address:string, first: number, skip: number): Promise<NFTCollection[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { owner: "${verifyAddress}"}, first: ${first}, skip: ${skip})`
+        const options = `(where: { collectionOwner: "${verifyAddress}"}, first: ${first}, skip: ${skip})`
         return await this.query.getNftCollections(options)
     }
 
-    public async getNftCollectionByAddress(address: string): Promise<Token> {
+    public async getNftCollectionByAddress(address: string): Promise<NFTCollection> {
         const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { address: "${verifyAddress}"})`
         return await this.query.getNftCollection(options)
     }
 
-    public async getNfts(first: number, skip: number): Promise<NFT[]> {
+    public async getNfts(first: number, skip: number): Promise<NFTToken[]> {
         this.checkFirstAndSkip(first, skip)
         const options = `(first: ${first}, skip: ${skip})`
         return await this.query.getNfts(options)
     }
 
-    public async getNftsByCollection(address: string, first: number, skip: number): Promise<NFT[]> {
+    public async getNftsByCollection(address: string, first: number, skip: number): Promise<NFTToken[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { collection: "${verifyAddress.toLowerCase()}"}, first: ${first}, skip: ${skip})`
         return await this.query.getNfts(options)
     }
 
-    public async getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFT[]> {
+    public async getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFTToken[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { user: "${verifyAddress.toLowerCase()}"}, first: ${first}, skip: ${skip})`
+        const options = `(where: { balances_: { owner: "${verifyAddress.toLowerCase()}" } }, first: ${first}, skip: ${skip})`
         return await this.query.getNfts(options)
     }
 

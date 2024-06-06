@@ -2,7 +2,7 @@ import { NETWORKS } from "../endpoints";
 import { DecimalContract } from "./interfaces/contracts";
 import { Token, AddressBalance } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
-import { NFTCollection, NFT } from "./interfaces/nfts";
+import { NFTCollection, NFTToken } from "./interfaces/nfts";
 export default class Queries {
     private readonly network;
     constructor(network: NETWORKS);
@@ -20,7 +20,7 @@ export default class Queries {
     getSumAmountToPenalty(): Promise<SumAmountToPenalty>;
     subgraphCustomQuery(query: string): Promise<any>;
     getNftCollections(options: string): Promise<NFTCollection[]>;
-    getNftCollection(options: string): Promise<Token>;
-    getNfts(options: string): Promise<NFT[]>;
+    getNftCollection(options: string): Promise<NFTCollection>;
+    getNfts(options: string): Promise<NFTToken[]>;
     getNftCollectionType(options: string): Promise<string | null>;
 }

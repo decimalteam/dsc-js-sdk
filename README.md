@@ -24,6 +24,23 @@ const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
 await decimalEVM.connect();
 ```
 
+## DEL
+
+### Send DEL
+
+```js
+const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
+const amount = decimalEVM.parseEther('1') // 1 DEL
+await decimalEVM.sendDEL(address, amount)
+```
+
+### Burn DEL
+
+```js
+const amount = decimalEVM.parseEther('1') // 1 DEL
+await decimalEVM.burnDEL(amount)
+```
+
 ## Token
 
 ### Create token
@@ -419,7 +436,7 @@ const stakesFrozenFiltered = stakesFrozen.filter(({unfreezeTimestamp}) => unfree
 if (stakesFrozenFiltered.length > 0) {
   const stakeFrozen = stakesFrozenFiltered[0] // first stake frozen (for example)
 
-  const result = await decimalEVM.completeStakeToken(stakeFrozen.queueIndex)
+  const result = await decimalEVM.completeStakeToken([stakeFrozen.stakeIndex])
   if (result.error == null) {
       //successfully transaction: result.tx
   } else {
@@ -505,7 +522,7 @@ const stakesFrozenFiltered = stakesFrozen.filter(({unfreezeTimestamp}) => unfree
 if (stakesFrozenFiltered.length > 0) {
   const stakeFrozen = stakesFrozenFiltered[0] // first stake frozen (for example)
 
-  const result = await decimalEVM.completeStakeNFT(stakeFrozen.queueIndex)
+  const result = await decimalEVM.completeStakeNFT([stakeFrozen.stakeIndex])
   if (result.error == null) {
       //successfully transaction: result.tx
   } else {
@@ -1025,7 +1042,7 @@ const result = await subgraph.getNftCollectionType(nftCollectionAddress)
 const result = await subgraph.getNfts(first, skip)
 ```
 
-#### Get NFTs by NFT Collection
+#### Get NFTs by NFT Collection address
 ```js
 const nftCollectionAddress = "0x15ea2325268864227d7eaf6a4b76cafbeec3050d"
 const result = await subgraph.getNftsByCollection(nftCollectionAddress, first, skip)

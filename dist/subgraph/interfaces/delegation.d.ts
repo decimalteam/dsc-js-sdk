@@ -35,7 +35,7 @@ export interface TransferStake {
     } | null;
     tokenId?: string;
     amount: string;
-    queueIndex: string;
+    stakeIndex: string;
     unfreezeTimestamp: string;
     tokenType: string;
 }
@@ -51,7 +51,7 @@ export interface WithdrawStake {
     };
     tokenId?: string;
     amount: string;
-    queueIndex: string;
+    stakeIndex: string;
     unfreezeTimestamp: string;
     tokenType: string;
 }

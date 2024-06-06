@@ -2,8 +2,8 @@ import SDK from '../../src/index'
 
 jest.setTimeout(2000000)
 
-const Validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
-const Account = "0x35119df12afdf848b7ef2536af2411ab0a611c45"
+const Validator = "0xae7f720b602d1253b8766724b80e98271a948740"
+const Account = "0x4e8f97244dc1e570742d9e8cf28c4413c4a8aede"
 
 describe('Subgraph', () => {
 
@@ -153,11 +153,12 @@ describe('Subgraph', () => {
         console.log(resultGetNftCollectionsByOwner)
 
         if (resultGetNftCollections.length > 0) {
-            const nft = resultGetNftCollections[0] // first nft collection
-            const resultGetNftCollectionByAddress = await subgraph.getNftCollectionByAddress(nft.address)
+            const nftCollection = resultGetNftCollections[0] // first nft collection
+            const resultGetNftCollectionByAddress = await subgraph.getNftCollectionByAddress(nftCollection.address)
             console.log(resultGetNftCollectionByAddress)
         }
     })
+
 
     test('get nfts, get nfts by address collection, get nfts by user address', async() => {
         // Sdk.
@@ -169,14 +170,14 @@ describe('Subgraph', () => {
         console.log(resultGetNfts)
 
         const nft = resultGetNfts[0] //first nft
-        const resultGetNftsByCollection = await subgraph.getNftsByCollection(nft.collection.id, 1000, 0)
+        const resultGetNftsByCollection = await subgraph.getNftsByCollection(nft.collection!.address, 1000, 0)
         console.log(resultGetNftsByCollection)
 
-        const resultGetAddressBalancesNfts = await subgraph.getAddressBalancesNfts(nft.user, 1000, 0)
+        const resultGetAddressBalancesNfts = await subgraph.getAddressBalancesNfts(nft.balances[0].owner.address, 1000, 0)
         console.log(resultGetAddressBalancesNfts)
-        
     })
- 
+
+
     test('get nft stakes, get nft stakes by address, get nft stakes by validator', async() => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
@@ -193,6 +194,7 @@ describe('Subgraph', () => {
         console.log(resultGetNFTStakesByValidotor)
     })
 
+ 
     test('get transfer nft stakes, get transfer nft stakes by address', async() => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
@@ -206,6 +208,7 @@ describe('Subgraph', () => {
         console.log(resultGetTransferStakesByAddress)
     })
 
+
     test('get withdraw nft stakes, get withdraw nft stakes by address', async() => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
@@ -218,14 +221,15 @@ describe('Subgraph', () => {
         const resultGetTransferStakesByAddress = await subgraph.getWithdrawNFTStakesByAddress(Account, 1000, 0)
         console.log(resultGetTransferStakesByAddress)
     })
-    
+
     test('get nft collection type', async() => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
         const subgraph = new Subgraph(DecimalNetworks.devnet)
 
-        const resultGetNftCollectionType = await subgraph.getNftCollectionType("0x15ea2325268864227d7eaf6a4b76cafbeec3050d")
+        const resultGetNftCollectionType = await subgraph.getNftCollectionType("0x07c0f327e1e21501607ad67dd64d454ec045aef7")
         console.log(resultGetNftCollectionType)
     })
+    
 })

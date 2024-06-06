@@ -22,6 +22,8 @@ export default class DecimalEVM {
     private getContract;
     connect(): Promise<void>;
     private initFromImplementation;
+    sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
+    burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{
         tx: null;
         tokenAddress: null;
@@ -118,7 +120,7 @@ export default class DecimalEVM {
         error: any;
         estimateGas: null;
     }>;
-    completeStakeToken(index: string | number, estimateGas?: boolean): Promise<{
+    completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<{
         tx: null;
         error: null;
         estimateGas: import("@ethersproject/bignumber").BigNumber;
@@ -135,7 +137,7 @@ export default class DecimalEVM {
     delegateERC1155(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     withdrawStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
-    completeStakeNFT(index: string | number, estimateGas?: boolean): Promise<{
+    completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<{
         tx: null;
         error: null;
         estimateGas: import("@ethersproject/bignumber").BigNumber;

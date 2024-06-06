@@ -5,7 +5,7 @@ import {
 import { DecimalContract } from "./interfaces/contracts";
 import { Token, AddressBalance } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
-import { NFTCollection, NFT } from "./interfaces/nfts";
+import { NFTCollection, NFTToken } from "./interfaces/nfts";
 import fetch from "node-fetch";
 
 export default class Queries {
@@ -114,6 +114,7 @@ export default class Queries {
                     address
                     symbol  
                 }
+                tokenId
                 amount
                 tokenType
             }
@@ -142,7 +143,7 @@ export default class Queries {
                 }
                 tokenId
                 amount
-                queueIndex
+                stakeIndex
                 unfreezeTimestamp
                 tokenType
             }
@@ -168,7 +169,7 @@ export default class Queries {
                 }
                 tokenId
                 amount
-                queueIndex
+                stakeIndex
                 unfreezeTimestamp
                 tokenType
             }
@@ -306,49 +307,97 @@ export default class Queries {
     public async getNftCollections(options: string): Promise<NFTCollection[]> {
         const result = await this.query(`{
             nftcollections${options} {
-                id
                 address
                 symbol
                 name
-                owner
+                collectionOwner
                 tokenType
+                collectionSupply
+                nfts {
+                  tokenURI
+                  tokenId
+                  supply
+                  transfers {
+                    from
+                    to
+                    txHash
+                    blockNumber
+                    amount
+                  }
+                  balances {
+                    owner {
+                      address
+                    }
+                    amount
+                  }
+                }
             }
         }`)
         return result.nftcollections
     }
 
-    public async getNftCollection(options:string): Promise<Token> {
+    public async getNftCollection(options:string): Promise<NFTCollection> {
         const result = await this.query(`{
             nftcollections${options} {
-                id
                 address
                 symbol
                 name
-                owner
+                collectionOwner
                 tokenType
+                collectionSupply
+                nfts {
+                  tokenURI
+                  tokenId
+                  supply
+                  transfers {
+                    from
+                    to
+                    txHash
+                    blockNumber
+                    amount
+                  }
+                  balances {
+                    owner {
+                      address
+                    }
+                    amount
+                  }
+                }
             }
         }`)
         return result.nftcollections[0]
     }
 
-    public async getNfts(options:string): Promise<NFT[]> {
+    public async getNfts(options:string): Promise<NFTToken[]> {
         const result = await this.query(`{
-            nfts${options} {
-                id
-                user
+            nfttokens${options} {
+                tokenURI
                 tokenId
-                balance
+                supply
                 collection {
-                    id
                     address
                     symbol
                     name
-                    owner
+                    collectionOwner
                     tokenType
+                    collectionSupply
+                }
+                transfers {
+                  from
+                  to
+                  txHash
+                  blockNumber
+                  amount
+                }
+                balances {
+                  owner {
+                    address
+                  }
+                  amount
                 }
             }
         }`)
-        return result.nfts
+        return result.nfttokens
     }
 
     public async getNftCollectionType(options:string): Promise<string | null> {

@@ -2,7 +2,7 @@ import { NETWORKS } from "../endpoints";
 import { DecimalContract } from "./interfaces/contracts";
 import { Token, AddressBalance } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
-import { NFTCollection, NFT } from "./interfaces/nfts";
+import { NFTCollection, NFTToken } from "./interfaces/nfts";
 export default class Subgraph {
     private readonly network;
     private readonly query;
@@ -35,10 +35,10 @@ export default class Subgraph {
     getSumAmountToPenalty(): Promise<{}>;
     getNftCollections(first: number, skip: number): Promise<NFTCollection[]>;
     getNftCollectionsByOwner(address: string, first: number, skip: number): Promise<NFTCollection[]>;
-    getNftCollectionByAddress(address: string): Promise<Token>;
-    getNfts(first: number, skip: number): Promise<NFT[]>;
-    getNftsByCollection(address: string, first: number, skip: number): Promise<NFT[]>;
-    getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFT[]>;
+    getNftCollectionByAddress(address: string): Promise<NFTCollection>;
+    getNfts(first: number, skip: number): Promise<NFTToken[]>;
+    getNftsByCollection(address: string, first: number, skip: number): Promise<NFTToken[]>;
+    getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFTToken[]>;
     getNftCollectionType(address: string): Promise<string | null>;
     subgraphCustomQuery(query: string): Promise<any>;
 }

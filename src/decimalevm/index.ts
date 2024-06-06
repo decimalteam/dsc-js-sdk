@@ -120,6 +120,25 @@ export default class DecimalEVM {
   }
 
   // write function
+  public async sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean) {
+    if (!this.call) throw this.isNotConnected;
+    if (estimateGas) {
+      return await this.account.estimateGas({
+        to: address,
+        value: amount
+      });
+    }
+    return await this.account.sendTransaction({
+      to: address,
+      value: amount
+    }).then((tx: ethers.ContractTransaction) => tx.wait());
+  }
+
+  public async burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean) {
+    if (!this.call) throw this.isNotConnected;
+    return this.sendDEL(ethers.constants.AddressZero, amount, estimateGas)
+  }
+
   public async createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
     return await this.call.createToken(payload, reserve, estimateGas)
@@ -398,9 +417,9 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     return await this.call.applyPenaltiesToStakeToken(validator, delegator, tokenAddress, estimateGas)
   }
-  public async completeStakeToken(index:string| number, estimateGas?: boolean) {
+  public async completeStakeToken(indexes:string[] | number[], estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
-    return await this.call.completeStakeToken(index, estimateGas)
+    return await this.call.completeStakeToken(indexes, estimateGas)
   }
 
   public async delegateERC721(validator:string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
@@ -430,9 +449,9 @@ export default class DecimalEVM {
     if (typeNFT != TypeNFT.ERC721 && typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC721 and ERC1155`);
     return await this.call.withdrawStakeNFT(validator, nftAddress, tokenId, amount, estimateGas)
   }
-  public async completeStakeNFT(index:string| number, estimateGas?: boolean) {
+  public async completeStakeNFT(indexes:string[] | number[], estimateGas?: boolean) {
     if (!this.call) throw this.isNotConnected;
-    return await this.call.completeStakeNFT(index, estimateGas)
+    return await this.call.completeStakeNFT(indexes, estimateGas)
   }
 
   public async addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, estimateGas?: boolean) {

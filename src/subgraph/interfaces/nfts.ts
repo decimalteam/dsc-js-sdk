@@ -1,16 +1,37 @@
 export interface NFTCollection {
-    id: string;
     address: string;
     symbol: string;
     name: string;
-    owner: string;
+    collectionOwner: string;
     tokenType: string;
+    collectionSupply: string;
+    nfts: NFTToken[];
 }
 
-export interface NFT {
-    id: string;
-    user: string;
+export interface NFTToken {
+    tokenURI: string;
     tokenId: string;
-    balance: string;
-    collection: NFTCollection
+    supply: string;
+    collection?: NFTCollection;
+    transfers: NFTTransfer[];
+    balances: NFTBalance[];
+}
+  
+export interface NFTBalance {
+    owner: {
+        address: string; 
+    }
+    nft?: NFTToken;
+    collection?: NFTCollection;
+    amount: string;
+}
+  
+export interface NFTTransfer  {
+    from: string;
+    to: string;
+    nft?: NFTToken;
+    collection?: NFTCollection;
+    txHash: string;
+    blockNumber: string;
+    amount: string;
 }

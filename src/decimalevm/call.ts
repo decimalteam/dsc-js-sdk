@@ -239,14 +239,14 @@ export default class Call {
         }
     }
 
-    public async completeStakeToken(index:string| number, estimateGas?: boolean) {
+    public async completeStakeToken(indexes:string[] | number[], estimateGas?: boolean) {
         try {
-            await this.delegation.contract.callStatic.completeStake(index, await this.txOptions())
+            await this.delegation.contract.callStatic.complete(indexes, await this.txOptions())
             if (estimateGas) {
-                const gas = await this.delegation.contract.estimateGas.completeStake(index, await this.txOptions())
+                const gas = await this.delegation.contract.estimateGas.complete(indexes, await this.txOptions())
                 return {tx: null, error: null, estimateGas: gas} 
             }
-            const tx = await this.delegation.contract.completeStake(index, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            const tx = await this.delegation.contract.complete(indexes, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
             return {tx: tx, error: null, estimateGas: null} 
         } catch (err: any) {
             if (err?.revert?.name != null) {
@@ -478,14 +478,14 @@ export default class Call {
         }
     }
 
-    public async completeStakeNFT(index:string| number, estimateGas?: boolean) {
+    public async completeStakeNFT(indexes:string[] | number[], estimateGas?: boolean) {
         try {
-            await this.delegationNft.contract.callStatic.completeStake(index, await this.txOptions())
+            await this.delegationNft.contract.callStatic.complete(indexes, await this.txOptions())
             if (estimateGas) {
-                const gas = await this.delegationNft.contract.estimateGas.completeStake(index, await this.txOptions())
+                const gas = await this.delegationNft.contract.estimateGas.complete(indexes, await this.txOptions())
                 return {tx: null, error: null, estimateGas: gas} 
             }
-            const tx = await this.delegationNft.contract.completeStake(index, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            const tx = await this.delegationNft.contract.complete(indexes, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
             return {tx: tx, error: null, estimateGas: null} 
         } catch (err: any) {
             if (err?.revert?.name != null) {

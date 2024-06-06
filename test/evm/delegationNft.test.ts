@@ -189,7 +189,7 @@ describe('Delegation NFT', () => {
             if (frozenFiltered.length > 0) {
                 const index = frozenFiltered[0].index // first frozen (ready to be complete) by delegator
 
-                const result = await decimalEVM.completeStakeNFT(index)
+                const result = await decimalEVM.completeStakeNFT([index])
                 if (result.error == null) {
                     //successfully completeStakeNFT
                 } else {
