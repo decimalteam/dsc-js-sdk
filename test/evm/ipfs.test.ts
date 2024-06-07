@@ -8,7 +8,42 @@ const mnemonic = 'dutch clap mystery cost crush yellow unfair race like casual p
 
 describe('ifps', () => {
 
-    test('upload from uri', async() => {
+
+    test('upload token icon from file', async() => {
+        const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+        const decimalWallet = new Wallet(mnemonic);
+        
+        const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.testnet);
+        await decimalEVM.connect();
+
+        const filePath = 'C:/Users/User/Desktop/unnamed.png'
+        const buffer = fs.readFileSync(filePath);
+        
+        const filename = filePath
+        const result = await decimalEVM.uploadTokenBufferToIPFS(buffer, filename)
+        console.log(result)
+    })
+
+    test('upload token icon from url', async() => {
+        const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+        const decimalWallet = new Wallet(mnemonic);
+        
+        const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+        await decimalEVM.connect();
+
+        const uri = `https://cdn-icons-png.flaticon.com/512/7977/7977062.png`
+        const buffer = await fetch(uri).then((res) => res.buffer());
+
+        const filename = uri
+        const result = await decimalEVM.uploadTokenBufferToIPFS(buffer, filename)
+        console.log(result)
+
+        const cidUrl = decimalEVM.getUrlFromCid(result.image)
+        console.log(cidUrl)
+    })
+
+ 
+    test('upload nft from uri', async() => {
         const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
         const decimalWallet = new Wallet(mnemonic);
         
@@ -21,7 +56,7 @@ describe('ifps', () => {
         const filename = uri
         const name = 'NameNFT23'
         const description = 'Description NFT2'
-        const result = await decimalEVM.uploadBufferToIPFS(buffer, filename, name, description)
+        const result = await decimalEVM.uploadNFTBufferToIPFS(buffer, filename, name, description)
         console.log(result)
 
         const cidMetadataUrl = decimalEVM.getUrlFromCid(result.file_cid_meta)
@@ -30,7 +65,7 @@ describe('ifps', () => {
         console.log(cidUrl)
     })
 
-    test('upload from file', async() => {
+    test('upload nft from file', async() => {
         const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
         const decimalWallet = new Wallet(mnemonic);
         
@@ -43,12 +78,12 @@ describe('ifps', () => {
         const filename = filePath
         const name = 'NameNFT23'
         const description = 'Description NFT2'
-        const result = await decimalEVM.uploadBufferToIPFS(buffer, filename, name, description)
+        const result = await decimalEVM.uploadNFTBufferToIPFS(buffer, filename, name, description)
         console.log(result)
     })
 
 
-    /* example upload from browser
+    /* example upload NFT from browser
     const name = 'NameNFT23'
     const description = 'Description NFT2'
     const metadataBlob = await decimalEVM.getBlobMetadata(name, description)
@@ -59,7 +94,16 @@ describe('ifps', () => {
     data.append('uploading_files', input.files[0])
     data.append('uploading_files', metadataBlob)
 
-    const result = await decimalEVM.uploadToIPFS(data)
+    const result = await decimalEVM.uploadNFTFormToIPFS(data)
+    */
+
+    /* example upload Token from browser
+    var input = document.querySelector('input[type="file"]')
+
+    var data = new FormData()
+    data.append('uploading_files', input.files[0])
+
+    const result = await decimalEVM.uploadTokenFormToIPFS(data)
     */
     
 })

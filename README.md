@@ -1119,7 +1119,70 @@ const result = await subgraph.getWithdrawNFTStakesByAddress(account, first, skip
 
 ## IPFS
 
-#### Example: Upload from filesystem (node js)
+### IPFS for tokens
+
+#### Example: Upload Token from filesystem (node js)
+```js
+const filePath = 'C:/Users/User/Desktop/unnamed.png'
+const buffer = fs.readFileSync(filePath);
+
+const filename = filePath
+const result = await decimalEVM.uploadTokenBufferToIPFS(buffer, filename)
+/* example response
+{
+  image: 'QmRnq6DxnG2w8VPpLvovwYTZDVQVqDj6Zcnpbo8oJMGx41'
+}
+*/
+```
+
+#### Example: Upload Token from url (node js)
+```js
+const uri = `https://cdn-icons-png.flaticon.com/512/7977/7977062.png`
+const buffer = await fetch(uri).then((res) => res.buffer());
+
+const filename = uri
+const result = await decimalEVM.uploadTokenBufferToIPFS(buffer, filename)
+/* example response
+{
+  image: 'QmRnq6DxnG2w8VPpLvovwYTZDVQVqDj6Zcnpbo8oJMGx41'
+}
+*/
+```
+
+#### Example: Upload Token from input (browser)
+```js
+const description = 'Description NFT2'
+var input = document.querySelector('input[type="file"]')
+
+var data = new FormData()
+data.append('uploading_files', input.files[0])
+
+const result = await decimalEVM.uploadTokenFormToIPFS(data)
+/* example response
+{
+  image: 'QmRnq6DxnG2w8VPpLvovwYTZDVQVqDj6Zcnpbo8oJMGx41'
+}
+*/
+```
+
+#### Example: Upload Token from url (browser)
+```js
+const imageBlob = await fetch(uri).then((res) => res.blob());
+
+var data = new FormData()
+data.append('uploading_files', imageBlob)
+
+const result = await decimalEVM.uploadTokenFormToIPFS(data)
+/* example response
+{
+  image: 'QmRnq6DxnG2w8VPpLvovwYTZDVQVqDj6Zcnpbo8oJMGx41'
+}
+*/
+```
+
+### IPFS for NFTs
+
+#### Example: Upload NFT from filesystem (node js)
 ```js
 const filePath = 'C:/Users/User/Desktop/unnamed.png'
 const buffer = fs.readFileSync(filePath);
@@ -1127,7 +1190,7 @@ const buffer = fs.readFileSync(filePath);
 const filename = filePath
 const name = 'NameNFT23'
 const description = 'Description NFT2'
-const result = await decimalEVM.uploadBufferToIPFS(buffer, filename, name, description)
+const result = await decimalEVM.uploadNFTBufferToIPFS(buffer, filename, name, description)
 /* example response
 {
   file_cid_media: 'Qmaw2FvZamk5AsEBfbe3bz3c9yc7mfReRpmVfiMJMxs93A',
@@ -1136,7 +1199,7 @@ const result = await decimalEVM.uploadBufferToIPFS(buffer, filename, name, descr
 */
 ```
 
-#### Example: Upload from url (node js)
+#### Example: Upload NFT from url (node js)
 ```js
 const uri = `https://example.com/image.png`
 const imageBlob = await fetch(uri).then((res) => res.blob());
@@ -1146,7 +1209,7 @@ const buffer = Buffer.from(await imageBlob.arrayBuffer());
 const filename = uri
 const name = 'NameNFT23'
 const description = 'Description NFT2'
-const result = await decimalEVM.uploadBufferToIPFS(buffer, filename, name, description)
+const result = await decimalEVM.uploadNFTBufferToIPFS(buffer, filename, name, description)
 /* example response
 {
   file_cid_media: 'Qmaw2FvZamk5AsEBfbe3bz3c9yc7mfReRpmVfiMJMxs93A',
@@ -1155,7 +1218,7 @@ const result = await decimalEVM.uploadBufferToIPFS(buffer, filename, name, descr
 */
 ```
 
-#### Example: Upload from input (browser)
+#### Example: Upload NFT from input (browser)
 ```js
 const name = 'NameNFT23'
 const description = 'Description NFT2'
@@ -1167,7 +1230,7 @@ var data = new FormData()
 data.append('uploading_files', input.files[0])
 data.append('uploading_files', metadataBlob)
 
-const result = await decimalEVM.uploadToIPFS(data)
+const result = await decimalEVM.uploadNFTFormToIPFS(data)
 /* example response
 {
   file_cid_media: 'Qmaw2FvZamk5AsEBfbe3bz3c9yc7mfReRpmVfiMJMxs93A',
@@ -1176,7 +1239,7 @@ const result = await decimalEVM.uploadToIPFS(data)
 */
 ```
 
-#### Example: Upload from url (browser)
+#### Example: Upload NFT from url (browser)
 ```js
 const name = 'NameNFT23'
 const description = 'Description NFT2'
@@ -1188,7 +1251,7 @@ var data = new FormData()
 data.append('uploading_files', imageBlob)
 data.append('uploading_files', metadataBlob)
 
-const result = await decimalEVM.uploadToIPFS(data)
+const result = await decimalEVM.uploadNFTFormToIPFS(data)
 /* example response
 {
   file_cid_media: 'Qmaw2FvZamk5AsEBfbe3bz3c9yc7mfReRpmVfiMJMxs93A',

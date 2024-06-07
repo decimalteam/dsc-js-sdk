@@ -26,8 +26,8 @@ export default class IPFS {
         }
     }
     
-    public async upload(form: any){
-        const result = await fetch(`${getIpfsEndpoints(this.network)}upload`, {
+    public async upload(form: any, nft: boolean){
+        const result = await fetch(`${getIpfsEndpoints(this.network)}${nft ? 'upload' : 'upload-image'}`, {
             method: 'POST',
             body: form
         })
@@ -35,20 +35,28 @@ export default class IPFS {
     }
 
     // for node js
-    public async uploadFromBuffer(buffer:Buffer, fileName:string, name:string, description:string) {
+    public async uploadNFTBufferToIPFS(buffer:Buffer, fileName:string, name:string, description:string) {
         const form: any = new FormData();
         const metadata = this.getMetadata(name, description)
 
         form.append('uploading_files', buffer, { filename: fileName });
         form.append('uploading_files', JSON.stringify(metadata), { filename: "metadata.json" });
 
-        return await this.upload(form)
+        return await this.upload(form, true)
     }
 
     // for browser
     public getBlobMetadata(name:string, description:string): Blob {
         const metadata = this.getMetadata(name, description)
         return new Blob([JSON.stringify(metadata, null, 0)], { type: "application/json" });
+    }
+
+    public async uploadTokenBufferToIPFS(buffer: Buffer, fileName: string): Promise<{ image: string }> {
+        const form = new FormData();
+
+        form.append('uploading_files', buffer, { filename: fileName });
+
+        return await this.upload(form, false)
     }
 
     public getUrlFromCid(cid:string) {

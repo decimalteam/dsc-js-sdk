@@ -858,16 +858,24 @@ export default class DecimalEVM {
   }
 
   //ipfs
-  public async uploadBufferToIPFS(buffer:Buffer, fileName:string, name:string, description:string) {
-    return await this.ipfs.uploadFromBuffer(buffer, fileName, name, description);
+  public async uploadNFTBufferToIPFS(buffer:Buffer, fileName:string, name:string, description:string) {
+    return await this.ipfs.uploadNFTBufferToIPFS(buffer, fileName, name, description);
+  }
+
+  public async uploadTokenBufferToIPFS(buffer:Buffer, fileName:string) {
+    return await this.ipfs.uploadTokenBufferToIPFS(buffer, fileName);
   }
 
   public async getBlobMetadata(name:string, description:string) {
     return this.ipfs.getBlobMetadata(name, description);
   }
 
-  public async uploadToIPFS(form:any) {
-    return await this.ipfs.upload(form);
+  public async uploadNFTFormToIPFS(form: any) {
+    return await this.ipfs.upload(form, true);
+  }
+
+  public async uploadTokenFormToIPFS(form: any) {
+    return await this.ipfs.upload(form, false);
   }
 
   public getUrlFromCid(cid:string) {

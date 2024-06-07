@@ -223,8 +223,12 @@ export default class DecimalEVM {
     verifyСontract(address: string, contract_code: string, compiler: string, optimizer: string, runs: string, evm_version: string): Promise<boolean>;
     private validationValidatorMeta;
     getFeeData(): Promise<ethers.providers.FeeData>;
-    uploadBufferToIPFS(buffer: Buffer, fileName: string, name: string, description: string): Promise<any>;
+    uploadNFTBufferToIPFS(buffer: Buffer, fileName: string, name: string, description: string): Promise<any>;
+    uploadTokenBufferToIPFS(buffer: Buffer, fileName: string): Promise<{
+        image: string;
+    }>;
     getBlobMetadata(name: string, description: string): Promise<import("buffer").Blob>;
-    uploadToIPFS(form: any): Promise<any>;
+    uploadNFTFormToIPFS(form: any): Promise<any>;
+    uploadTokenFormToIPFS(form: any): Promise<any>;
     getUrlFromCid(cid: string): string;
 }
