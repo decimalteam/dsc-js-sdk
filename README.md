@@ -596,13 +596,13 @@ const getEstimateGas = true
 const {tokenAddress, estimateGas} = await decimalEVM.createToken(newToken, reserve, getEstimateGas)
 //To calculate the fee, request the current gasPrice and multiply by the received estimateGas
 const feeData = await decimalEVM.getFeeData()
-const resultFee = estimateGas*feeData.gasPrice
+const resultFee = BigInt(estimateGas.toString())*BigInt(feeData.gasPrice!.toString())
 
 //You can get the current estimateGas from any write function by specifying `true` in the last parameter
 //Another example
 const estimateGas = await decimalEVM.approveToken(tokenAddress, spender, amount, getEstimateGas)
 const feeData = await decimalEVM.getFeeData()
-const resultFeeForApproveToken = estimateGas*feeData.gasPrice
+const resultFeeForApproveToken = BigInt(estimateGas.toString())*BigInt(feeData.gasPrice!.toString())
 ```
 
 ## Multicall
