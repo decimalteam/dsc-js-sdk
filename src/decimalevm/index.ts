@@ -18,6 +18,16 @@ import IPFS from "./ipfs";
 import {
 	abi as multiCallAbi
 } from "./abi/Multicall.json";
+import {
+  buildContractCall,
+  buildSafeTransaction,
+  executeTx,
+  executeTxWithSigners,
+  MetaTransaction,
+  safeApproveHash,
+  SafeSignature,
+  SafeTransaction
+} from "./multisig/execution";
 
 export default class DecimalEVM {
 
@@ -37,6 +47,13 @@ export default class DecimalEVM {
   };
 
   private isNotConnected = new Error('DecimalEVM is not connected');
+
+  public multisig = {
+    buildTxSendDEL: this.buildMultiSigTxSendDEL.bind(this),
+    signTx: this.signMultiSigTx.bind(this),
+    executeTx: this.executeMultiSigTx.bind(this),
+  };
+  
 
   public constructor(
       wallet: Wallet,
@@ -69,6 +86,7 @@ export default class DecimalEVM {
 			delegationNft,
       masterValidator,
       contractMulticall,
+      contractMultiSend,
 		] = await Promise.all([
 			this.initFromImplementation(contracts, 'contract-center'),
 			this.initFromImplementation(contracts, 'token-center'),
@@ -77,6 +95,7 @@ export default class DecimalEVM {
       this.initFromImplementation(contracts, 'delegation-nft'),
 			this.initFromImplementation(contracts, 'master-validator'),
       this.getContract(getMultiCallAddresses(this.network), multiCallAbi),
+      this.getContract(getMultiCallAddresses(this.network), multiCallAbi), //TODO edit to multiSend for multisig
 		])
 
     const [
@@ -115,7 +134,8 @@ export default class DecimalEVM {
       nftCenter,
       delegationNft,
       masterValidator,
-      contractMulticall
+      contractMulticall,
+      contractMultiSend
     )
   }
 
@@ -511,6 +531,23 @@ export default class DecimalEVM {
     if (!this.call) throw this.isNotConnected;
     return await this.call.unpauseValidator(validator, estimateGas)
   }
+  
+  public async buildMultiSigTxSendDEL(address: string, amount: string | number | bigint): Promise<SafeTransaction> {
+    if (!this.call) throw this.isNotConnected;
+    return buildSafeTransaction({ to: address, value: amount, nonce: 0 });
+  }
+
+  public async signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
+    if (!this.call) throw this.isNotConnected;
+    return await this.call.signMultiSigTx(safeAddress, safeTx);
+  }
+
+  public async executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) {
+    if (!this.call) throw this.isNotConnected;
+    const safe = new ethers.Contract(safeAddress, []) //TODO add abi
+    return await this.call.executeMultiSigTx(safeTx, signatures, safe) 
+  }
+
 
   // view function
 

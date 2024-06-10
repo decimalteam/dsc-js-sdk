@@ -6,6 +6,19 @@ import {
     NETWORKS,
 } from "../endpoints";
 
+import {
+    buildContractCall,
+    buildSafeTransaction,
+    executeTx,
+    executeTxWithSigners,
+    MetaTransaction,
+    safeApproveHash,
+    SafeSignature,
+    safeSignTypedData,
+    SafeTransaction
+} from "./multisig/execution";
+import { buildMultiSendSafeTx } from "./multisig/multisend";
+
 export enum TypeNFT {
     ERC721,
     ERC1155,
@@ -58,6 +71,7 @@ export default class Call {
     private readonly delegationNft: DecimalContractEVM;
     private readonly masterValidator: DecimalContractEVM;
     private readonly multiCall: DecimalContractEVM;
+    private readonly multiSend: DecimalContractEVM;
 
     public constructor(
         network: NETWORKS,
@@ -70,6 +84,7 @@ export default class Call {
         delegationNft: DecimalContractEVM,
         masterValidator: DecimalContractEVM,
         multiCall: DecimalContractEVM,
+        multiSend: DecimalContractEVM, //for multisig
     ) {
         this.network = network
         this.provider = provider;
@@ -81,6 +96,7 @@ export default class Call {
         this.delegationNft = delegationNft;
         this.masterValidator = masterValidator;
         this.multiCall = multiCall;
+        this.multiSend = multiSend;
     }
 
     private async txOptions(options?:any | undefined) {
@@ -846,6 +862,17 @@ export default class Call {
         );
 
         return ethers.utils.splitSignature(signature);
+    }
+
+    //multisig
+    public async buildMultiSigTx(txs: MetaTransaction[], safe: ethers.Contract): Promise<SafeTransaction> {
+        return await buildMultiSendSafeTx(this.multiSend.contract, txs, await safe.nonce());
+    }
+    public async signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
+        return safeSignTypedData(this.account, safeAddress, safeTx)
+    }
+    public async executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract) {
+        await executeTx(safe, safeTx, signatures);
     }
 
 }
