@@ -3,6 +3,7 @@ import DecimalContractEVM from "./contract";
 import { Stake } from "./interfaces/delegation";
 import { ValidatorStatus } from "./interfaces/validator";
 import { NETWORKS } from "../endpoints";
+import { MetaTransaction, SafeSignature, SafeTransaction } from "./multisig/execution";
 export declare enum TypeNFT {
     ERC721 = 0,
     ERC1155 = 1
@@ -47,7 +48,8 @@ export default class Call {
     private readonly delegationNft;
     private readonly masterValidator;
     private readonly multiCall;
-    constructor(network: NETWORKS, provider: ethers.providers.JsonRpcProvider, account: HDNodeWallet, contractCenter: DecimalContractEVM, tokenCenter: DecimalContractEVM, delegation: DecimalContractEVM, nftCenter: DecimalContractEVM, delegationNft: DecimalContractEVM, masterValidator: DecimalContractEVM, multiCall: DecimalContractEVM);
+    private readonly multiSend;
+    constructor(network: NETWORKS, provider: ethers.providers.JsonRpcProvider, account: HDNodeWallet, contractCenter: DecimalContractEVM, tokenCenter: DecimalContractEVM, delegation: DecimalContractEVM, nftCenter: DecimalContractEVM, delegationNft: DecimalContractEVM, masterValidator: DecimalContractEVM, multiCall: DecimalContractEVM, multiSend: DecimalContractEVM);
     private txOptions;
     private parseLog;
     multicall(calls: {
@@ -236,4 +238,7 @@ export default class Call {
     getDecimalContract(contract: string): ethers.Contract;
     getSignPermitERC721(contract: ethers.Contract, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature>;
     getSignPermitERC1155(contract: ethers.Contract, spender: string): Promise<ethers.Signature>;
+    buildMultiSigTx(txs: MetaTransaction[], safe: ethers.Contract): Promise<SafeTransaction>;
+    signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature>;
+    executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract): Promise<void>;
 }

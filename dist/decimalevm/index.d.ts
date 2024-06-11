@@ -6,6 +6,7 @@ import DecimalContractEVM from "./contract";
 import { TypeNFT, Token, NFTCollection, ValidotorStake } from "./call";
 import { TokenType } from "./interfaces/delegation";
 import { ValidatorMeta, ValidatorStatus } from "./interfaces/validator";
+import { SafeSignature, SafeTransaction } from "./multisig/execution";
 export default class DecimalEVM {
     private readonly network;
     private readonly wallet;
@@ -18,6 +19,11 @@ export default class DecimalEVM {
     private contarcts;
     private abis?;
     private isNotConnected;
+    multisig: {
+        buildTxSendDEL: (address: string, amount: string | number | bigint) => Promise<SafeTransaction>;
+        signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
+        executeTx: (safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) => Promise<void>;
+    };
     constructor(wallet: Wallet, network: NETWORKS);
     private getContract;
     connect(): Promise<void>;
@@ -160,6 +166,9 @@ export default class DecimalEVM {
     removeValidator(validator: string, estimateGas?: boolean): Promise<any>;
     pauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
     unpauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
+    buildMultiSigTxSendDEL(address: string, amount: string | number | bigint): Promise<SafeTransaction>;
+    signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature>;
+    executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string): Promise<void>;
     getBalance(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
     getNftType(address: string): Promise<TypeNFT>;
     getNftTypeFromContract(address: string): Promise<TypeNFT>;

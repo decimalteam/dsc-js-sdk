@@ -91,7 +91,17 @@ export default class Queries {
                 token {
                     address
                     symbol
+                    name
+                    decimals
+                    crr
+                    totalSupply
+                    maxTotalSupply
+                    minTotalSupply
                     identity
+                    reserve
+                    currentPrice
+                    owner
+                    tokenType
                 }
             }
         }`)
