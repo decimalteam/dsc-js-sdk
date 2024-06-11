@@ -362,7 +362,7 @@ await decimalEVM.delegateDEL(validator, amount)
 ### Delegation Token (approve Token)
 ```js
 const amount = decimalEVM.parseEther(1) //1 token
-const delegationAddress = decimalEVM.getDecimalContractAddress('delegation')
+const delegationAddress = await decimalEVM.getDecimalContractAddress('delegation')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
 await decimalEVM.approveToken(tokenAddress, delegationAddress, amount)
@@ -372,7 +372,7 @@ await decimalEVM.delegateToken(validator, tokenAddress, amount)
 ### Delegation Token (permit Token)
 ```js
 const amount = decimalEVM.parseEther(1) //1 token
-const delegationAddress  = decimalEVM.getDecimalContractAddress('delegation')
+const delegationAddress  = await decimalEVM.getDecimalContractAddress('delegation')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
 const sign = await decimalEVM.getSignPermitToken(tokenAddress, delegationAddress, amount)
@@ -450,7 +450,7 @@ if (stakesFrozenFiltered.length > 0) {
 ### Delegation NFT (approve NFT)
 ```js
 const tokenId = 0 // tokenId of NFT
-const delegationNftAddress = decimalEVM.getDecimalContractAddress('delegation-nft')
+const delegationNftAddress = await decimalEVM.getDecimalContractAddress('delegation-nft')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
 //delegate ERC721
@@ -466,7 +466,7 @@ await decimalEVM.delegateERC721(validator, nftCollectionAddress, tokenId)
 ### Delegation NFT (permit NFT)
 ```js
 const tokenId = 0 // tokenId of NFT
-const delegationNftAddress = decimalEVM.getDecimalContractAddress('delegation-nft')
+const delegationNftAddress = await decimalEVM.getDecimalContractAddress('delegation-nft')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
 //delegate ERC721
@@ -1379,7 +1379,7 @@ const newToken: any = {
 }
 const reserve = decimalEVM.parseEther(1250);
 
-const contractAddress = decimalEVM.getDecimalContractAddress('token-center')
+const contractAddress = await decimalEVM.getDecimalContractAddress('token-center')
 
 const contract = await decimalEVM.connectToContract(contractAddress, tokenCenterAbi)
 
