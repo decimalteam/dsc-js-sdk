@@ -67,7 +67,7 @@ describe('Tokens', () => {
 
 
         const recipient = decimalWallet.evmAddress!
-        const tokenCenterAddress = decimalEVM.getDecimalContractAddress('token-center')
+        const tokenCenterAddress = await decimalEVM.getDecimalContractAddress('token-center')
 
         const amountOut = decimalEVM.parseEther(100); // tokens 
         const amountDel = await decimalEVM.calculateBuyInput(resultToken1.tokenAddress, amountOut) // the amount of DEL to buy 100 tokens

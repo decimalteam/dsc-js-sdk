@@ -41,7 +41,7 @@ describe('Delegation NFT', () => {
             const resultERC1155 = await decimalEVM.mintNFTWithDELReserve(resultCollection1155.nftCollectionAddress, owner, tokenURI, reserveFor1155, tokenId1155, amount) //ERC1155
             
 
-            const delegationNftAddress = decimalEVM.getDecimalContractAddress('delegation-nft')
+            const delegationNftAddress = await decimalEVM.getDecimalContractAddress('delegation-nft')
             //delegate erc721
             await decimalEVM.approveNFT721(resultCollection721.nftCollectionAddress, delegationNftAddress, resultERC721.tokenId) //ERC721
             await decimalEVM.delegateERC721(Validator, resultCollection721.nftCollectionAddress, resultERC721.tokenId) //ERC721
@@ -87,7 +87,7 @@ describe('Delegation NFT', () => {
             const reserveFor1155 = decimalEVM.parseEther(1*amount); // =20 del
             const resultERC1155 = await decimalEVM.mintNFTWithDELReserve(resultCollection1155.nftCollectionAddress, owner, tokenURI, reserveFor1155, tokenId1155, amount) //ERC1155
             
-            const delegationNftAddress  = decimalEVM.getDecimalContractAddress('delegation-nft')
+            const delegationNftAddress  = await decimalEVM.getDecimalContractAddress('delegation-nft')
             //delegate erc721
             const signERC721 = await decimalEVM.getSignPermitERC721(resultCollection721.nftCollectionAddress, delegationNftAddress, resultERC721.tokenId)
             await decimalEVM.delegateERC721(Validator, resultCollection721.nftCollectionAddress, resultERC721.tokenId, signERC721) //ERC721

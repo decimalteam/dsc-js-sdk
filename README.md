@@ -21,7 +21,21 @@ const decimalWallet = new Wallet(mnemonic);
 //DecimalNetworks.testnet - is testnet
 //DecimalNetworks.mainnet - is mainnet
 const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
-await decimalEVM.connect();
+
+//To work with Decimal contracts, they need to be initialized
+//You can initialize all contracts at once, or individually
+//If you forgot to initialize the contact before using the function, it will be initialized automatically during the execution of the function
+//To speed up the sdk, we recommend doing this in advance
+await decimalEVM.connect(); // initializes all contacts
+
+await decimalEVM.connect('contract-center') // initializes only contract-center contact
+await decimalEVM.connect('token-center') // initializes only token-center contact
+await decimalEVM.connect('nft-center') // initializes only nft-center contact
+await decimalEVM.connect('delegation') // initializes only delegation contact (delegation token)
+await decimalEVM.connect('delegation-nft') // initializes only delegation-nft contact (delegation nft)
+await decimalEVM.connect('master-validator') // initializes only master-validator contact (master node)
+await decimalEVM.connect('multi-call') // initializes only multi-call contact (multi send)
+await decimalEVM.connect('multi-sign') // initializes only multi-sign contact
 ```
 
 ## DEL
@@ -362,7 +376,7 @@ await decimalEVM.delegateDEL(validator, amount)
 ### Delegation Token (approve Token)
 ```js
 const amount = decimalEVM.parseEther(1) //1 token
-const delegationAddress = decimalEVM.getDecimalContractAddress('delegation')
+const delegationAddress = await decimalEVM.getDecimalContractAddress('delegation')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
 await decimalEVM.approveToken(tokenAddress, delegationAddress, amount)
@@ -372,7 +386,7 @@ await decimalEVM.delegateToken(validator, tokenAddress, amount)
 ### Delegation Token (permit Token)
 ```js
 const amount = decimalEVM.parseEther(1) //1 token
-const delegationAddress  = decimalEVM.getDecimalContractAddress('delegation')
+const delegationAddress  = await decimalEVM.getDecimalContractAddress('delegation')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
 const sign = await decimalEVM.getSignPermitToken(tokenAddress, delegationAddress, amount)
@@ -450,7 +464,7 @@ if (stakesFrozenFiltered.length > 0) {
 ### Delegation NFT (approve NFT)
 ```js
 const tokenId = 0 // tokenId of NFT
-const delegationNftAddress = decimalEVM.getDecimalContractAddress('delegation-nft')
+const delegationNftAddress = await decimalEVM.getDecimalContractAddress('delegation-nft')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
 //delegate ERC721
@@ -466,7 +480,7 @@ await decimalEVM.delegateERC721(validator, nftCollectionAddress, tokenId)
 ### Delegation NFT (permit NFT)
 ```js
 const tokenId = 0 // tokenId of NFT
-const delegationNftAddress = decimalEVM.getDecimalContractAddress('delegation-nft')
+const delegationNftAddress = await decimalEVM.getDecimalContractAddress('delegation-nft')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
 //delegate ERC721
@@ -606,6 +620,36 @@ const resultFeeForApproveToken = BigInt(estimateGas.toString())*BigInt(feeData.g
 ```
 
 ## Multicall
+
+### Multi send Token
+```js
+//Form an array of multi send token
+//token - the address of the token contract
+//to - recipient address
+//amount - amount of transfer
+const tokenAddress1 = "0xe1E885a848DC0c0867E119E7e80289f98e27256C"
+const tokenAddress2 = "0x1f68CaD1e55049793F6c9229EAD50f1c651fEb10"
+let data: any = []
+data.push({
+    token: tokenAddress1,
+    to: "0x0000000000000000000000000000000000000001",
+    amount: decimalEVM.parseEther(1)
+})
+data.push({
+    token: tokenAddress1,
+    to: "0x0000000000000000000000000000000000000002",
+    amount: decimalEVM.parseEther(1)
+})
+data.push({
+    token: tokenAddress2,
+    to: "0x0000000000000000000000000000000000000003",
+    amount: decimalEVM.parseEther(1)
+})
+
+const tx = await decimalEVM.multiSendToken(data)
+```
+
+## Сustom multi call
 ```js
 //Form an array of calls
 //target - the address of the target contract for the call
@@ -1379,7 +1423,7 @@ const newToken: any = {
 }
 const reserve = decimalEVM.parseEther(1250);
 
-const contractAddress = decimalEVM.getDecimalContractAddress('token-center')
+const contractAddress = await decimalEVM.getDecimalContractAddress('token-center')
 
 const contract = await decimalEVM.connectToContract(contractAddress, tokenCenterAbi)
 

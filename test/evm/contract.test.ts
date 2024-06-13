@@ -75,7 +75,7 @@ describe('Contract', () => {
             }
             const reserve = decimalEVM.parseEther(1250);
 
-            const contractAddress = decimalEVM.getDecimalContractAddress('token-center')
+            const contractAddress = await decimalEVM.getDecimalContractAddress('token-center')
 
             const contract = await decimalEVM.connectToContract(contractAddress, tokenCenterAbi)
 
@@ -125,7 +125,7 @@ describe('Contract', () => {
             }
             const reserve = decimalEVM.parseEther(1250);
 
-            const contractAddress = decimalEVM.getDecimalContractAddress('token-center')
+            const contractAddress = await decimalEVM.getDecimalContractAddress('token-center')
 
             const contract = await decimalEVM.connectToContract(contractAddress, tokenCenterAbi)
 

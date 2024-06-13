@@ -49,7 +49,7 @@ describe('Delegation', () => {
             const {tokenAddress} = await decimalEVM.createToken(newToken, reserve)
             //delegate
             const amount = decimalEVM.parseEther(1) //1 token
-            const delegationAddress = decimalEVM.getDecimalContractAddress('delegation')
+            const delegationAddress = await decimalEVM.getDecimalContractAddress('delegation')
 
             await decimalEVM.approveToken(tokenAddress, delegationAddress, amount)
             await decimalEVM.delegateToken(Validator, tokenAddress, amount)
@@ -86,7 +86,7 @@ describe('Delegation', () => {
 
             const owner = decimalWallet.evmAddress!
 
-            const delegationAddress  = decimalEVM.getDecimalContractAddress('delegation')
+            const delegationAddress  = await decimalEVM.getDecimalContractAddress('delegation')
             const sign = await decimalEVM.getSignPermitToken(tokenAddress, delegationAddress, amount)
             await decimalEVM.delegateToken(Validator, tokenAddress, amount, sign)
             console.log(`successfully delegateToken`)
