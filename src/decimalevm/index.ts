@@ -88,7 +88,18 @@ export default class DecimalEVM {
         this.account
       )
     }
-    if (contractName) await this.checkConnect(contractName)
+    if (contractName) {
+      await this.checkConnect(contractName)
+    } else {
+      await this.checkConnect('contract-center')
+      await this.checkConnect('token-center')
+      await this.checkConnect('nft-center')
+      await this.checkConnect('delegation')
+      await this.checkConnect('delegation-nft')
+      await this.checkConnect('master-validator')
+      await this.checkConnect('multi-call')
+      await this.checkConnect('multi-sign')
+    }
   }
   
   private async checkConnect(contractName: string = '') {
