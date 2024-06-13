@@ -14,31 +14,37 @@ export default class DecimalEVM {
     private readonly subgraph;
     private readonly ipfs;
     private call?;
+    private contractAddesses?;
     provider: ethers.providers.JsonRpcProvider;
     account: HDNodeWallet;
     private contarcts;
-    private abis?;
-    private isNotConnected;
+    private abis;
     multisig: {
         buildTxSendDEL: (address: string, amount: string | number | bigint) => Promise<SafeTransaction>;
         signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
-        executeTx: (safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) => Promise<void>;
+        executeTx: (safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) => Promise<any>;
     };
     constructor(wallet: Wallet, network: NETWORKS);
     private getContract;
-    connect(): Promise<void>;
+    connect(contractName?: string): Promise<void>;
+    private checkConnect;
     private initFromImplementation;
-    multiCall(callDatas: {
+    multiCall(callData: {
         target: string;
         iface: string;
         params: any;
+    }[], estimateGas?: boolean): Promise<any>;
+    multiSendToken(multiData: {
+        token: string;
+        to: string;
+        amount: any;
     }[], estimateGas?: boolean): Promise<any>;
     sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{
         tx: null;
         tokenAddress: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         tokenAddress: any;
@@ -58,7 +64,7 @@ export default class DecimalEVM {
     createCollectionERC721(payload: NFTCollection, estimateGas?: boolean): Promise<{
         tx: null;
         nftCollectionAddress: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         nftCollectionAddress: any;
@@ -67,7 +73,7 @@ export default class DecimalEVM {
     createCollectionERC1155(payload: NFTCollection, estimateGas?: boolean): Promise<{
         tx: null;
         nftCollectionAddress: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         nftCollectionAddress: any;
@@ -97,7 +103,7 @@ export default class DecimalEVM {
     addTokenReserveNFT(nftCollectionAddress: string, tokenId: string | number | bigint, amountReserve: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferNFT(nftCollectionAddress: string, from: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     transferBatchNFT1155(nftCollectionAddress: string, from: string, to: string, tokenIds: string[] | number[], amounts: string[] | number[], estimateGas?: boolean): Promise<any>;
-    disableMintNFT(nftCollectionAddress: string, estimateGas?: boolean): Promise<void>;
+    disableMintNFT(nftCollectionAddress: string, estimateGas?: boolean): Promise<any>;
     burnNFT(nftCollectionAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     setBaseURINFT(nftCollectionAddress: string, baseURI: string, estimateGas?: boolean): Promise<any>;
     setTokenURINFT(nftCollectionAddress: string, tokenId: string | number | bigint, tokenURI: string, estimateGas?: boolean): Promise<any>;
@@ -108,7 +114,7 @@ export default class DecimalEVM {
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
         tx: null;
         error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         error: null;
@@ -121,7 +127,7 @@ export default class DecimalEVM {
     applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
         tx: null;
         error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         error: null;
@@ -134,7 +140,7 @@ export default class DecimalEVM {
     completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<{
         tx: null;
         error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         error: null;
@@ -151,7 +157,7 @@ export default class DecimalEVM {
     completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<{
         tx: null;
         error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         error: null;
@@ -166,9 +172,9 @@ export default class DecimalEVM {
     removeValidator(validator: string, estimateGas?: boolean): Promise<any>;
     pauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
     unpauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
-    buildMultiSigTxSendDEL(address: string, amount: string | number | bigint): Promise<SafeTransaction>;
-    signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature>;
-    executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string): Promise<void>;
+    private buildMultiSigTxSendDEL;
+    private signMultiSigTx;
+    private executeMultiSigTx;
     getBalance(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
     getNftType(address: string): Promise<TypeNFT>;
     getNftTypeFromContract(address: string): Promise<TypeNFT>;
@@ -224,8 +230,8 @@ export default class DecimalEVM {
     formatEther(amount: string | number | bigint | BigNumberish): string;
     getAddress(address: string): string;
     private getNFTContract;
-    getDecimalContractAddress(contract: string): string;
-    getDecimalContract(contract: string): ethers.Contract;
+    getDecimalContractAddress(contract: string): Promise<string>;
+    getDecimalContract(contract: string): Promise<ethers.Contract>;
     getLatestBlock(): Promise<ethers.providers.Block>;
     getTokenTypes(): typeof TokenType;
     connectToContract(address: string, abi?: ethers.ContractInterface): Promise<DecimalContractEVM>;

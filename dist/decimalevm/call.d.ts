@@ -41,15 +41,16 @@ export default class Call {
     private readonly network;
     private readonly provider;
     private readonly account;
-    private readonly contractCenter;
-    private readonly tokenCenter;
-    private readonly delegation;
-    private readonly nftCenter;
-    private readonly delegationNft;
-    private readonly masterValidator;
-    private readonly multiCall;
-    private readonly multiSend;
-    constructor(network: NETWORKS, provider: ethers.providers.JsonRpcProvider, account: HDNodeWallet, contractCenter: DecimalContractEVM, tokenCenter: DecimalContractEVM, delegation: DecimalContractEVM, nftCenter: DecimalContractEVM, delegationNft: DecimalContractEVM, masterValidator: DecimalContractEVM, multiCall: DecimalContractEVM, multiSend: DecimalContractEVM);
+    contractCenter?: DecimalContractEVM;
+    tokenCenter?: DecimalContractEVM;
+    delegation?: DecimalContractEVM;
+    nftCenter?: DecimalContractEVM;
+    delegationNft?: DecimalContractEVM;
+    masterValidator?: DecimalContractEVM;
+    multiCall?: DecimalContractEVM;
+    multiSend?: DecimalContractEVM;
+    constructor(network: NETWORKS, provider: ethers.providers.JsonRpcProvider, account: HDNodeWallet);
+    setDecimalContractEVM(decimalContractEVM: DecimalContractEVM, name: string): void;
     private txOptions;
     private parseLog;
     multicall(calls: {
@@ -59,7 +60,7 @@ export default class Call {
     createToken(token: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{
         tx: null;
         tokenAddress: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         tokenAddress: any;
@@ -83,7 +84,7 @@ export default class Call {
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
         tx: null;
         error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         error: null;
@@ -96,7 +97,7 @@ export default class Call {
     applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
         tx: null;
         error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         error: null;
@@ -109,7 +110,7 @@ export default class Call {
     completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<{
         tx: null;
         error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         error: null;
@@ -122,7 +123,7 @@ export default class Call {
     createCollection(nft: NFTCollection, typeNFT: TypeNFT, estimateGas?: boolean): Promise<{
         tx: null;
         nftCollectionAddress: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         nftCollectionAddress: any;
@@ -172,7 +173,7 @@ export default class Call {
     completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<{
         tx: null;
         error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
+        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
     } | {
         tx: any;
         error: null;
@@ -234,11 +235,10 @@ export default class Call {
     getValidatorStatus(validator: string): Promise<ValidatorStatus>;
     validatorIsActive(validator: string): Promise<any>;
     validatorIsMember(validator: string): Promise<any>;
-    getDecimalContractAddress(contract: string): string;
-    getDecimalContract(contract: string): ethers.Contract;
+    getDecimalContract(contractName: string, address?: boolean): string | ethers.Contract;
     getSignPermitERC721(contract: ethers.Contract, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature>;
     getSignPermitERC1155(contract: ethers.Contract, spender: string): Promise<ethers.Signature>;
     buildMultiSigTx(txs: MetaTransaction[], safe: ethers.Contract): Promise<SafeTransaction>;
     signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature>;
-    executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract): Promise<void>;
+    executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract): Promise<any>;
 }
