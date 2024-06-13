@@ -78,16 +78,19 @@ export default class DecimalEVM {
     return this.contarcts[address]
   }
 
-  public async connect() {
-    this.contractAddesses = await this.subgraph.getDecimalContracts()
+  public async connect(contractName?: string) {
+    if (!this.call) {
+      this.contractAddesses = await this.subgraph.getDecimalContracts()
 
-    this.call = new Call(
-      this.network,
-      this.provider,
-      this.account
-    )
+      this.call = new Call(
+        this.network,
+        this.provider,
+        this.account
+      )
+    }
+    if (contractName) await this.checkConnect(contractName)
   }
-
+  
   private async checkConnect(contractName: string = '') {
     if (!this.call) throw new Error('DecimalEVM is not connected');
     if (!!contractName) {
@@ -158,9 +161,9 @@ export default class DecimalEVM {
             const multiSend = await this.getContract(getMultiCallAddresses(this.network), multiCallAbi);  //TODO edit to multiSend for multisig
             this.call.setDecimalContractEVM(multiSend, 'multiSend')
           }
-        break;
+          break;
         default:
-          throw new Error(`Unknown contract pack name`);
+          throw new Error(`Unknown contract pack name '${contractName}'`);
       }
     }
   }
@@ -173,30 +176,68 @@ export default class DecimalEVM {
   }
 
   // write function
-  public async multiCall(callDatas: {
+  public async multiCall(callData: {
     target: string;
     iface: string;
     params: any;
   }[], estimateGas?: boolean) {
-    await this.checkConnect('multiCall')
+    await this.checkConnect('multi-call')
     let calls: {
       target: string;
       callData: string;
     }[] = [];
-    for (let i = 0; i < callDatas.length; i++) {
-      if (callDatas[i].target.length != callDatas[i].iface.length) throw Error('Number of length does not match targets and ifaces');
-      const iFace = new ethers.utils.Interface([callDatas[i].iface]);
-      const data = iFace.encodeFunctionData(iFace.functions[Object.keys(iFace.functions)[0]].name, callDatas[i].params)
+    for (let i = 0; i < callData.length; i++) {
+
+      const iFace = new ethers.utils.Interface([callData[i].iface]);
+      const func = iFace.functions[Object.keys(iFace.functions)[0]]
+      if (callData[i].params.length != Object.keys(func.inputs).length) throw Error('Number of length does not match targets and ifaces');
+      const data = iFace.encodeFunctionData(func.name, callData[i].params)
       calls.push({
-        target: callDatas[i].target,
+        target: callData[i].target,
         callData: data
       })
     }
     return await this.call!.multicall(calls, estimateGas)
   }
 
+  public async multiSendToken(multiData: {
+    token: string;
+    to: string;
+    amount: any;
+  }[], estimateGas?: boolean) {
+    const owner = this.account.address
+    const spender = await this.getDecimalContractAddress('multi-call')
+    let amountSum: {[token:string]: ethers.BigNumber} = {}
+    const callDatas: any[] = []
+    for (let i = 0; i < multiData.length; i++) {
+      const tokenAddress = multiData[i].token;
+      if (!amountSum[tokenAddress]) amountSum[tokenAddress] = ethers.BigNumber.from(0);
+      amountSum[tokenAddress] = amountSum[tokenAddress].add(ethers.BigNumber.from(multiData[i].amount))
+    }
+    for (const tokenAddress of Object.keys(amountSum)) {
+      const sign = await this.getSignPermitToken(tokenAddress, spender, amountSum[tokenAddress].toString())
+      const deadline = ethers.constants.MaxUint256
+      callDatas.push({
+        target: tokenAddress,
+        iface: "function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)",
+        params: [owner, spender, amountSum[tokenAddress], deadline, sign?.v, sign?.r, sign?.s ]
+      })
+    }
+    for (let i = 0; i < multiData.length; i++) {
+      const tokenAddress = multiData[i].token
+      const to = multiData[i].to
+      const amount = multiData[i].amount
+      callDatas.push(      {
+        target: tokenAddress,
+        iface: "function transferFrom(address from, address to, uint256 value)",
+        params: [owner, to, amount]
+      })
+    }
+    console.log(callDatas)
+    return await this.multiCall(callDatas, estimateGas)
+  }
+
   public async sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean) {
-    await this.checkConnect();
     if (estimateGas) {
       return await this.account.estimateGas({
         to: address,
@@ -210,7 +251,6 @@ export default class DecimalEVM {
   }
 
   public async burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean) {
-    await this.checkConnect();
     return this.sendDEL(ethers.constants.AddressZero, amount, estimateGas)
   }
 
@@ -559,17 +599,17 @@ export default class DecimalEVM {
   }
   
   private async buildMultiSigTxSendDEL(address: string, amount: string | number | bigint): Promise<SafeTransaction> {
-    await this.checkConnect('multiSend');
+    await this.checkConnect('multi-sign');
     return buildSafeTransaction({ to: address, value: amount, nonce: 0 });
   }
 
   private async signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
-    await this.checkConnect('multiSend');
+    await this.checkConnect('multi-sign');
     return await this.call!.signMultiSigTx(safeAddress, safeTx);
   }
 
   private async executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) {
-    await this.checkConnect('multiSend');
+    await this.checkConnect('multi-sign');
     const safe = new ethers.Contract(safeAddress, []) //TODO add abi
     return await this.call!.executeMultiSigTx(safeTx, signatures, safe) 
   }
@@ -578,12 +618,10 @@ export default class DecimalEVM {
   // view function
 
   public async getBalance(address: string) {
-    await this.checkConnect();
     return await this.provider.getBalance(address)
   }
 
   public async getNftType(address: string): Promise<TypeNFT> {
-    await this.checkConnect();
     const type = await this.subgraph.getNftCollectionType(address)
     if (type == null) throw new Error("The nft collection does not exist")
     let typeNFT: TypeNFT = TypeNFT[type as keyof typeof TypeNFT]
@@ -868,16 +906,15 @@ export default class DecimalEVM {
 
   public async getDecimalContractAddress(contract: string): Promise<string> {
     await this.checkConnect(contract);
-    return this.call!.getDecimalContractAddress(contract).toString()
+    return <string>this.call!.getDecimalContract(contract, true).toString()
   }
 
   public async getDecimalContract(contract: string): Promise<ethers.Contract> {
     await this.checkConnect(contract);
-    return this.call!.getDecimalContract(contract)
+    return <ethers.Contract>this.call!.getDecimalContract(contract)
   }
 
   public async getLatestBlock() {
-    await this.checkConnect();
     const block = await this.provider.getBlock('latest')
     if (block == null) throw new Error("try again")
     return block;

@@ -766,44 +766,24 @@ export default class Call {
     }
     
     //othres
-    public getDecimalContractAddress(contract: string) {
-        switch (contract) {
+    public getDecimalContract(contractName: string, address?: boolean): string | ethers.Contract {
+        switch (contractName) {
             case "contract-center":
-                return this.contractCenter!.contract.address
+                return address ? this.contractCenter!.contract.address : this.contractCenter!.contract
             case "token-center":
-                return this.tokenCenter!.contract.address
+                return address ? this.tokenCenter!.contract.address : this.tokenCenter!.contract
             case "nft-center":
-                return this.nftCenter!.contract.address
+                return address ? this.nftCenter!.contract.address : this.nftCenter!.contract
             case "delegation":
-                return this.delegation!.contract.address
+                return address ? this.delegation!.contract.address : this.delegation!.contract
             case "delegation-nft":
-                return this.delegationNft!.contract.address
+                return address ? this.delegationNft!.contract.address : this.delegationNft!.contract
             case "master-validator":
-                return this.masterValidator!.contract.address
-            default:
-                throw new Error(`There is no such contract in the Decimal`)
-        }
-    }
-
-    public getDecimalContract(contract: string) {
-        switch (contract) {
-            case "contract-center":
-                return this.contractCenter!.contract
-            case "token-center":
-                return this.tokenCenter!.contract
-            case "nft-center":
-                return this.nftCenter!.contract
-            case "delegation":
-                return this.delegation!.contract
-            case "delegation-nft":
-                return this.delegationNft!.contract
-            case "master-validator":
-                return this.masterValidator!.contract
+                return address ? this.masterValidator!.contract.address : this.masterValidator!.contract
             case "multi-call":
-                return this.multiCall!.contract
+                return address ? this.multiCall!.contract.address : this.multiCall!.contract
             case "multi-sign":
-                return this.multiSend!.contract
-                
+                return address ? this.multiSend!.contract.address : this.multiSend!.contract
             default:
                 throw new Error(`There is no such contract in the Decimal`)
         }
@@ -883,7 +863,7 @@ export default class Call {
 
         return ethers.utils.splitSignature(signature);
     }
-
+ 
     //multisig
     public async buildMultiSigTx(txs: MetaTransaction[], safe: ethers.Contract): Promise<SafeTransaction> {
         return await buildMultiSendSafeTx(this.multiSend!.contract, txs, await safe.nonce());

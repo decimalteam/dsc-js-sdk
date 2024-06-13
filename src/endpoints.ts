@@ -111,8 +111,8 @@ const ipfsEndpoints = { //TODO?
   [NETWORKS.MAINNET]: "https://testnet-nft-ipfs.decimalchain.com/",
 };
 
-const multicallAddresses = { //TODO
+const multicallAddresses = {
   [NETWORKS.DEVNET]: "0x6DA1B119532b971fa58c30A7568FA74d44f3aE72", 
-  [NETWORKS.TESTNET]: "",
+  [NETWORKS.TESTNET]: "0x6DA1B119532b971fa58c30A7568FA74d44f3aE72", //TODO
   [NETWORKS.MAINNET]: "0x949d1A0757803C51F2EfFFEb5472C861A898B8E8",
 };
