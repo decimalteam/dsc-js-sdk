@@ -102,81 +102,80 @@ export default class DecimalEVM {
     }
   }
   
-  private async checkConnect(contractName: string = '') {
+  private async checkConnect(contractName: string) {
     if (!this.call) throw new Error('DecimalEVM is not connected');
-    if (!!contractName) {
-      switch(contractName) {
-        case 'contract-center':
-          if (!this.call.contractCenter) {
-            const contractCenter = await this.initFromImplementation('contract-center');
-            this.call.setDecimalContractEVM(contractCenter, 'delegation')
-          }
-          break;
-        case 'token-center':
-          if (!this.call.tokenCenter) {
-            const tokenCenter = await this.initFromImplementation('token-center');
-            const tokenImplAddress = await tokenCenter.contract.implementation();
-            const tokenImpl = await this.getContract(tokenImplAddress);
-            this.abis.token = tokenImpl.abi;
-            this.call.setDecimalContractEVM(tokenCenter, 'tokenCenter')
-          }
-          break;
-        case 'nft-center':
-          if (!this.call.nftCenter) {
-            const nftCenter = await this.initFromImplementation('nft-center');
-            const [
-              erc721ImplAddress,
-              erc1155ImplAddress,
-            ] = await Promise.all([
-              nftCenter.contract.implementation(TypeNFT.ERC721),
-              nftCenter.contract.implementation(TypeNFT.ERC1155),
-            ])
-            const [
-              erc721Impl,
-              erc1155Impl,
-            ] = await Promise.all([
-              this.getContract(erc721ImplAddress),
-              this.getContract(erc1155ImplAddress),
-            ])
-            this.abis.erc721 = erc721Impl.abi;
-            this.abis.erc1155 = erc1155Impl.abi;
-            this.call.setDecimalContractEVM(nftCenter, 'nftCenter')
-          }
-          break;
-        case 'delegation':
-          if (!this.call.delegation) {
-            const delegation = await this.initFromImplementation('delegation');
-            this.call.setDecimalContractEVM(delegation, 'delegation')
-          }
-          break;
-        case 'delegation-nft':
-          if (!this.call.delegationNft) {
-            const delegationNft = await this.initFromImplementation('delegation-nft');
-            this.call.setDecimalContractEVM(delegationNft, 'delegation')
-          }
-          break;
-        case 'master-validator':
-          if (!this.call.masterValidator) {
-            const masterValidator = await this.initFromImplementation('master-validator');
-            this.call.setDecimalContractEVM(masterValidator, 'masterValidator')
-          }
-          break;
-        case 'multi-call':
-          if (!this.call.delegationNft) {
-            const multiCall = await this.getContract(getMultiCallAddresses(this.network), multiCallAbi);
-            this.call.setDecimalContractEVM(multiCall, 'multiCall')
-          }
-          break;
-        case 'multi-sign':
-          if (!this.call.delegationNft) {
-            const multiSend = await this.getContract(getMultiCallAddresses(this.network), multiCallAbi);  //TODO edit to multiSend for multisig
-            this.call.setDecimalContractEVM(multiSend, 'multiSend')
-          }
-          break;
-        default:
-          throw new Error(`Unknown contract pack name '${contractName}'`);
-      }
+    switch(contractName) {
+      case 'contract-center':
+        if (!this.call.contractCenter) {
+          const contractCenter = await this.initFromImplementation('contract-center');
+          this.call.setDecimalContractEVM(contractCenter, 'delegation')
+        }
+        break;
+      case 'token-center':
+        if (!this.call.tokenCenter) {
+          const tokenCenter = await this.initFromImplementation('token-center');
+          const tokenImplAddress = await tokenCenter.contract.implementation();
+          const tokenImpl = await this.getContract(tokenImplAddress);
+          this.abis.token = tokenImpl.abi;
+          this.call.setDecimalContractEVM(tokenCenter, 'tokenCenter')
+        }
+        break;
+      case 'nft-center':
+        if (!this.call.nftCenter) {
+          const nftCenter = await this.initFromImplementation('nft-center');
+          const [
+            erc721ImplAddress,
+            erc1155ImplAddress,
+          ] = await Promise.all([
+            nftCenter.contract.implementation(TypeNFT.ERC721),
+            nftCenter.contract.implementation(TypeNFT.ERC1155),
+          ])
+          const [
+            erc721Impl,
+            erc1155Impl,
+          ] = await Promise.all([
+            this.getContract(erc721ImplAddress),
+            this.getContract(erc1155ImplAddress),
+          ])
+          this.abis.erc721 = erc721Impl.abi;
+          this.abis.erc1155 = erc1155Impl.abi;
+          this.call.setDecimalContractEVM(nftCenter, 'nftCenter')
+        }
+        break;
+      case 'delegation':
+        if (!this.call.delegation) {
+          const delegation = await this.initFromImplementation('delegation');
+          this.call.setDecimalContractEVM(delegation, 'delegation')
+        }
+        break;
+      case 'delegation-nft':
+        if (!this.call.delegationNft) {
+          const delegationNft = await this.initFromImplementation('delegation-nft');
+          this.call.setDecimalContractEVM(delegationNft, 'delegation')
+        }
+        break;
+      case 'master-validator':
+        if (!this.call.masterValidator) {
+          const masterValidator = await this.initFromImplementation('master-validator');
+          this.call.setDecimalContractEVM(masterValidator, 'masterValidator')
+        }
+        break;
+      case 'multi-call':
+        if (!this.call.delegationNft) {
+          const multiCall = await this.getContract(getMultiCallAddresses(this.network), multiCallAbi);
+          this.call.setDecimalContractEVM(multiCall, 'multiCall')
+        }
+        break;
+      case 'multi-sign':
+        if (!this.call.delegationNft) {
+          const multiSend = await this.getContract(getMultiCallAddresses(this.network), multiCallAbi);  //TODO edit to multiSend for multisig
+          this.call.setDecimalContractEVM(multiSend, 'multiSend')
+        }
+        break;
+      default:
+        throw new Error(`Unknown contract pack name '${contractName}'`);
     }
+  
   }
 
   private async initFromImplementation( contractName: string) {
@@ -189,26 +188,36 @@ export default class DecimalEVM {
   // write function
   public async multiCall(callData: {
     target: string;
+    value: string | number | bigint | BigNumberish;
     iface: string;
     params: any;
   }[], estimateGas?: boolean) {
     await this.checkConnect('multi-call')
     let calls: {
       target: string;
+      value: string;
       callData: string;
     }[] = [];
+    let valueSum: ethers.BigNumber = ethers.BigNumber.from(0);
     for (let i = 0; i < callData.length; i++) {
-
-      const iFace = new ethers.utils.Interface([callData[i].iface]);
-      const func = iFace.functions[Object.keys(iFace.functions)[0]]
-      if (callData[i].params.length != Object.keys(func.inputs).length) throw Error('Number of length does not match targets and ifaces');
-      const data = iFace.encodeFunctionData(func.name, callData[i].params)
+      let data: string;
+      if (!!callData[i].iface) {
+        const iFace = new ethers.utils.Interface([callData[i].iface]);
+        const func = iFace.functions[Object.keys(iFace.functions)[0]]
+        if (callData[i].params.length != Object.keys(func.inputs).length) throw Error(`The length of 'params' does not match the length of 'iface'`);
+        data = iFace.encodeFunctionData(func.name, callData[i].params)
+      } else {
+        if (callData[i].params.length != 0) throw Error(`The length of 'params' does not match the length of 'iface'`);
+        data = "0x";
+      }
       calls.push({
         target: callData[i].target,
+        value: callData[i].value.toString(),
         callData: data
       })
+      valueSum = valueSum.add(ethers.BigNumber.from(callData[i].value))
     }
-    return await this.call!.multicall(calls, estimateGas)
+    return await this.call!.multicall(valueSum.toString(), calls, estimateGas)
   }
 
   public async multiSendToken(multiData: {
@@ -219,9 +228,15 @@ export default class DecimalEVM {
     const owner = this.account.address
     const spender = await this.getDecimalContractAddress('multi-call')
     let amountSum: {[token:string]: ethers.BigNumber} = {}
-    const callDatas: any[] = []
+    let callDatas: {
+      target: string;
+      value: string | number | bigint | BigNumberish;
+      iface: string;
+      params: any;
+    }[] = [];
     for (let i = 0; i < multiData.length; i++) {
       const tokenAddress = multiData[i].token;
+      if (tokenAddress == 'del') continue;
       if (!amountSum[tokenAddress]) amountSum[tokenAddress] = ethers.BigNumber.from(0);
       amountSum[tokenAddress] = amountSum[tokenAddress].add(ethers.BigNumber.from(multiData[i].amount))
     }
@@ -230,21 +245,33 @@ export default class DecimalEVM {
       const deadline = ethers.constants.MaxUint256
       callDatas.push({
         target: tokenAddress,
+        value: 0,
         iface: "function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)",
         params: [owner, spender, amountSum[tokenAddress], deadline, sign?.v, sign?.r, sign?.s ]
       })
     }
     for (let i = 0; i < multiData.length; i++) {
       const tokenAddress = multiData[i].token
-      const to = multiData[i].to
-      const amount = multiData[i].amount
-      callDatas.push(      {
-        target: tokenAddress,
-        iface: "function transferFrom(address from, address to, uint256 value)",
-        params: [owner, to, amount]
-      })
+      if (tokenAddress == 'del') {
+        const to = multiData[i].to
+        const amount = multiData[i].amount
+        callDatas.push({
+          target: to,
+          value: amount,
+          iface: "",
+          params: []
+        })
+      } else {
+        const to = multiData[i].to
+        const amount = multiData[i].amount
+        callDatas.push({
+          target: tokenAddress,
+          value: 0,
+          iface: "function transferFrom(address from, address to, uint256 value)",
+          params: [owner, to, amount]
+        })
+      }
     }
-    console.log(callDatas)
     return await this.multiCall(callDatas, estimateGas)
   }
 

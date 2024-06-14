@@ -624,7 +624,7 @@ const resultFeeForApproveToken = BigInt(estimateGas.toString())*BigInt(feeData.g
 ### Multi send Token
 ```js
 //Form an array of multi send token
-//token - the address of the token contract
+//token - the address of the token contract; or "del" for send del
 //to - recipient address
 //amount - amount of transfer
 const tokenAddress1 = "0xe1E885a848DC0c0867E119E7e80289f98e27256C"
@@ -643,6 +643,16 @@ data.push({
 data.push({
     token: tokenAddress2,
     to: "0x0000000000000000000000000000000000000003",
+    amount: decimalEVM.parseEther(1)
+})
+data.push({
+    token: "del",
+    to: "0x0000000000000000000000000000000000000004",
+    amount: decimalEVM.parseEther(1)
+})
+data.push({
+    token: "del",
+    to: "0x0000000000000000000000000000000000000005",
     amount: decimalEVM.parseEther(1)
 })
 

@@ -8,6 +8,7 @@ const mnemonic = 'dutch clap mystery cost crush yellow unfair race like casual p
 
 describe('multicall', () => {
 
+    
     test('send tokens (special function)', async() => {
         const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
         const decimalWallet = new Wallet(mnemonic);
@@ -40,11 +41,22 @@ describe('multicall', () => {
             to: "0x0000000000000000000000000000000000000004",
             amount: decimalEVM.parseEther(1)
         })
+        data.push({
+            token: "del",
+            to: "0x0000000000000000000000000000000000000007",
+            amount: decimalEVM.parseEther(1)
+        })
+        data.push({
+            token: "del",
+            to: "0x0000000000000000000000000000000000000008",
+            amount: decimalEVM.parseEther(1)
+        })
 
         const tx = await decimalEVM.multiSendToken(data)
         console.log(tx)
     })
-    
+  
+ /*
     test('send tokens (custom)', async() => {
         const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
         const decimalWallet = new Wallet(mnemonic);
@@ -69,26 +81,31 @@ describe('multicall', () => {
         const deadline = ethers.constants.MaxUint256
         const callDatas = [{
             target: tokenAddress,
+            value: 0,
             iface: "function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)",
             params: [owner, spender, amountSum, deadline, sign?.v, sign?.r, sign?.s ]
         },
         {
             target: tokenAddress,
+            value: 0,
             iface: "function transferFrom(address from, address to, uint256 value)",
             params: [owner, "0x0000000000000000000000000000000000000001", decimalEVM.parseEther(1)]
         },
         {
             target: tokenAddress,
+            value: 0,
             iface: "function transferFrom(address from, address to, uint256 value)",
             params: [owner, "0x0000000000000000000000000000000000000002", decimalEVM.parseEther(1)]
         },
         {
             target: tokenAddress,
+            value: 0,
             iface: "function transferFrom(address from, address to, uint256 value)",
             params: [owner, "0x0000000000000000000000000000000000000003", decimalEVM.parseEther(1)]
         },
         {
             target: tokenAddress,
+            value: 0,
             iface: "function transferFrom(address from, address to, uint256 value)",
             params: [owner, "0x0000000000000000000000000000000000000004", decimalEVM.parseEther(1)]
         },]
@@ -96,7 +113,40 @@ describe('multicall', () => {
         const tx = await decimalEVM.multiCall(callDatas)
         console.log(tx)
     })
-    
+
+    test('send del (custom)', async() => {
+        const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+        const decimalWallet = new Wallet(mnemonic);
+        
+        const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+
+        await decimalEVM.connect('multi-call')
+        await decimalEVM.connect('token-center')
+
+        const callDatas = [
+        {
+            target: "0x0000000000000000000000000000000000000005",
+            value: decimalEVM.parseEther(1),
+            iface: "",
+            params: []
+        },
+        {
+            target: "0x0000000000000000000000000000000000000006",
+            value: decimalEVM.parseEther(1),
+            iface: "",
+            params: []
+        },
+        {
+            target: "0x0000000000000000000000000000000000000007",
+            value: decimalEVM.parseEther(1),
+            iface: "",
+            params: []
+        },]
+        
+        const tx = await decimalEVM.multiCall(callDatas)
+        console.log(tx)
+    })
+    */
 })
 
 

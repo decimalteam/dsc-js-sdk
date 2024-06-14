@@ -31,6 +31,7 @@ export default class DecimalEVM {
     private initFromImplementation;
     multiCall(callData: {
         target: string;
+        value: string | number | bigint | BigNumberish;
         iface: string;
         params: any;
     }[], estimateGas?: boolean): Promise<any>;

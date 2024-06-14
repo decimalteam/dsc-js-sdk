@@ -53,8 +53,9 @@ export default class Call {
     setDecimalContractEVM(decimalContractEVM: DecimalContractEVM, name: string): void;
     private txOptions;
     private parseLog;
-    multicall(calls: {
+    multicall(value: string | number | bigint, calls: {
         target: string;
+        value: string;
         callData: string;
     }[], estimateGas?: boolean): Promise<any>;
     createToken(token: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{

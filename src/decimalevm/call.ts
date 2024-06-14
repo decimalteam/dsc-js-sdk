@@ -139,12 +139,12 @@ export default class Call {
     // -----------write functions----------
 
     //multicall
-    public async multicall(calls: {target: string; callData: string;}[], estimateGas?: boolean) {
+    public async multicall(value: string | number | bigint, calls: {target: string; value: string; callData: string;}[], estimateGas?: boolean) {
         if (estimateGas) {
-            return await this.multiCall?.contract.estimateGas.aggregate(calls)
+            return await this.multiCall?.contract.estimateGas.aggregate(calls, await this.txOptions({value: value}))
         }
-        await this.multiCall?.contract.callStatic.aggregate(calls)
-        return await this.multiCall?.contract.aggregate(calls).then((tx: ethers.ContractTransaction) => tx.wait());
+        await this.multiCall?.contract.callStatic.aggregate(calls, await this.txOptions({value: value}))
+        return await this.multiCall?.contract.aggregate(calls, await this.txOptions({value: value})).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     //token-center
