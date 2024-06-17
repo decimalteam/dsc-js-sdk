@@ -16,7 +16,7 @@ export interface NFTToken {
     balances: NFTBalance[];
 }
 export interface NFTBalance {
-    owner: {
+    user: {
         address: string;
     };
     nft?: NFTToken;
