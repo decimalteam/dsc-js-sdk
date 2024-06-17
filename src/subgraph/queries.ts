@@ -87,7 +87,7 @@ export default class Queries {
     public async getAddressBalances(options:string): Promise<AddressBalance[]> {
         const result = await this.query(`{
             balances${options} {
-                balance
+                amount
                 token {
                     address
                     symbol
@@ -367,7 +367,7 @@ export default class Queries {
                     amount
                   }
                   balances {
-                    owner {
+                    user {
                       address
                     }
                     amount

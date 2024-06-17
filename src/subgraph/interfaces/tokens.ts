@@ -15,7 +15,7 @@ export interface Token {
 }
 
 export interface AddressBalance {
-    balance: string;
+    amount: string;
     token: Token
 }
   
