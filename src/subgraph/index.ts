@@ -55,7 +55,7 @@ export default class Subgraph {
     public async getAddressBalances(address: string, first: number, skip: number): Promise<AddressBalance[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { user: "${verifyAddress}"}, first: ${first}, skip: ${skip})`
+        const options = `(where: { user_: { address: "${verifyAddress}" } }, first: ${first}, skip: ${skip})`
         return await this.query.getAddressBalances(options)
     }
 
