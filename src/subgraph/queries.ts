@@ -335,7 +335,7 @@ export default class Queries {
                     amount
                   }
                   balances {
-                    owner {
+                    user {
                       address
                     }
                     amount
@@ -400,7 +400,7 @@ export default class Queries {
                   amount
                 }
                 balances {
-                  owner {
+                  user {
                     address
                   }
                   amount
