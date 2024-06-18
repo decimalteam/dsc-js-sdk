@@ -552,7 +552,7 @@ if (stakesFrozenFiltered.length > 0) {
 const newValidator: any = {
     operator_address: decimalWallet.evmAddress,
     reward_address: decimalWallet.evmAddress,
-    consensus_pubkey: decimalWallet.getPublicKeyString(),
+    consensus_pubkey: Buffer.from(decimalWallet.getPublicKey().key.buffer).toString('base64'),
     description: {
         moniker: 'test-node-sgp1-01',
         identity: '',
@@ -570,7 +570,7 @@ await decimalEVM.addValidatorWithETH(newValidator, decimalEVM.parseEther(2))
 const newValidator: any = {
     operator_address: decimalWallet.evmAddress,
     reward_address: decimalWallet.evmAddress,
-    consensus_pubkey: decimalWallet.getPublicKeyString(),
+    consensus_pubkey: Buffer.from(decimalWallet.getPublicKey().key.buffer).toString('base64'),
     description: {
         moniker: 'test-node-sgp1-01',
         identity: '',
