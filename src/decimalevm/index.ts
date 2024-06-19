@@ -5,6 +5,7 @@ import {
     getNewApiEndpoint,
     NETWORKS,
     getMultiCallAddresses,
+    getMultiSigAddresses
 } from "../endpoints";
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
@@ -168,8 +169,18 @@ export default class DecimalEVM {
         break;
       case 'multi-sign':
         if (!this.call.delegationNft) {
-          const multiSend = await this.getContract(getMultiCallAddresses(this.network), multiCallAbi);  //TODO edit to multiSend for multisig
+          const [
+            safe,
+            safeFactory,
+            multiSend
+          ] = await Promise.all([
+            this.getContract(getMultiSigAddresses(this.network).safe),
+            this.getContract(getMultiSigAddresses(this.network).safeFactory),
+            this.getContract(getMultiSigAddresses(this.network).multiSend)
+          ])
           this.call.setDecimalContractEVM(multiSend, 'multiSend')
+          this.call.setDecimalContractEVM(safe, 'safe')
+          this.call.setDecimalContractEVM(safeFactory, 'safeFactory')
         }
         break;
       default:
@@ -652,6 +663,20 @@ export default class DecimalEVM {
     return await this.call!.executeMultiSigTx(safeTx, signatures, safe) 
   }
 
+  public async createMultiSig(ownersData: {
+    owner: string;
+    weight: number;
+  }[], weightThreshold?: number) {
+    await this.checkConnect('multi-sign');
+    for (let i = 0; i < ownersData.length; i++) {
+      if (ownersData[i].weight < 1 || ownersData[i].weight > 1000)  throw new Error("Invalid owner weight")
+    }
+    if (weightThreshold === 0) throw new Error("Invalid weightThreshold")
+    if (!weightThreshold) {
+      weightThreshold = ownersData.reduce((sum, num) => sum + num.weight, 0);
+    }
+    return await this.call!.createMultiSig(ownersData, weightThreshold) 
+  }
 
   // view function
 
