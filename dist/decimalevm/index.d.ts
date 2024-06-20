@@ -115,18 +115,19 @@ export default class DecimalEVM {
         error: any;
         estimateGas: any;
     }>;
-    addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, estimateGas?: boolean): Promise<any>;
+    addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     addValidatorWithETH(meta: ValidatorMeta, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     removeValidator(validator: string, estimateGas?: boolean): Promise<any>;
     pauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
     unpauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
+    updateValidatorMeta(meta: ValidatorMeta, estimateGas?: boolean): Promise<any>;
     private buildMultiSigTxSendDEL;
     private signMultiSigTx;
     private executeMultiSigTx;
     createMultiSig(ownersData: {
         owner: string;
         weight: number;
-    }[], weightThreshold?: number): Promise<{
+    }[], weightThreshold?: number, estimateGas?: boolean): Promise<{
         tx: any;
         multisigAddress: any;
         estimateGas: any;

@@ -131,11 +131,12 @@ export default class Call {
         error: any;
         estimateGas: any;
     }>;
-    addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, estimateGas?: boolean): Promise<any>;
+    addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     addValidatorWithETH(validator: string, meta: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     removeValidator(validator: string, estimateGas?: boolean): Promise<any>;
     pauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
     unpauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
+    updateValidatorMeta(validator: string, meta: string, estimateGas?: boolean): Promise<any>;
     checkTokenExists(address: string): Promise<any>;
     getAddressTokenBySymbol(symbol: string): Promise<any>;
     getCommissionSymbol(symbol: string): Promise<any>;

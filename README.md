@@ -584,7 +584,16 @@ const stakeValidator: any = {
   token: tokenAddress,
   amount: decimalEVM.parseEther(10)
 }
-await decimalEVM.addValidatorWithToken(newValidator, stakeValidator)
+const masterValidatorAddress = await decimalEVM.getDecimalContractAddress('master-validator')
+
+//for permit
+const sign = await decimalEVM.getSignPermitToken(tokenAddress, masterValidatorAddress, stakeValidator.amount)
+await decimalEVM.addValidatorWithToken(newValidator, stakeValidator, sign)
+
+// or for appove
+await decimalEVM.approveToken(tokenAddress, masterValidatorAddress, stakeValidator.amount)
+await decimalEVM.addValidatorWithToken(newValidator, stakeValidator, undefined)
+
 ```
 
 #### Pause validator
@@ -597,6 +606,24 @@ const pauseValidator = await decimalEVM.pauseValidator(validator)
 ```js
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 const unpauseValidator = await decimalEVM.unpauseValidator(validator)
+```
+
+#### Update validator meta data
+```js
+const validatorMeta: any = {
+    operator_address: decimalWallet.evmAddress,
+    reward_address: decimalWallet.evmAddress,
+    consensus_pubkey: Buffer.from(decimalWallet.getPublicKey().key.buffer).toString('base64'),
+    description: {
+        moniker: 'test-node-sgp1-01',
+        identity: '',
+        website: 'decimalchain.com',
+        security_contact: '',
+        details: 'Declaring validator on test-node-sgp1-01'
+    },
+    commission: '0.100000000000000000',
+}
+await decimalEVM.updateValidatorMeta(validatorMeta)
 ```
 
 ## Сalculation of the transaction fee
