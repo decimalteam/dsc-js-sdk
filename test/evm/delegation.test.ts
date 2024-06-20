@@ -36,7 +36,7 @@ describe('Delegation', () => {
 
             //prepare
             const newToken: any = {
-                tokenOwner: decimalWallet.evmAddress,
+                creator: decimalWallet.evmAddress,
                 symbol: 'COStestSymbol'+Math.floor(Math.random() * 10000),
                 name: 'CosmosName',
                 crr: 50,
@@ -69,7 +69,7 @@ describe('Delegation', () => {
 
             //prepare
             const newToken: any = {
-                tokenOwner: decimalWallet.evmAddress,
+                creator: decimalWallet.evmAddress,
                 symbol: 'COStestSymbol'+Math.floor(Math.random() * 10000),
                 name: 'CosmosName',
                 crr: 50,

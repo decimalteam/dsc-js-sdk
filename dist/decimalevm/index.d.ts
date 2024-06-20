@@ -106,7 +106,6 @@ export default class DecimalEVM {
     transferBatchNFT1155(nftCollectionAddress: string, from: string, to: string, tokenIds: string[] | number[], amounts: string[] | number[], estimateGas?: boolean): Promise<any>;
     disableMintNFT(nftCollectionAddress: string, estimateGas?: boolean): Promise<any>;
     burnNFT(nftCollectionAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
-    setBaseURINFT(nftCollectionAddress: string, baseURI: string, estimateGas?: boolean): Promise<any>;
     setTokenURINFT(nftCollectionAddress: string, tokenId: string | number | bigint, tokenURI: string, estimateGas?: boolean): Promise<any>;
     delegateDEL(validator: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     delegateToken(validator: string, tokenAddress: string, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;

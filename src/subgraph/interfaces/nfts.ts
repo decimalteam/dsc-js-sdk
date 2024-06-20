@@ -2,7 +2,7 @@ export interface NFTCollection {
     address: string;
     symbol: string;
     name: string;
-    collectionOwner: string;
+    creator: string;
     tokenType: string;
     collectionSupply: string;
     nfts: NFTToken[];

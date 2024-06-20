@@ -34,7 +34,7 @@ export enum FreezeType {
 }
 
 export type Token = {
-    tokenOwner: string;
+    creator: string;
     symbol: string;
     name: string;
     crr: string | number | bigint;
@@ -45,13 +45,11 @@ export type Token = {
 }
 
 export type NFTCollection = {
-    tokenOwner: string;
+    creator: string;
     symbol: string;
     name: string;
     contractURI: string;
-    baseURI: string;
     refundable: boolean;
-    allowMint: boolean;
 }
 
 export type ValidotorStake = {
@@ -357,10 +355,10 @@ export default class Call {
         }
     }
 
-    public async setBaseURINFT(contract: ethers.Contract, baseURI: string, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.setBaseURI(baseURI)
-        return await contract.setBaseURI(baseURI).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
+    // public async setBaseURINFT(contract: ethers.Contract, baseURI: string, estimateGas?: boolean) {
+    //     if (estimateGas) return await contract.estimateGas.setBaseURI(baseURI)
+    //     return await contract.setBaseURI(baseURI).then((tx: ethers.ContractTransaction) => tx.wait());
+    // }
 
     public async setTokenURINFT(contract: ethers.Contract, tokenId: string | number | bigint, tokenURI: string, estimateGas?: boolean) {
         if (estimateGas) return await contract.setTokenURI(tokenId, tokenURI, await this.txOptions()) 

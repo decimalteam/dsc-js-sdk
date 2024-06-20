@@ -15,7 +15,7 @@ export declare enum FreezeType {
     Completed = 3
 }
 export type Token = {
-    tokenOwner: string;
+    creator: string;
     symbol: string;
     name: string;
     crr: string | number | bigint;
@@ -25,13 +25,11 @@ export type Token = {
     identity: string;
 };
 export type NFTCollection = {
-    tokenOwner: string;
+    creator: string;
     symbol: string;
     name: string;
     contractURI: string;
-    baseURI: string;
     refundable: boolean;
-    allowMint: boolean;
 };
 export type ValidotorStake = {
     token: string;
@@ -134,7 +132,6 @@ export default class Call {
     transferNFT(contract: ethers.Contract, from: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     disableMintNFT(contract: ethers.Contract, estimateGas?: boolean): Promise<any>;
     burnNFT(contract: ethers.Contract, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
-    setBaseURINFT(contract: ethers.Contract, baseURI: string, estimateGas?: boolean): Promise<any>;
     setTokenURINFT(contract: ethers.Contract, tokenId: string | number | bigint, tokenURI: string, estimateGas?: boolean): Promise<any>;
     mintNFT(contract: ethers.Contract, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
         tx: null;

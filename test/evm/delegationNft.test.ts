@@ -21,13 +21,11 @@ describe('Delegation NFT', () => {
 
             //prepare
             const newNFT: any = {
-                tokenOwner: owner,
+                creator: owner,
                 symbol: 'NFTtest',
                 name: 'NFTName',
                 contractURI: 'ipfs://ipfs/qwerty12345',
-                baseURI: 'ipfs:/',
-                refundable: false,
-                allowMint: true
+                refundable: false
             }
             const resultCollection721 = await decimalEVM.createCollectionERC721(newNFT)
             const resultCollection1155 = await decimalEVM.createCollectionERC1155(newNFT)
@@ -68,13 +66,11 @@ describe('Delegation NFT', () => {
 
             //prepare
             const newNFT: any = {
-                tokenOwner: owner,
+                creator: owner,
                 symbol: 'NFTtest',
                 name: 'NFTName',
                 contractURI: 'ipfs://ipfs/qwerty12345',
-                baseURI: 'ipfs:/',
                 refundable: false,
-                allowMint: true
             }
             const resultCollection721 = await decimalEVM.createCollectionERC721(newNFT)
             const resultCollection1155 = await decimalEVM.createCollectionERC1155(newNFT)
