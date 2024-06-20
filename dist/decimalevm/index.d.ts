@@ -195,6 +195,7 @@ export default class DecimalEVM {
     verifyСontract(address: string, contract_code: string, compiler: string, optimizer: string, runs: string, evm_version: string): Promise<boolean>;
     private validationValidatorMeta;
     getFeeData(): Promise<ethers.providers.FeeData>;
+    uploadNFTBase64ToIPFS(base64: string, fileName: string, name: string, description: string): Promise<any>;
     uploadNFTBufferToIPFS(buffer: Buffer, fileName: string, name: string, description: string): Promise<any>;
     uploadTokenBufferToIPFS(buffer: Buffer, fileName: string): Promise<{
         image: string;
