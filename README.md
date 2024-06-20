@@ -35,7 +35,7 @@ await decimalEVM.connect('delegation') // initializes only delegation contact (d
 await decimalEVM.connect('delegation-nft') // initializes only delegation-nft contact (delegation nft)
 await decimalEVM.connect('master-validator') // initializes only master-validator contact (master node)
 await decimalEVM.connect('multi-call') // initializes only multi-call contact (multi send)
-await decimalEVM.connect('multi-sign') // initializes only multi-sign contact
+await decimalEVM.connect('multi-sig') // initializes only multi-sig contact
 ```
 
 ## DEL

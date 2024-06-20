@@ -826,7 +826,7 @@ export default class Call {
                 return address ? this.masterValidator!.contract.address : this.masterValidator!.contract
             case "multi-call":
                 return address ? this.multiCall!.contract.address : this.multiCall!.contract
-            case "multi-sign":
+            case "multi-sig":
                 return address ? this.multiSend!.contract.address : this.multiSend!.contract
             default:
                 throw new Error(`There is no such contract in the Decimal`)
