@@ -10,7 +10,7 @@ export default class Subgraph {
     private checkFirstAndSkip;
     getDecimalContracts(): Promise<DecimalContract[]>;
     getTokens(first: number, skip: number): Promise<Token[]>;
-    getTokensByOwner(address: string, first: number, skip: number): Promise<Token[]>;
+    getTokensByCreator(address: string, first: number, skip: number): Promise<Token[]>;
     getTokenBySymbol(symbol: string): Promise<Token>;
     getTokenByAddress(address: string): Promise<Token>;
     getAddressBalances(address: string, first: number, skip: number): Promise<AddressBalance[]>;
@@ -34,11 +34,12 @@ export default class Subgraph {
     getValidatorPenaltiesFromBlock(validator: string, blockNumber: string | number, first: number, skip: number): Promise<Penalty[]>;
     getSumAmountToPenalty(): Promise<{}>;
     getNftCollections(first: number, skip: number): Promise<NFTCollection[]>;
-    getNftCollectionsByOwner(address: string, first: number, skip: number): Promise<NFTCollection[]>;
+    getNftCollectionsByCreator(address: string, first: number, skip: number): Promise<NFTCollection[]>;
     getNftCollectionByAddress(address: string): Promise<NFTCollection>;
     getNfts(first: number, skip: number): Promise<NFTToken[]>;
     getNftsByCollection(address: string, first: number, skip: number): Promise<NFTToken[]>;
     getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFTToken[]>;
+    getNftCollectionByCreatorAndUser(address: string, first: number, skip: number): Promise<NFTCollection[]>;
     getNftCollectionType(address: string): Promise<string | null>;
     subgraphCustomQuery(query: string): Promise<any>;
 }

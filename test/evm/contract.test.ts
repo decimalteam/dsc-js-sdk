@@ -64,7 +64,7 @@ describe('Contract', () => {
             await decimalEVM.connect();
 
             const newToken: any = {
-                tokenOwner: decimalWallet.evmAddress,
+                creator: decimalWallet.evmAddress,
                 symbol: 'COStest'+Math.floor(Math.random() * 10000),
                 name: 'CosmosName',
                 crr: 50,
@@ -114,7 +114,7 @@ describe('Contract', () => {
             await decimalEVM.connect();
 
             const newToken: any = {
-                tokenOwner: decimalWallet.evmAddress,
+                creator: decimalWallet.evmAddress,
                 symbol: 'COStest'+Math.floor(Math.random() * 10000),
                 name: 'CosmosName',
                 crr: 50,

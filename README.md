@@ -62,7 +62,7 @@ await decimalEVM.burnDEL(amount)
 ```js
 
 const newToken = {
-  tokenOwner: decimalWallet.evmAddress, // owner of token (evm address)
+  creator: decimalWallet.evmAddress, // owner of token (evm address)
   symbol: 'TKNE', // symbol of token
   name: 'TokenName', // name of token
   crr: 50, // crr of token (value is from 10 to 100)
@@ -198,11 +198,10 @@ const tx = await decimalEVM.updateDetailsToken(tokenAddress, newIdentity, newMax
 ### Create NFT Collection
 ```js
 const newNFT: any = {
-  tokenOwner: decimalWallet.evmAddress, // owner of nft collection (evm address)
+  creator: decimalWallet.evmAddress, // owner of nft collection (evm address)
   symbol: 'PIRS', // symbol of nft collection
   name: 'Pirates', // name of nft collection
   contractURI: 'ipfs://ipfs/QmShfT7LRyjN4ZFNyGAK5YftGU7sa9xqTTukzPiYPsrLFk', // uri of nft collection
-  baseURI: 'ipfs:/', // base uri for all nfts inside the nft collection
   refundable: false, // is the reserve returned when burning NFT (true or false)
   allowMint: true //is mint allowed for the nft collection
 }
@@ -335,11 +334,11 @@ await decimalEVM.burnNFT(nftCollectionAddress, tokenId) // for ERC721
 //const amount = 20
 //await decimalEVM.burnNFT(nftCollectionAddress, tokenId, amount) // for ERC1155
 ```
-### Set BaseURI for NFT Collection
+<!-- ### Set BaseURI for NFT Collection
 ```js
 const baseURI = 'https://example.com/'
 await decimalEVM.setBaseURINFT(nftCollectionAddress, baseURI)
-```
+``` -->
 
 ### Set TokenURI for NFT
 ```js
@@ -1400,7 +1399,7 @@ const contractAddress = '0x3c546e3eb206c0be7d3c9b85c81cd98700fd3db6'
 const contract = await decimalEVM.connectToContract(contractAddress)
 
 const newToken: any = {
-    tokenOwner: decimalWallet.evmAddress,
+    creator: decimalWallet.evmAddress,
     symbol: 'COStest'+Math.floor(Math.random() * 10000),
     name: 'CosmosName',
     crr: 50,
@@ -1422,7 +1421,7 @@ const tx = await contract.call("createToken", newToken, options)
 #### Send signed transaction
 ```js
 const newToken: any = {
-    tokenOwner: decimalWallet.evmAddress,
+    creator: decimalWallet.evmAddress,
     symbol: 'COStest'+Math.floor(Math.random() * 10000),
     name: 'CosmosName',
     crr: 50,

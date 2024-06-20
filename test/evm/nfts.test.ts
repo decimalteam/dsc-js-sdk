@@ -20,13 +20,11 @@ describe('NFTs', () => {
         await decimalEVM.connect();
 
         const newNFT: any = {
-          tokenOwner: decimalWallet.evmAddress,
+          creator: decimalWallet.evmAddress,
           symbol: 'NFTtest',
           name: 'NFTName',
           contractURI: 'ipfs://ipfs/qwerty12345',
-          baseURI: 'ipfs:/',
-          refundable: false,
-          allowMint: true
+          refundable: false
         }
 
         //const resultERC721Standart = await decimalEVM.createCollectionERC721Standart(newNFT)
@@ -128,7 +126,7 @@ describe('NFTs', () => {
 
         //prepare
         const newToken: any = {
-          tokenOwner: decimalWallet.evmAddress,
+          creator: decimalWallet.evmAddress,
           symbol: 'COStest'+Math.floor(Math.random() * 10000),
           name: 'CosmosName',
           crr: 50,
@@ -255,25 +253,25 @@ describe('NFTs', () => {
       }
     });
 
-    test('set base uri nft', async() => {
-      try {
-        // Sdk.
-        const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
-        const decimalWallet = new Wallet(mnemonic);
+    // test('set base uri nft', async() => {
+    //   try {
+    //     // Sdk.
+    //     const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+    //     const decimalWallet = new Wallet(mnemonic);
         
-        const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
-        await decimalEVM.connect();
+    //     const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+    //     await decimalEVM.connect();
 
-        const baseURI = 'https://example.com/'
-        //await decimalEVM.setBaseURINFT(addressERC721Standart, baseURI) //ERC721Standart
-        await decimalEVM.setBaseURINFT(addressERC721, baseURI) //ERC721
-        //await decimalEVM.setBaseURINFT(addressERC1155Standart, baseURI) //ERC1155Standart
-        await decimalEVM.setBaseURINFT(addressERC1155, baseURI) //ERC1155
-        console.log(`successfully setBaseURINFT`)
-      } catch (e) {
-        console.log(e)
-      }
-    });
+    //     const baseURI = 'https://example.com/'
+    //     //await decimalEVM.setBaseURINFT(addressERC721Standart, baseURI) //ERC721Standart
+    //     await decimalEVM.setBaseURINFT(addressERC721, baseURI) //ERC721
+    //     //await decimalEVM.setBaseURINFT(addressERC1155Standart, baseURI) //ERC1155Standart
+    //     await decimalEVM.setBaseURINFT(addressERC1155, baseURI) //ERC1155
+    //     console.log(`successfully setBaseURINFT`)
+    //   } catch (e) {
+    //     console.log(e)
+    //   }
+    // });
 
     test('set token uri nft', async() => {
       try {

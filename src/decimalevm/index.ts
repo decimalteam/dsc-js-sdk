@@ -538,12 +538,12 @@ export default class DecimalEVM {
     }
   }
 
-  public async setBaseURINFT(nftCollectionAddress: string, baseURI: string, estimateGas?: boolean) {
-    await this.checkConnect('nft-center');
-    const typeNFT = await this.getNftType(nftCollectionAddress)
-    const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    return await this.call!.setBaseURINFT(nft.contract, baseURI, estimateGas)
-  }
+  // public async setBaseURINFT(nftCollectionAddress: string, baseURI: string, estimateGas?: boolean) {
+  //   await this.checkConnect('nft-center');
+  //   const typeNFT = await this.getNftType(nftCollectionAddress)
+  //   const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
+  //   return await this.call!.setBaseURINFT(nft.contract, baseURI, estimateGas)
+  // }
 
   public async setTokenURINFT(nftCollectionAddress: string, tokenId: string | number | bigint, tokenURI: string, estimateGas?: boolean) {
     await this.checkConnect('nft-center');

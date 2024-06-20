@@ -57,7 +57,7 @@ export default class Queries {
                 identity
                 reserve
                 currentPrice
-                owner
+                creator
                 tokenType
             }
         }`)
@@ -77,7 +77,7 @@ export default class Queries {
                 identity
                 reserve
                 currentPrice
-                owner
+                creator
                 tokenType
             }
         }`)
@@ -100,7 +100,7 @@ export default class Queries {
                     identity
                     reserve
                     currentPrice
-                    owner
+                    creator
                     tokenType
                 }
             }
@@ -320,7 +320,7 @@ export default class Queries {
                 address
                 symbol
                 name
-                collectionOwner
+                creator
                 tokenType
                 collectionSupply
                 nfts {
@@ -352,7 +352,7 @@ export default class Queries {
                 address
                 symbol
                 name
-                collectionOwner
+                creator
                 tokenType
                 collectionSupply
                 nfts {
@@ -388,7 +388,7 @@ export default class Queries {
                     address
                     symbol
                     name
-                    collectionOwner
+                    creator
                     tokenType
                     collectionSupply
                 }
