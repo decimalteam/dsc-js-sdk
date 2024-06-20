@@ -583,9 +583,14 @@ export default class Call {
     }
 
     //master-validator
-    public async addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, estimateGas?: boolean) {
-        if (estimateGas) return await this.masterValidator!.contract.estimateGas.addValidator(validator, meta, stake, await this.txOptions())
-        return await this.masterValidator!.contract.addValidator(validator, meta, stake, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    public async addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean) {
+        if (sign == undefined) {
+            if (estimateGas) return await this.masterValidator!.contract.estimateGas.addValidator(validator, meta, stake, await this.txOptions())
+            return await this.masterValidator!.contract.addValidator(validator, meta, stake, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+        } else {
+            //TODO
+            throw Error('TODO')
+        }
     }
 
     public async addValidatorWithETH(validator: string, meta: string, amount: string | number | bigint, estimateGas?: boolean) {
@@ -610,6 +615,11 @@ export default class Call {
     public async unpauseValidator(validator: string, estimateGas?: boolean) {
         if (estimateGas) return await this.masterValidator!.contract.estimateGas.unpauseValidator(validator, await this.txOptions())
         return await this.masterValidator!.contract.unpauseValidator(validator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async updateValidatorMeta(validator: string, meta: string, estimateGas?: boolean) {
+        if (estimateGas) return await this.masterValidator!.contract.estimateGas.updateValidatorMeta(validator, meta, await this.txOptions())
+        return await this.masterValidator!.contract.updateValidatorMeta(validator, meta, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     // -----------view functions----------
@@ -927,14 +937,12 @@ export default class Call {
             0,
             ethers.constants.AddressZero
         ]);
-      
         const saltNumber = Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER - 1)).toString();
-        const template = await this.safeFactory!.contract.createProxyWithNonce.staticCall(this.safe!.contract.address, encodedInitializer, saltNumber);
-
         if (estimateGas) {
             const gas = await this.safeFactory!.contract.estimateGas.createProxyWithNonce(this.safe!.contract.address, encodedInitializer, saltNumber, await this.txOptions());
-            return {tx: null, multisigAddress: template, estimateGas: gas} 
+            return {tx: null, multisigAddress: null, estimateGas: gas} 
         }
+        const template = await this.safeFactory!.contract.callStatic.createProxyWithNonce(this.safe!.contract.address, encodedInitializer, saltNumber, await this.txOptions());
         const tx = await this.safeFactory!.contract.createProxyWithNonce(this.safe!.contract.address, encodedInitializer, saltNumber, await this.txOptions()).then((tx: any) => tx.wait());
         return {tx: tx, multisigAddress: template, estimateGas: null};
     }

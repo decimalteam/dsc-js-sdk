@@ -15,12 +15,13 @@ describe('multisig', () => {
         const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
         const decimalWallet1 = new Wallet(mnemonic1);
         const decimalWallet2 = new Wallet(mnemonic2);
+        const decimalWallet3 = new Wallet(mnemonic3);
 
         const decimalEVM = new DecimalEVM(decimalWallet1, DecimalNetworks.testnet);
 
         await decimalEVM.connect('multi-sig')
 
-        const owners = [{
+        const ownerData = [{
             owner: decimalWallet1.evmAddress!,
             weight: 100
         },
@@ -29,12 +30,12 @@ describe('multisig', () => {
             weight: 100
         },
         {
-            owner: decimalWallet2.evmAddress!,
+            owner: decimalWallet3.evmAddress!,
             weight: 100
         }]
-        const weightThreshold = 2000
-        //decimalEVM.createMultiSig()
-
+        const weightThreshold = 200
+        const result = await decimalEVM.createMultiSig(ownerData, weightThreshold)
+        console.log(result)
     })
   
 })

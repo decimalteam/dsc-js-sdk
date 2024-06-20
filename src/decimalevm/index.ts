@@ -618,11 +618,11 @@ export default class DecimalEVM {
     return await this.call!.completeStakeNFT(indexes, estimateGas)
   }
 
-  public async addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, estimateGas?: boolean) {
+  public async addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean) {
     await this.checkConnect('master-validator');
     const validator = meta.operator_address
     this.validationValidatorMeta(meta)
-    return await this.call!.addValidatorWithToken(validator, JSON.stringify(meta), stake, estimateGas)
+    return await this.call!.addValidatorWithToken(validator, JSON.stringify(meta), stake, sign, estimateGas)
   }
 
   public async addValidatorWithETH(meta: ValidatorMeta, amount: string | number | bigint, estimateGas?: boolean) {
@@ -646,6 +646,13 @@ export default class DecimalEVM {
     await this.checkConnect('master-validator');
     return await this.call!.unpauseValidator(validator, estimateGas)
   }
+
+  public async updateValidatorMeta(meta: ValidatorMeta, estimateGas?: boolean) {
+    await this.checkConnect('master-validator');
+    const validator = meta.operator_address
+    this.validationValidatorMeta(meta)
+    return await this.call!.updateValidatorMeta(validator, JSON.stringify(meta), estimateGas)
+  }
   
   private async buildMultiSigTxSendDEL(address: string, amount: string | number | bigint): Promise<SafeTransaction> {
     await this.checkConnect('multi-sig');
@@ -666,16 +673,20 @@ export default class DecimalEVM {
   public async createMultiSig(ownersData: {
     owner: string;
     weight: number;
-  }[], weightThreshold?: number) {
+  }[], weightThreshold?: number, estimateGas?: boolean) {
     await this.checkConnect('multi-sig');
+    let totalWeight = 0;
     for (let i = 0; i < ownersData.length; i++) {
       if (ownersData[i].weight < 1 || ownersData[i].weight > 1000)  throw new Error("Invalid owner weight")
+        totalWeight += ownersData[i].weight
     }
     if (weightThreshold === 0) throw new Error("Invalid weightThreshold")
-    if (!weightThreshold) {
+    if (weightThreshold) {
+      if (weightThreshold > totalWeight) throw new Error("Invalid weightThreshold. weightThreshold must not exceed total weight of owners")
+    } else {
       weightThreshold = ownersData.reduce((sum, num) => sum + num.weight, 0);
     }
-    return await this.call!.createMultiSig(ownersData, weightThreshold) 
+    return await this.call!.createMultiSig(ownersData, weightThreshold, estimateGas) 
   }
 
   // view function
@@ -1030,7 +1041,7 @@ export default class DecimalEVM {
     const buffer = Buffer.from(base64Image!, 'base64');
     return await this.ipfs.uploadNFTBufferToIPFS(buffer, fileName, name, description);
   }
-  
+
   public async uploadNFTBufferToIPFS(buffer:Buffer, fileName:string, name:string, description:string) {
     return await this.ipfs.uploadNFTBufferToIPFS(buffer, fileName, name, description);
   }
