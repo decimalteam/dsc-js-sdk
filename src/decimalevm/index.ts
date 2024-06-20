@@ -52,7 +52,20 @@ export default class DecimalEVM {
     erc1155: undefined,
   }
 
-  public multisig = {
+  public multisig = <{
+    create: (ownersData: {
+        owner: string;
+        weight: number;
+    }[], weightThreshold?: number, estimateGas?: boolean) => Promise<{
+        tx: any;
+        multisigAddress: any;
+        estimateGas: any;
+    }>;
+    buildTxSendDEL: (safeAddress: string, to: string, amount: string | number | bigint) => Promise<SafeTransaction>;
+    signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
+    executeTx: (safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) => Promise<any>
+  }>{
+    create: this.createMultiSig.bind(this),
     buildTxSendDEL: this.buildMultiSigTxSendDEL.bind(this),
     signTx: this.signMultiSigTx.bind(this),
     executeTx: this.executeMultiSigTx.bind(this),
@@ -654,9 +667,10 @@ export default class DecimalEVM {
     return await this.call!.updateValidatorMeta(validator, JSON.stringify(meta), estimateGas)
   }
   
-  private async buildMultiSigTxSendDEL(address: string, amount: string | number | bigint): Promise<SafeTransaction> {
+  private async buildMultiSigTxSendDEL(safeAddress: string, to: string, amount: string | number | bigint): Promise<SafeTransaction> {
     await this.checkConnect('multi-sig');
-    return buildSafeTransaction({ to: address, value: amount, nonce: 0 });
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    return buildSafeTransaction({ to: to, value: amount, nonce: await safe.contract.nonce() });
   }
 
   private async signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
@@ -666,11 +680,11 @@ export default class DecimalEVM {
 
   private async executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) {
     await this.checkConnect('multi-sig');
-    const safe = new ethers.Contract(safeAddress, []) //TODO add abi
-    return await this.call!.executeMultiSigTx(safeTx, signatures, safe) 
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    return await this.call!.executeMultiSigTx(safeTx, signatures, safe.contract) 
   }
 
-  public async createMultiSig(ownersData: {
+  private async createMultiSig(ownersData: {
     owner: string;
     weight: number;
   }[], weightThreshold?: number, estimateGas?: boolean) {

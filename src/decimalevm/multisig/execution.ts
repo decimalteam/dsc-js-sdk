@@ -197,7 +197,7 @@ export const executeTx = async (safe: ethers.Contract, safeTx: SafeTransaction, 
         safeTx.refundReceiver,
         signatureBytes,
         overrides || {},
-    );
+    ).then((tx: ethers.ContractTransaction) => tx.wait());
 };
 
 export const buildContractCall = async (
