@@ -46,6 +46,8 @@ export default class Call {
     delegationNft?: DecimalContractEVM;
     masterValidator?: DecimalContractEVM;
     multiCall?: DecimalContractEVM;
+    safe?: DecimalContractEVM;
+    safeFactory?: DecimalContractEVM;
     multiSend?: DecimalContractEVM;
     constructor(network: NETWORKS, provider: ethers.providers.JsonRpcProvider, account: HDNodeWallet);
     setDecimalContractEVM(decimalContractEVM: DecimalContractEVM, name: string): void;
@@ -57,13 +59,9 @@ export default class Call {
         callData: string;
     }[], estimateGas?: boolean): Promise<any>;
     createToken(token: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: null;
-        tokenAddress: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
         tokenAddress: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     convertToken(tokenIn: string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     approveToken(contract: ethers.Contract, spender: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
@@ -81,52 +79,24 @@ export default class Call {
     transferStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, estimateGas?: boolean): Promise<any>;
     withdrawStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
-        tx: null;
-        error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
-        error: null;
-        estimateGas: null;
-    } | {
-        tx: null;
         error: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
-        tx: null;
-        error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
-        error: null;
-        estimateGas: null;
-    } | {
-        tx: null;
         error: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<{
-        tx: null;
-        error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
-        error: null;
-        estimateGas: null;
-    } | {
-        tx: null;
         error: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     createCollection(nft: NFTCollection, typeNFT: TypeNFT, estimateGas?: boolean): Promise<{
-        tx: null;
-        nftCollectionAddress: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
         nftCollectionAddress: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     setApprovalForAllNFT(contract: ethers.Contract, to: string, approved: boolean, estimateGas?: boolean): Promise<any>;
     transferNFT(contract: ethers.Contract, from: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
@@ -134,31 +104,19 @@ export default class Call {
     burnNFT(contract: ethers.Contract, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     setTokenURINFT(contract: ethers.Contract, tokenId: string | number | bigint, tokenURI: string, estimateGas?: boolean): Promise<any>;
     mintNFT(contract: ethers.Contract, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: null;
-        tokenId: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
-    } | {
         tx: any;
         tokenId: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     mintNFTWithDELReserve(contract: ethers.Contract, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: null;
-        tokenId: string | number | bigint | undefined;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
-    } | {
         tx: any;
         tokenId: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     mintNFTWithTokenReserve(contract: ethers.Contract, to: string, tokenURI: string, reserveAmount: string | number | bigint, reserveToken: string, sign?: ethers.Signature, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: null;
-        tokenId: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
-    } | {
         tx: any;
         tokenId: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     addDELReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, estimateGas?: boolean): Promise<any>;
     addTokenReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
@@ -169,17 +127,9 @@ export default class Call {
     transferStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     withdrawStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<{
-        tx: null;
-        error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
-        error: null;
-        estimateGas: null;
-    } | {
-        tx: null;
         error: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, estimateGas?: boolean): Promise<any>;
     addValidatorWithETH(validator: string, meta: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
@@ -236,6 +186,14 @@ export default class Call {
     getDecimalContract(contractName: string, address?: boolean): string | ethers.Contract;
     getSignPermitERC721(contract: ethers.Contract, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature>;
     getSignPermitERC1155(contract: ethers.Contract, spender: string): Promise<ethers.Signature>;
+    createMultiSig(ownersData: {
+        owner: string;
+        weight: number;
+    }[], weightThreshold: number, estimateGas?: boolean): Promise<{
+        tx: any;
+        multisigAddress: any;
+        estimateGas: any;
+    }>;
     buildMultiSigTx(txs: MetaTransaction[], safe: ethers.Contract): Promise<SafeTransaction>;
     signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature>;
     executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract): Promise<any>;

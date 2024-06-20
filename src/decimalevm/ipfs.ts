@@ -36,6 +36,7 @@ export default class IPFS {
 
     // for node js
     public async uploadNFTBufferToIPFS(buffer:Buffer, fileName:string, name:string, description:string) {
+        if (Buffer.byteLength(buffer) > 100000000) throw new Error('File size should not exceed 100 MB.');
         const form: any = new FormData();
         const metadata = this.getMetadata(name, description)
 
@@ -52,6 +53,8 @@ export default class IPFS {
     }
 
     public async uploadTokenBufferToIPFS(buffer: Buffer, fileName: string): Promise<{ image: string }> {
+        if (Buffer.byteLength(buffer) > 100000000) throw new Error('File size should not exceed 100 MB.');
+        
         const form = new FormData();
 
         form.append('uploading_files', buffer, { filename: fileName });

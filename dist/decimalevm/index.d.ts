@@ -43,13 +43,9 @@ export default class DecimalEVM {
     sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: null;
-        tokenAddress: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
         tokenAddress: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     convertToken(tokenIn: string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     approveToken(tokenAddress: string, spender: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
@@ -63,42 +59,26 @@ export default class DecimalEVM {
     updateDetailsToken(tokenAddress: string, newIdentity: string, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean): Promise<any>;
     permitToken(tokenAddress: string, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean): Promise<any>;
     createCollectionERC721(payload: NFTCollection, estimateGas?: boolean): Promise<{
-        tx: null;
-        nftCollectionAddress: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
         nftCollectionAddress: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     createCollectionERC1155(payload: NFTCollection, estimateGas?: boolean): Promise<{
-        tx: null;
-        nftCollectionAddress: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
         nftCollectionAddress: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     approveNFT721(nftCollectionAddress: string, to: string, tokenId: string | number | bigint, estimateGas?: boolean): Promise<any>;
     approveForAllNFT(nftCollectionAddress: string, to: string, approved: boolean, estimateGas?: boolean): Promise<any>;
     mintNFTWithDELReserve(nftCollectionAddress: string, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: null;
-        tokenId: string | number | bigint | undefined;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
-    } | {
         tx: any;
         tokenId: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     mintNFTWithTokenReserve(nftCollectionAddress: string, to: string, tokenURI: string, reserveAmount: string | number | bigint, reserveToken: string, sign?: ethers.Signature, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: null;
-        tokenId: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber;
-    } | {
         tx: any;
         tokenId: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     addDELReserveNFT(nftCollectionAddress: string, tokenId: string | number | bigint, amountReserve: string | number | bigint, estimateGas?: boolean): Promise<any>;
     addTokenReserveNFT(nftCollectionAddress: string, tokenId: string | number | bigint, amountReserve: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
@@ -112,60 +92,28 @@ export default class DecimalEVM {
     transferStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, estimateGas?: boolean): Promise<any>;
     withdrawStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
-        tx: null;
-        error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
-        error: null;
-        estimateGas: null;
-    } | {
-        tx: null;
         error: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
-        tx: null;
-        error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
-        error: null;
-        estimateGas: null;
-    } | {
-        tx: null;
         error: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<{
-        tx: null;
-        error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
-        error: null;
-        estimateGas: null;
-    } | {
-        tx: null;
         error: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     delegateERC721(validator: string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     delegateERC1155(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     withdrawStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<{
-        tx: null;
-        error: null;
-        estimateGas: import("@ethersproject/bignumber").BigNumber | undefined;
-    } | {
         tx: any;
-        error: null;
-        estimateGas: null;
-    } | {
-        tx: null;
         error: any;
-        estimateGas: null;
+        estimateGas: any;
     }>;
     addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, estimateGas?: boolean): Promise<any>;
     addValidatorWithETH(meta: ValidatorMeta, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
@@ -175,6 +123,14 @@ export default class DecimalEVM {
     private buildMultiSigTxSendDEL;
     private signMultiSigTx;
     private executeMultiSigTx;
+    createMultiSig(ownersData: {
+        owner: string;
+        weight: number;
+    }[], weightThreshold?: number): Promise<{
+        tx: any;
+        multisigAddress: any;
+        estimateGas: any;
+    }>;
     getBalance(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
     getNftType(address: string): Promise<TypeNFT>;
     getNftTypeFromContract(address: string): Promise<TypeNFT>;
@@ -238,6 +194,7 @@ export default class DecimalEVM {
     verifyСontract(address: string, contract_code: string, compiler: string, optimizer: string, runs: string, evm_version: string): Promise<boolean>;
     private validationValidatorMeta;
     getFeeData(): Promise<ethers.providers.FeeData>;
+    uploadNFTBase64ToIPFS(base64: string, fileName: string, name: string, description: string): Promise<any>;
     uploadNFTBufferToIPFS(buffer: Buffer, fileName: string, name: string, description: string): Promise<any>;
     uploadTokenBufferToIPFS(buffer: Buffer, fileName: string): Promise<{
         image: string;

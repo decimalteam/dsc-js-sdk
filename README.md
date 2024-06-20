@@ -35,7 +35,7 @@ await decimalEVM.connect('delegation') // initializes only delegation contact (d
 await decimalEVM.connect('delegation-nft') // initializes only delegation-nft contact (delegation nft)
 await decimalEVM.connect('master-validator') // initializes only master-validator contact (master node)
 await decimalEVM.connect('multi-call') // initializes only multi-call contact (multi send)
-await decimalEVM.connect('multi-sign') // initializes only multi-sign contact
+await decimalEVM.connect('multi-sig') // initializes only multi-sig contact
 ```
 
 ## DEL
@@ -551,7 +551,7 @@ if (stakesFrozenFiltered.length > 0) {
 const newValidator: any = {
     operator_address: decimalWallet.evmAddress,
     reward_address: decimalWallet.evmAddress,
-    consensus_pubkey: decimalWallet.getPublicKeyString(),
+    consensus_pubkey: Buffer.from(decimalWallet.getPublicKey().key.buffer).toString('base64'),
     description: {
         moniker: 'test-node-sgp1-01',
         identity: '',
@@ -569,7 +569,7 @@ await decimalEVM.addValidatorWithETH(newValidator, decimalEVM.parseEther(2))
 const newValidator: any = {
     operator_address: decimalWallet.evmAddress,
     reward_address: decimalWallet.evmAddress,
-    consensus_pubkey: decimalWallet.getPublicKeyString(),
+    consensus_pubkey: Buffer.from(decimalWallet.getPublicKey().key.buffer).toString('base64'),
     description: {
         moniker: 'test-node-sgp1-01',
         identity: '',

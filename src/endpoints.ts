@@ -32,6 +32,14 @@ export function getMultiCallAddresses(network: NETWORKS): string {
   return multicallAddresses[network];
 }
 
+export function getMultiSigAddresses(network: NETWORKS): {
+  safe: string;
+  safeFactory: string;
+  multiSend: string;
+} {
+  return multiSigAddresses[network];
+}
+
 export function getRpcEndpoint(
   network: NETWORKS,
   isNodeDirectMode: boolean
@@ -115,4 +123,22 @@ const multicallAddresses = {
   [NETWORKS.DEVNET]: "0xDFD261f1E962C5E70e509d332e68C82ed7a36b90", 
   [NETWORKS.TESTNET]: "0x81FD5FAe106dFD0343B0435a1bc0ef89BB14C317",
   [NETWORKS.MAINNET]: "0x949d1A0757803C51F2EfFFEb5472C861A898B8E8", //TODO
+};
+
+const multiSigAddresses = {
+  [NETWORKS.DEVNET]: {
+    safe: "0x9ce939092224973DFdF94d77AB922a86c80e2cbB",
+    safeFactory: "0xfBD0d88BdD63FD44ff3Ed38351237eEa9E0702C6",
+    multiSend: "0x1e7749fEc23173D5CC185d61F571f2F2a76eF1d6"
+  }, 
+  [NETWORKS.TESTNET]: {
+    safe: "0x225B65b609f814cab1A7e70506aC24b3B1e25197",
+    safeFactory: "0x6A9471C4A265B61dFF58E6db79b62627991374AE",
+    multiSend: "0x37Ea7B8B9Cdb67EC40F166b92B6195310e78c389"
+  }, 
+  [NETWORKS.MAINNET]: {
+    safe: "", //TODO
+    safeFactory: "", //TODO
+    multiSend: "" //TODO
+  }, 
 };

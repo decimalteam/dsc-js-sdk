@@ -5,6 +5,7 @@ import {
     getNewApiEndpoint,
     NETWORKS,
     getMultiCallAddresses,
+    getMultiSigAddresses
 } from "../endpoints";
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
@@ -98,7 +99,7 @@ export default class DecimalEVM {
       await this.checkConnect('delegation-nft')
       await this.checkConnect('master-validator')
       await this.checkConnect('multi-call')
-      await this.checkConnect('multi-sign')
+      await this.checkConnect('multi-sig')
     }
   }
   
@@ -166,10 +167,20 @@ export default class DecimalEVM {
           this.call.setDecimalContractEVM(multiCall, 'multiCall')
         }
         break;
-      case 'multi-sign':
+      case 'multi-sig':
         if (!this.call.delegationNft) {
-          const multiSend = await this.getContract(getMultiCallAddresses(this.network), multiCallAbi);  //TODO edit to multiSend for multisig
+          const [
+            safe,
+            safeFactory,
+            multiSend
+          ] = await Promise.all([
+            this.getContract(getMultiSigAddresses(this.network).safe),
+            this.getContract(getMultiSigAddresses(this.network).safeFactory),
+            this.getContract(getMultiSigAddresses(this.network).multiSend)
+          ])
           this.call.setDecimalContractEVM(multiSend, 'multiSend')
+          this.call.setDecimalContractEVM(safe, 'safe')
+          this.call.setDecimalContractEVM(safeFactory, 'safeFactory')
         }
         break;
       default:
@@ -637,21 +648,35 @@ export default class DecimalEVM {
   }
   
   private async buildMultiSigTxSendDEL(address: string, amount: string | number | bigint): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sign');
+    await this.checkConnect('multi-sig');
     return buildSafeTransaction({ to: address, value: amount, nonce: 0 });
   }
 
   private async signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
-    await this.checkConnect('multi-sign');
+    await this.checkConnect('multi-sig');
     return await this.call!.signMultiSigTx(safeAddress, safeTx);
   }
 
   private async executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) {
-    await this.checkConnect('multi-sign');
+    await this.checkConnect('multi-sig');
     const safe = new ethers.Contract(safeAddress, []) //TODO add abi
     return await this.call!.executeMultiSigTx(safeTx, signatures, safe) 
   }
 
+  public async createMultiSig(ownersData: {
+    owner: string;
+    weight: number;
+  }[], weightThreshold?: number) {
+    await this.checkConnect('multi-sig');
+    for (let i = 0; i < ownersData.length; i++) {
+      if (ownersData[i].weight < 1 || ownersData[i].weight > 1000)  throw new Error("Invalid owner weight")
+    }
+    if (weightThreshold === 0) throw new Error("Invalid weightThreshold")
+    if (!weightThreshold) {
+      weightThreshold = ownersData.reduce((sum, num) => sum + num.weight, 0);
+    }
+    return await this.call!.createMultiSig(ownersData, weightThreshold) 
+  }
 
   // view function
 
@@ -995,6 +1020,17 @@ export default class DecimalEVM {
   }
 
   //ipfs
+  public async uploadNFTBase64ToIPFS(base64: string, fileName:string, name:string, description:string) {
+    var base64Image;
+    if (base64.includes(';base64,')) {
+      base64Image = base64.split(';base64,').pop();
+    } else {
+      base64Image = base64;
+    }
+    const buffer = Buffer.from(base64Image!, 'base64');
+    return await this.ipfs.uploadNFTBufferToIPFS(buffer, fileName, name, description);
+  }
+  
   public async uploadNFTBufferToIPFS(buffer:Buffer, fileName:string, name:string, description:string) {
     return await this.ipfs.uploadNFTBufferToIPFS(buffer, fileName, name, description);
   }
