@@ -323,6 +323,7 @@ export default class Queries {
                 creator
                 tokenType
                 collectionSupply
+                contractURI
                 nfts {
                   tokenURI
                   tokenId
@@ -355,6 +356,7 @@ export default class Queries {
                 creator
                 tokenType
                 collectionSupply
+                contractURI
                 nfts {
                   tokenURI
                   tokenId
@@ -391,6 +393,7 @@ export default class Queries {
                     creator
                     tokenType
                     collectionSupply
+                    contractURI
                 }
                 transfers {
                   from

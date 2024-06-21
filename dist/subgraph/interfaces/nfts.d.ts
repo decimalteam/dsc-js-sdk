@@ -5,6 +5,7 @@ export interface NFTCollection {
     creator: string;
     tokenType: string;
     collectionSupply: string;
+    contractURI: string;
     nfts: NFTToken[];
 }
 export interface NFTToken {

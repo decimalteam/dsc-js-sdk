@@ -149,8 +149,8 @@ describe('Subgraph', () => {
 
         const resultGetNftCollections = await subgraph.getNftCollections(1000, 0)
         console.log(resultGetNftCollections)
-        const resultGetNftCollectionsByOwner = await subgraph.getNftCollectionsByOwner(Account, 1000, 0)
-        console.log(resultGetNftCollectionsByOwner)
+        const resultgetNftCollectionsByCreator = await subgraph.getNftCollectionsByCreator(Account, 1000, 0)
+        console.log(resultgetNftCollectionsByCreator)
 
         if (resultGetNftCollections.length > 0) {
             const nftCollection = resultGetNftCollections[0] // first nft collection
