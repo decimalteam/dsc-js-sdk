@@ -951,8 +951,8 @@ export default class Call {
     public async signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
         return safeSignTypedData(this.account, safeAddress, safeTx)
     }
-    public async executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract) {
-        return await executeTx(safe, safeTx, signatures);
+    public async executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract, estimateGas?: boolean) {
+        return await executeTx(safe, safeTx, signatures, estimateGas);
     }
 
 }
