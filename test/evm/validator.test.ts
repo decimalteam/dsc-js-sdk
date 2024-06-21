@@ -34,6 +34,8 @@ describe('Validators', () => {
           token: tokenAddress,
           amount: decimalEVM.parseEther(10)
         }
+        const masterValidatorAddress = await decimalEVM.getDecimalContractAddress('master-validator')
+        await decimalEVM.approveToken(tokenAddress, masterValidatorAddress, stakeValidator.amount)
         const resultAddWithToken = await decimalEVM.addValidatorWithToken(newValidator, stakeValidator)
         const pauseValidator = await decimalEVM.pauseValidator(newValidator.operator_address)
         const unpauseValidator = await decimalEVM.unpauseValidator(newValidator.operator_address)

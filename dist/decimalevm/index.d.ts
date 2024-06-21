@@ -20,7 +20,15 @@ export default class DecimalEVM {
     private contarcts;
     private abis;
     multisig: {
-        buildTxSendDEL: (address: string, amount: string | number | bigint) => Promise<SafeTransaction>;
+        create: (ownersData: {
+            owner: string;
+            weight: number;
+        }[], weightThreshold?: number, estimateGas?: boolean) => Promise<{
+            tx: any;
+            multisigAddress: any;
+            estimateGas: any;
+        }>;
+        buildTxSendDEL: (safeAddress: string, to: string, amount: string | number | bigint) => Promise<SafeTransaction>;
         signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
         executeTx: (safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) => Promise<any>;
     };
@@ -115,22 +123,16 @@ export default class DecimalEVM {
         error: any;
         estimateGas: any;
     }>;
-    addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, estimateGas?: boolean): Promise<any>;
+    addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     addValidatorWithETH(meta: ValidatorMeta, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     removeValidator(validator: string, estimateGas?: boolean): Promise<any>;
     pauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
     unpauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
+    updateValidatorMeta(meta: ValidatorMeta, estimateGas?: boolean): Promise<any>;
     private buildMultiSigTxSendDEL;
     private signMultiSigTx;
     private executeMultiSigTx;
-    createMultiSig(ownersData: {
-        owner: string;
-        weight: number;
-    }[], weightThreshold?: number): Promise<{
-        tx: any;
-        multisigAddress: any;
-        estimateGas: any;
-    }>;
+    private createMultiSig;
     getBalance(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
     getNftType(address: string): Promise<TypeNFT>;
     getNftTypeFromContract(address: string): Promise<TypeNFT>;
