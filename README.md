@@ -1193,7 +1193,7 @@ const result = await subgraph.getNftCollections(first, skip)
 #### Get NFT Collections
 ```js
 const owner = "0x35119df12afdf848b7ef2536af2411ab0a611c45"
-const result = await subgraph.getNftCollectionsByOwner(owner, first, skip)
+const result = await subgraph.getNftCollectionsByCreator(owner, first, skip)
 ```
 
 #### Get NFT Collection by address NFT Connection
