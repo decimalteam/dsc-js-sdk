@@ -7,6 +7,7 @@ import { TypeNFT, Token, NFTCollection, ValidotorStake } from "./call";
 import { TokenType } from "./interfaces/delegation";
 import { ValidatorMeta, ValidatorStatus } from "./interfaces/validator";
 import { SafeSignature, SafeTransaction } from "./multisig/execution";
+import { Blob } from "buffer";
 export default class DecimalEVM {
     private readonly network;
     private readonly wallet;
@@ -139,6 +140,8 @@ export default class DecimalEVM {
     private approveHashMultiSig;
     private executeMultiSigTx;
     private createMultiSig;
+    private decodeSafeTransaction;
+    private decodeData;
     getBalance(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
     getNftType(address: string): Promise<TypeNFT>;
     getNftTypeFromContract(address: string): Promise<TypeNFT>;
@@ -207,7 +210,7 @@ export default class DecimalEVM {
     uploadTokenBufferToIPFS(buffer: Buffer, fileName: string): Promise<{
         image: string;
     }>;
-    getBlobMetadata(name: string, description: string): Promise<import("buffer").Blob>;
+    getBlobMetadata(name: string, description: string): Promise<Blob>;
     uploadNFTFormToIPFS(form: any): Promise<any>;
     uploadTokenFormToIPFS(form: any): Promise<any>;
     getUrlFromCid(cid: string): string;
