@@ -737,6 +737,58 @@ export default class DecimalEVM {
     return await this.call!.createMultiSig(ownersData, weightThreshold, estimateGas) 
   }
 
+  private decodeSafeTransaction(safeTx: SafeTransaction): {
+    action: string;
+    tokenType: string;
+    token: string;
+    to: string;
+    tokenId?: string;
+    amount?: string;
+  } {
+    if (safeTx.data == "0x") return {
+      action: 'transfer',
+      tokenType: 'Native',
+      token: 'DEL',
+      to: safeTx.to,
+      amount: safeTx.value.toString()
+    }
+    const resultTransferERC20 = this.decodeData("function transfer(address to, uint256 value)", safeTx.data)
+    if (resultTransferERC20) return {
+      action: 'transfer',
+      tokenType: 'ERC20',
+      token: safeTx.to,
+      to: resultTransferERC20[0],
+      amount: resultTransferERC20[1]
+    }
+    const resultTransferERC721 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)", safeTx.data)
+    if (resultTransferERC721) return {
+      action: 'transfer',
+      tokenType: 'ERC721',
+      token: safeTx.to,
+      to: resultTransferERC721[1],
+      tokenId: resultTransferERC721[2],
+    }
+    const resultTransferERC1155 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes data)", safeTx.data)
+    if (resultTransferERC1155) return {
+      action: 'transfer',
+      tokenType: 'ERC1155',
+      token: safeTx.to,
+      to: resultTransferERC1155[1],
+      tokenId: resultTransferERC1155[2],
+      amount: resultTransferERC1155[3]
+    }
+    throw Error('Dot')
+  }
+  
+  private decodeData(interFace: string, data: string) {
+    try {
+      const iFace = new ethers.utils.Interface([interFace]);
+      return iFace.decodeFunctionData(iFace.functions[0].name, data)
+    } catch {
+      return undefined
+    }
+  }
+
   // view function
 
   public async getBalance(address: string) {
