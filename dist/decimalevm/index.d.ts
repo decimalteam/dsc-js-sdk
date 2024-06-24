@@ -29,8 +29,11 @@ export default class DecimalEVM {
             estimateGas: any;
         }>;
         buildTxSendDEL: (safeAddress: string, to: string, amount: string | number | bigint) => Promise<SafeTransaction>;
+        buildTxSendToken: (safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint) => Promise<SafeTransaction>;
+        buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint) => Promise<SafeTransaction>;
         signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
-        executeTx: (safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) => Promise<any>;
+        approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
+        executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
     };
     constructor(wallet: Wallet, network: NETWORKS);
     private getContract;
@@ -130,7 +133,10 @@ export default class DecimalEVM {
     unpauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
     updateValidatorMeta(meta: ValidatorMeta, estimateGas?: boolean): Promise<any>;
     private buildMultiSigTxSendDEL;
+    private buildMultiSigTxSendToken;
+    private buildMultiSigTxSendNFT;
     private signMultiSigTx;
+    private approveHashMultiSig;
     private executeMultiSigTx;
     private createMultiSig;
     getBalance(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;

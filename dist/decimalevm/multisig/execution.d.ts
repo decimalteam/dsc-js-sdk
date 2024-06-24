@@ -48,7 +48,7 @@ export declare const safeSignMessage: (signer: ethers.Wallet, safeAddress: strin
 export declare const buildContractSignature: (signerAddress: string, signature: string) => SafeSignature;
 export declare const buildSignatureBytes: (signatures: SafeSignature[]) => string;
 export declare const logGas: (message: string, tx: Promise<any>, skip?: boolean) => Promise<any>;
-export declare const executeTx: (safe: ethers.Contract, safeTx: SafeTransaction, signatures: SafeSignature[], overrides?: any) => Promise<any>;
+export declare const executeTx: (safe: ethers.Contract, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean, overrides?: any) => Promise<any>;
 export declare const buildContractCall: (contract: ethers.Contract, method: string, params: any[], nonce: BigNumberish, delegateCall?: boolean, overrides?: Partial<SafeTransaction>) => Promise<SafeTransaction>;
 export declare const executeTxWithSigners: (safe: ethers.Contract, tx: SafeTransaction, signers: ethers.Wallet[], overrides?: any) => Promise<any>;
 export declare const executeContractCallWithSigners: (safe: ethers.Contract, contract: BaseContract, method: string, params: any[], signers: ethers.Wallet[], delegateCall?: boolean, overrides?: Partial<SafeTransaction>) => Promise<any>;

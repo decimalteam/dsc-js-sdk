@@ -199,5 +199,5 @@ export default class Call {
     }>;
     buildMultiSigTx(txs: MetaTransaction[], safe: ethers.Contract): Promise<SafeTransaction>;
     signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature>;
-    executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract): Promise<any>;
+    executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract, estimateGas?: boolean): Promise<any>;
 }
