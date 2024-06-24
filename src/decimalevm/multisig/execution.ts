@@ -183,8 +183,23 @@ export const logGas = async (message: string, tx: Promise<any>, skip?: boolean):
     });
 };
 
-export const executeTx = async (safe: ethers.Contract, safeTx: SafeTransaction, signatures: SafeSignature[], overrides?: any): Promise<any> => {
+export const executeTx = async (safe: ethers.Contract, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean, overrides?: any): Promise<any> => {
     const signatureBytes = buildSignatureBytes(signatures);
+    if (estimateGas) {
+        return safe.estimateGas.execTransaction(
+            safeTx.to,
+            safeTx.value,
+            safeTx.data,
+            safeTx.operation,
+            safeTx.safeTxGas,
+            safeTx.baseGas,
+            safeTx.gasPrice,
+            safeTx.gasToken,
+            safeTx.refundReceiver,
+            signatureBytes,
+            overrides || {},
+        ) 
+    }
     return safe.execTransaction(
         safeTx.to,
         safeTx.value,

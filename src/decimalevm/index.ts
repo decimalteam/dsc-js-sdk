@@ -62,12 +62,18 @@ export default class DecimalEVM {
         estimateGas: any;
     }>;
     buildTxSendDEL: (safeAddress: string, to: string, amount: string | number | bigint) => Promise<SafeTransaction>;
+    buildTxSendToken: (safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint) => Promise<SafeTransaction>;
+    buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint) => Promise<SafeTransaction>
     signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
-    executeTx: (safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) => Promise<any>
+    approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
+    executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
   }>{
     create: this.createMultiSig.bind(this),
     buildTxSendDEL: this.buildMultiSigTxSendDEL.bind(this),
+    buildTxSendToken: this.buildMultiSigTxSendToken.bind(this),
+    buildTxSendNFT: this.buildMultiSigTxSendNFT.bind(this),
     signTx: this.signMultiSigTx.bind(this),
+    approveHash: this.approveHashMultiSig.bind(this),
     executeTx: this.executeMultiSigTx.bind(this),
   };
   
@@ -673,15 +679,43 @@ export default class DecimalEVM {
     return buildSafeTransaction({ to: to, value: amount, nonce: await safe.contract.nonce() });
   }
 
+  private async buildMultiSigTxSendToken(safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const iFace = new ethers.utils.Interface(["function transfer(address to, uint256 value)"]);
+    const data = iFace.encodeFunctionData('transfer', [to, amount])
+    return buildSafeTransaction({ data, to: tokenAddress, nonce: await safe.contract.nonce() });
+  }
+
+  private async buildMultiSigTxSendNFT(safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    let data: string;
+    if (amount === undefined) {
+      const iFace = new ethers.utils.Interface(["function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)"]);
+      data = iFace.encodeFunctionData('safeTransferFrom', [safeAddress, to, tokenId, "0x"])
+    } else {
+      const iFace = new ethers.utils.Interface(["function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes data)"]);
+      data = iFace.encodeFunctionData('safeTransferFrom', [safeAddress, to, tokenId, amount, "0x"])
+    }
+    return buildSafeTransaction({ data, to: tokenAddress, nonce: await safe.contract.nonce() });
+  }
+
   private async signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
     await this.checkConnect('multi-sig');
     return await this.call!.signMultiSigTx(safeAddress, safeTx);
   }
 
-  private async executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safeAddress: string) {
+  private async approveHashMultiSig(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    return await this.call!.executeMultiSigTx(safeTx, signatures, safe.contract) 
+    return await safeApproveHash(this.account, safe.contract, safeTx)
+  }
+
+  private async executeMultiSigTx(safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) {
+    await this.checkConnect('multi-sig');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    return await this.call!.executeMultiSigTx(safeTx, signatures, safe.contract, estimateGas) 
   }
 
   private async createMultiSig(ownersData: {

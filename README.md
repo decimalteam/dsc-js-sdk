@@ -706,6 +706,77 @@ const tx = await decimalEVM.multiCall(callDatas)
 console.log(tx)
 ```
 
+## MultiSig
+
+### Create multisig wallet
+```js
+const ownerData = [{
+    owner: addressOwner1,
+    weight: 100
+},
+{
+    owner: addressOwner2,
+    weight: 100
+},
+{
+    owner: addressOwner3,
+    weight: 100
+}]
+const weightThreshold = 200 //The weight threshold for making a transaction
+const { multisigAddress } = await decimalEVM.multisig.create(ownerData, weightThreshold)
+```
+
+### Get build transaction for Send DEL
+```js
+const to = "0x0000000000000000000000000000000000000099";
+const amount = decimalEVM.parseEther('10')
+const safeTx = await decimalEVM.multisig.buildTxSendDEL(multisigAddress, to, amount)
+```
+
+### Get build transaction for Send Token
+```js
+const to = "0x0000000000000000000000000000000000000099";
+const amount = decimalEVM.parseEther('10')
+const safeTx = await decimalEVM1.multisig.buildTxSendToken(multisigAddress, tokenAddress, to, amount)
+```
+
+### Get build transaction for Send NFT
+```js
+const to = "0x0000000000000000000000000000000000000099";
+const tokenAddress = "0x65Dad3283BCE73E5EfBbaB8B0183dF5FdF4506e5"
+const tokenId = 0;
+const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, to, tokenId, ) // send erc721
+//const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, to, tokenId, amount) // send erc1155
+```
+
+### Sign and execute transaction
+```js
+//After build the transaction, you need to sign it
+
+// sign tx
+const signTx1 = await decimalEVM.multisig.signTx(multisigAddress, safeTx)   // sign owner 1
+//const signTx2 = await decimalEVM2.multisig.signTx(multisigAddress, safeTx) // sign owner 2
+//const signTx3 = await decimalEVM3.multisig.signTx(multisigAddress, safeTx) // sign owner 3
+
+// or sign tx and approve hash
+const signTx1 = await decimalEVM.multisig.approveHash(multisigAddress, safeTx)   // sign owner 1
+//const signTx2 = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx) // sign owner 2
+//const signTx3 = await decimalEVM3.multisig.approveHash(multisigAddress, safeTx) // sign owner 3
+
+//Executing a transaction
+const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2, signTx3]) //sign and specify user signatures
+```
+
+### Send DEL for MultiSig (with approve hash signatures)
+```js
+const amount = decimalEVM.parseEther('10')
+const safeTx = await decimalEVM.multisig.buildTxSendDEL(multisigAddress, "0x0000000000000000000000000000000000000099", amount)
+const signTx1 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx)   // sign owner 1
+//const signTx2 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) // sign owner 2
+//const signTx3 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) // sign owner 3
+const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2, signTx3]) //sign and specify user signatures
+```
+
 ## Viewing functions
 
 ### Network
