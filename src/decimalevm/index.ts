@@ -29,6 +29,7 @@ import {
   SafeSignature,
   SafeTransaction
 } from "./multisig/execution";
+import { Blob } from "buffer";
 
 export default class DecimalEVM {
 
@@ -779,7 +780,7 @@ export default class DecimalEVM {
     }
     throw Error('Dot')
   }
-  
+
   private decodeData(interFace: string, data: string) {
     try {
       const iFace = new ethers.utils.Interface([interFace]);
@@ -1139,7 +1140,8 @@ export default class DecimalEVM {
       base64Image = base64;
     }
     const buffer = Buffer.from(base64Image!, 'base64');
-    return await this.ipfs.uploadNFTBufferToIPFS(buffer, fileName, name, description);
+    const blob = new Blob([buffer], { type: base64.split(';base64,')[0].split(':')[1] })
+    return await this.ipfs.uploadNFTBlobToIPFS(blob, fileName, name, description);
   }
 
   public async uploadNFTBufferToIPFS(buffer:Buffer, fileName:string, name:string, description:string) {
