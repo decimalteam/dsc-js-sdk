@@ -324,6 +324,8 @@ export default class Queries {
                 tokenType
                 collectionSupply
                 contractURI
+                allowMint
+                burnable
                 nfts {
                   tokenURI
                   tokenId
@@ -357,6 +359,8 @@ export default class Queries {
                 tokenType
                 collectionSupply
                 contractURI
+                allowMint
+                burnable
                 nfts {
                   tokenURI
                   tokenId
@@ -394,6 +398,8 @@ export default class Queries {
                     tokenType
                     collectionSupply
                     contractURI
+                    allowMint
+                    burnable
                 }
                 transfers {
                   from

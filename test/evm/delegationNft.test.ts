@@ -25,7 +25,8 @@ describe('Delegation NFT', () => {
                 symbol: 'NFTtest',
                 name: 'NFTName',
                 contractURI: 'ipfs://ipfs/qwerty12345',
-                refundable: false
+                refundable: false,
+                burnable: true
             }
             const resultCollection721 = await decimalEVM.createCollectionERC721(newNFT)
             const resultCollection1155 = await decimalEVM.createCollectionERC1155(newNFT)
@@ -71,6 +72,7 @@ describe('Delegation NFT', () => {
                 name: 'NFTName',
                 contractURI: 'ipfs://ipfs/qwerty12345',
                 refundable: false,
+                burnable: true
             }
             const resultCollection721 = await decimalEVM.createCollectionERC721(newNFT)
             const resultCollection1155 = await decimalEVM.createCollectionERC1155(newNFT)

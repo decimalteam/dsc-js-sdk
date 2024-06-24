@@ -29,6 +29,8 @@ export type NFTCollection = {
     symbol: string;
     name: string;
     contractURI: string;
+    allowMint: boolean;
+    burnable: boolean;
     refundable: boolean;
 };
 export type ValidotorStake = {

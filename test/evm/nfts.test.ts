@@ -24,7 +24,8 @@ describe('NFTs', () => {
           symbol: 'NFTtest',
           name: 'NFTName',
           contractURI: 'ipfs://ipfs/qwerty12345',
-          refundable: false
+          refundable: false,
+          burnable: true
         }
 
         //const resultERC721Standart = await decimalEVM.createCollectionERC721Standart(newNFT)
