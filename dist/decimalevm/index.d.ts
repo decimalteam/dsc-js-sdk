@@ -67,31 +67,10 @@ export default class DecimalEVM {
     sellExactTokensForDEL(tokenAddress: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
     updateDetailsToken(tokenAddress: string, newIdentity: string, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean): Promise<any>;
     permitToken(tokenAddress: string, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean): Promise<any>;
-<<<<<<< HEAD
-    createCollectionERC721(payload: NFTCollection, estimateGas?: boolean): Promise<{
-        tx: any;
-        nftCollectionAddress: any;
-        estimateGas: any;
-    }>;
-    createCollectionERC1155(payload: NFTCollection, estimateGas?: boolean): Promise<{
-        tx: any;
-        nftCollectionAddress: any;
-        estimateGas: any;
-    }>;
-    createCollectionERC721Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<{
-        tx: any;
-        nftCollectionAddress: any;
-        estimateGas: any;
-    }>;
-    createCollectionERC1155Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<{
-        tx: any;
-        nftCollectionAddress: any;
-        estimateGas: any;
-    }>;
-=======
     createCollectionERC721(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
     createCollectionERC1155(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
->>>>>>> origin/v45_ethers_v5
+    createCollectionERC721Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<any>;
+    createCollectionERC1155Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<any>;
     approveNFT721(nftCollectionAddress: string, to: string, tokenId: string | number | bigint, estimateGas?: boolean): Promise<any>;
     approveForAllNFT(nftCollectionAddress: string, to: string, approved: boolean, estimateGas?: boolean): Promise<any>;
     mintNFTWithDELReserve(nftCollectionAddress: string, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;

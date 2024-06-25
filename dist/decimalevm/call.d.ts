@@ -77,33 +77,10 @@ export default class Call {
     delegateToken(validator: string, tokenAddress: string, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, estimateGas?: boolean): Promise<any>;
     withdrawStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
-<<<<<<< HEAD
-    applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }>;
-    applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }>;
-    completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }>;
-    createCollection(nft: NFTCollection | NFTCollectionReserveless, typeNFT: TypeNFT, withReserve: boolean, estimateGas?: boolean): Promise<{
-        tx: any;
-        nftCollectionAddress: any;
-        estimateGas: any;
-    }>;
-=======
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
-    createCollection(nft: NFTCollection, typeNFT: TypeNFT, estimateGas?: boolean): Promise<any>;
->>>>>>> origin/v45_ethers_v5
+    createCollection(nft: NFTCollection | NFTCollectionReserveless, typeNFT: TypeNFT, withReserve: boolean, estimateGas?: boolean): Promise<any>;
     setApprovalForAllNFT(contract: ethers.Contract, to: string, approved: boolean, estimateGas?: boolean): Promise<any>;
     transferNFT(contract: ethers.Contract, from: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     disableMintNFT(contract: ethers.Contract, estimateGas?: boolean): Promise<any>;
