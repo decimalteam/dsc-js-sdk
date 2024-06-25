@@ -156,19 +156,14 @@ export default class Call {
     }
 
     //token-center
-    public async createToken(token:Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenAddress: any;
-        estimateGas: any;
-    }> {
+    public async createToken(token:Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<any> {
         if (estimateGas) {
-            const gas = await this.tokenCenter!.contract.estimateGas.createToken(token, await this.txOptions({value: reserve}))
-            return {tx: null, tokenAddress: null, estimateGas: gas};
+            return await this.tokenCenter!.contract.estimateGas.createToken(token, await this.txOptions({value: reserve}))
         }
 
         const tx = await this.tokenCenter!.contract.createToken(token, await this.txOptions({value: reserve})).then((tx: ethers.ContractTransaction) => tx.wait());
         const event = this.parseLog(this.tokenCenter!.contract, tx.logs, 'TokenDeployed')
-        return {tx: tx, tokenAddress: event.args[0], estimateGas: null};
+        return {tx: tx, tokenAddress: event.args[0]};
     }
 
     public async convertToken(tokenIn:string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean) {
@@ -260,75 +255,56 @@ export default class Call {
         if (estimateGas) return await this.delegation!.contract.estimateGas.withdraw(validator, tokenAddress, amount, await this.txOptions())
         return await this.delegation!.contract.withdraw(validator, tokenAddress, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
-    public async applyPenaltyToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean):Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }> {
+    public async applyPenaltyToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean):Promise<any> {
         try {
             await this.delegation!.contract.callStatic.applyPenaltyToStake(validator, delegator, tokenAddress, await this.txOptions())
             if (estimateGas) {
-                const gas = await this.delegation!.contract.estimateGas.applyPenaltyToStake(validator, delegator, tokenAddress, await this.txOptions())
-                return {tx: null, error: null, estimateGas: gas} 
+                return await this.delegation!.contract.estimateGas.applyPenaltyToStake(validator, delegator, tokenAddress, await this.txOptions())
             }
             const tx = await this.delegation!.contract.applyPenaltyToStake(validator, delegator, tokenAddress, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-            return {tx: tx, error: null, estimateGas: null} 
+            return {tx: tx, error: null} 
         } catch (err: any) {
             if (err?.revert?.name != null) {
-                return {tx: null, error: err.revert.name, estimateGas: null} 
+                return {tx: null, error: err.revert.name} 
             }
             throw new Error(err)
         }
     }
 
-    public async applyPenaltiesToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }> {
+    public async applyPenaltiesToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any> {
         try {
             await this.delegation!.contract.callStatic.applyPenaltiesToStake(validator, delegator, tokenAddress, await this.txOptions())
             if (estimateGas) {
-                const gas = await this.delegation!.contract.estimateGas.applyPenaltiesToStake(validator, delegator, tokenAddress, await this.txOptions())
-                return {tx: null, error: null, estimateGas: gas} 
+                return await this.delegation!.contract.estimateGas.applyPenaltiesToStake(validator, delegator, tokenAddress, await this.txOptions())
             }
             const tx = await this.delegation!.contract.applyPenaltiesToStake(validator, delegator, tokenAddress, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-            return {tx: tx, error: null, estimateGas: null} 
+            return {tx: tx, error: null} 
         } catch (err: any) {
             if (err?.revert?.name != null) {
-                return {tx: null, error: err.revert.name, estimateGas: null} 
+                return {tx: null, error: err.revert.name} 
             }
             throw new Error(err)
         }
     }
 
-    public async completeStakeToken(indexes:string[] | number[], estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }> {
+    public async completeStakeToken(indexes:string[] | number[], estimateGas?: boolean): Promise<any> {
         try {
             await this.delegation!.contract.callStatic.complete(indexes, await this.txOptions())
             if (estimateGas) {
-                const gas = await this.delegation!.contract.estimateGas.complete(indexes, await this.txOptions())
-                return {tx: null, error: null, estimateGas: gas} 
+                return await this.delegation!.contract.estimateGas.complete(indexes, await this.txOptions())
             }
             const tx = await this.delegation!.contract.complete(indexes, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-            return {tx: tx, error: null, estimateGas: null} 
+            return {tx: tx, error: null} 
         } catch (err: any) {
             if (err?.revert?.name != null) {
-                return {tx: null, error: err.revert.name, estimateGas: null} 
+                return {tx: null, error: err.revert.name} 
             }
             throw new Error(err)
         }
     }
 
     //nft-center
-    public async createCollection(nft:NFTCollection, typeNFT: TypeNFT, estimateGas?: boolean): Promise<{
-        tx: any;
-        nftCollectionAddress: any;
-        estimateGas: any;
-    }> {
+    public async createCollection(nft:NFTCollection, typeNFT: TypeNFT, estimateGas?: boolean): Promise<any> {
         let collection: string;
         switch (typeNFT) {
             //case TypeNFT.ERC721Standart:
@@ -345,12 +321,11 @@ export default class Call {
                 break;
         }
         if (estimateGas) {
-            const gas = await this.nftCenter!.contract.estimateGas[collection](nft, await this.txOptions())
-            return {tx: null, nftCollectionAddress: null, estimateGas: gas};
+            return await this.nftCenter!.contract.estimateGas[collection](nft, await this.txOptions())
         }
         const tx = await this.nftCenter!.contract[collection](nft, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         const event = this.parseLog(this.nftCenter!.contract, tx.logs, 'NFTCreated')
-        return {tx: tx, nftCollectionAddress: event.args[0], estimateGas: null};
+        return {tx: tx, nftCollectionAddress: event.args[0]};
     }
     
 
@@ -396,93 +371,73 @@ export default class Call {
     }
 
     //nft 721Standart && 1155Standart
-    public async mintNFT(contract: ethers.Contract, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenId: any;
-        estimateGas: any;
-    }> {
+    public async mintNFT(contract: ethers.Contract, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any> {
         if (tokenId !== undefined && amount !== undefined) {
             if (estimateGas) {
-                const gas = await contract.estimateGas.mint(to, tokenId, amount, tokenURI, await this.txOptions())
-                return {tx: null, tokenId: null, estimateGas: gas};
+                return await contract.estimateGas.mint(to, tokenId, amount, tokenURI, await this.txOptions())
             }
             const tx = await contract.mint(to, tokenId, amount, tokenURI, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155Standart
-            return {tx: tx, tokenId: tokenId, estimateGas: null};
+            return {tx: tx, tokenId: tokenId};
         } else {
             if (estimateGas) {
-                const gas = await contract.estimateGas.mint(to, tokenURI, await this.txOptions())
-                return {tx: null, tokenId: null, estimateGas: gas};
+                return await contract.estimateGas.mint(to, tokenURI, await this.txOptions())
             }
             const tx = await contract.mint(to, tokenURI, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721Standart
             const event = this.parseLog(contract, tx.logs, 'Transfer')
-            return {tx: tx, tokenId: event.args[2], estimateGas: null};
+            return {tx: tx, tokenId: event.args[2]};
         }
     }
 
     //nft 721 && 1155
-    public async mintNFTWithDELReserve(contract: ethers.Contract, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenId: any;
-        estimateGas: any;
-    }> {
+    public async mintNFTWithDELReserve(contract: ethers.Contract, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any> {
         if (tokenId !== undefined && amount !== undefined) {
             if (estimateGas) {
-                const gas = await contract.estimateGas.mintByETH(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve}))
-                return {tx: null, tokenId: tokenId, estimateGas: gas};
+                return await contract.estimateGas.mintByETH(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve}))
             }
             const tx = await contract.mintByETH(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //1155
-            return {tx: tx, tokenId: tokenId, estimateGas: null};
+            return {tx: tx, tokenId: tokenId};
         } else {
             if (estimateGas) {
-                const gas = await contract.estimateGas.mintByETH(to, tokenURI, await this.txOptions({ value: reserve}))
-                return {tx: null, tokenId: tokenId, estimateGas: gas}; 
+                return await contract.estimateGas.mintByETH(to, tokenURI, await this.txOptions({ value: reserve}))
             }
             const tx = await contract.mintByETH(to, tokenURI, await this.txOptions({ value: reserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //721
             const event = this.parseLog(contract, tx.logs, 'Transfer')
-            return {tx: tx, tokenId: event.args[2], estimateGas: null};
+            return {tx: tx, tokenId: event.args[2]};
         }
     }
 
-    public async mintNFTWithTokenReserve(contract: ethers.Contract, to: string, tokenURI: string, reserveAmount: string | number | bigint, reserveToken: string, sign?: ethers.Signature, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenId: any;
-        estimateGas: any;
-    }> {
+    public async mintNFTWithTokenReserve(contract: ethers.Contract, to: string, tokenURI: string, reserveAmount: string | number | bigint, reserveToken: string, sign?: ethers.Signature, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any> {
         if (tokenId !== undefined && amount !== undefined) {
             if (sign != undefined) {
                 const deadline = ethers.constants.MaxUint256
                 if (estimateGas) {
-                    const gas = await contract.estimateGas.mintByPermit(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-                    return {tx: null, tokenId: null, estimateGas: gas};
+                    return await contract.estimateGas.mintByPermit(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
                 }
                 const tx = await contract.mintByPermit(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155 permit
-                return {tx: tx, tokenId: tokenId, estimateGas: null};
+                return {tx: tx, tokenId: tokenId};
             } else {
                 if (estimateGas) {
-                    const gas = await contract.estimateGas.mint(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, await this.txOptions())
-                    return {tx: null, tokenId: null, estimateGas: gas};
+                    return await contract.estimateGas.mint(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, await this.txOptions())
                 }
                 const tx = await contract.mint(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155 approve
-                return {tx: tx, tokenId: tokenId, estimateGas: null};
+                return {tx: tx, tokenId: tokenId};
             }
         } else {
             if (sign != undefined) {
                 const deadline = ethers.constants.MaxUint256
                 if (estimateGas) {
-                    const gas = await contract.estimateGas.mintByPermit(to, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-                    return {tx: null, tokenId: null, estimateGas: gas};
+                    return await contract.estimateGas.mintByPermit(to, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
                 }
                 const tx = await contract.mintByPermit(to, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721 permit
                 const event = this.parseLog(contract, tx.logs, 'Transfer')
-                return {tx: tx, tokenId: event.args[2], estimateGas: null};
+                return {tx: tx, tokenId: event.args[2]};
             } else {
                 if (estimateGas) {
-                    const gas = await contract.estimateGas.mint(to, tokenURI, reserveAmount, reserveToken, await this.txOptions())
-                    return {tx: null, tokenId: null, estimateGas: gas};
+                    return await contract.estimateGas.mint(to, tokenURI, reserveAmount, reserveToken, await this.txOptions())
                 }
                 const tx = await contract.mint(to, tokenURI, reserveAmount, reserveToken, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721 approve
                 const event = this.parseLog(contract, tx.logs, 'Transfer')
-                return {tx: tx, tokenId: event.args[2], estimateGas: null};
+                return {tx: tx, tokenId: event.args[2]};
             }
 
         }
@@ -561,22 +516,17 @@ export default class Call {
         }
     }
 
-    public async completeStakeNFT(indexes:string[] | number[], estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }> {
+    public async completeStakeNFT(indexes:string[] | number[], estimateGas?: boolean): Promise<any> {
         try {
             await this.delegationNft!.contract.callStatic.complete(indexes, await this.txOptions())
             if (estimateGas) {
-                const gas = await this.delegationNft!.contract.estimateGas.complete(indexes, await this.txOptions())
-                return {tx: null, error: null, estimateGas: gas} 
+                return await this.delegationNft!.contract.estimateGas.complete(indexes, await this.txOptions())
             }
             const tx = await this.delegationNft!.contract.complete(indexes, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-            return {tx: tx, error: null, estimateGas: null} 
+            return {tx: tx, error: null} 
         } catch (err: any) {
             if (err?.revert?.name != null) {
-                return {tx: null, error: err.revert.name, estimateGas: null} 
+                return {tx: null, error: err.revert.name} 
             }
             throw new Error(err)
         }
@@ -922,11 +872,7 @@ export default class Call {
     public async createMultiSig(ownersData: {
         owner: string;
         weight: number;
-    }[], weightThreshold: number, estimateGas?: boolean): Promise<{
-        tx: any;
-        multisigAddress: any;
-        estimateGas: any;
-    }> {
+    }[], weightThreshold: number, estimateGas?: boolean): Promise<any> {
         const encodedInitializer = this.safe!.contract.interface.encodeFunctionData("setup", [
             ownersData,
             weightThreshold,
@@ -939,12 +885,11 @@ export default class Call {
         ]);
         const saltNumber = Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER - 1)).toString();
         if (estimateGas) {
-            const gas = await this.safeFactory!.contract.estimateGas.createProxyWithNonce(this.safe!.contract.address, encodedInitializer, saltNumber, await this.txOptions());
-            return {tx: null, multisigAddress: null, estimateGas: gas} 
+            return await this.safeFactory!.contract.estimateGas.createProxyWithNonce(this.safe!.contract.address, encodedInitializer, saltNumber, await this.txOptions());
         }
         const template = await this.safeFactory!.contract.callStatic.createProxyWithNonce(this.safe!.contract.address, encodedInitializer, saltNumber, await this.txOptions());
         const tx = await this.safeFactory!.contract.createProxyWithNonce(this.safe!.contract.address, encodedInitializer, saltNumber, await this.txOptions()).then((tx: any) => tx.wait());
-        return {tx: tx, multisigAddress: template, estimateGas: null};
+        return {tx: tx, multisigAddress: template};
     }
 
     public async buildMultiSigTx(txs: MetaTransaction[], safe: ethers.Contract): Promise<SafeTransaction> {

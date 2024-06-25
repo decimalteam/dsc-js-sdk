@@ -633,7 +633,7 @@ const {tokenAddress} = await decimalEVM.createToken(newToken, reserve)
 
 //Before send the transaction, you can calculate estimate gas price for this function
 const getEstimateGas = true
-const {tokenAddress, estimateGas} = await decimalEVM.createToken(newToken, reserve, getEstimateGas)
+const estimateGas = await decimalEVM.createToken(newToken, reserve, getEstimateGas)
 //To calculate the fee, request the current gasPrice and multiply by the received estimateGas
 const feeData = await decimalEVM.getFeeData()
 const resultFee = BigInt(estimateGas.toString())*BigInt(feeData.gasPrice!.toString())
