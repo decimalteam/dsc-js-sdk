@@ -33,6 +33,7 @@ export type NFTCollection = {
     burnable: boolean;
     refundable: boolean;
 };
+export type NFTCollectionReserveless = Omit<NFTCollection, 'refundable'>;
 export type ValidotorStake = {
     token: string;
     amount: ethers.BigNumberish;
@@ -95,7 +96,7 @@ export default class Call {
         error: any;
         estimateGas: any;
     }>;
-    createCollection(nft: NFTCollection, typeNFT: TypeNFT, estimateGas?: boolean): Promise<{
+    createCollection(nft: NFTCollection | NFTCollectionReserveless, typeNFT: TypeNFT, withReserve: boolean, estimateGas?: boolean): Promise<{
         tx: any;
         nftCollectionAddress: any;
         estimateGas: any;

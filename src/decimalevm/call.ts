@@ -54,6 +54,9 @@ export type NFTCollection = {
     refundable: boolean;
 }
 
+export type NFTCollectionReserveless = Omit<NFTCollection, 'refundable'>
+
+
 export type ValidotorStake = {
     token: string,
     amount: ethers.BigNumberish;
@@ -324,25 +327,26 @@ export default class Call {
     }
 
     //nft-center
-    public async createCollection(nft:NFTCollection, typeNFT: TypeNFT, estimateGas?: boolean): Promise<{
+    public async createCollection(nft: NFTCollection | NFTCollectionReserveless, typeNFT: TypeNFT, withReserve: boolean, estimateGas?: boolean): Promise<{
         tx: any;
         nftCollectionAddress: any;
         estimateGas: any;
     }> {
-        let collection: string;
-        switch (typeNFT) {
-            //case TypeNFT.ERC721Standart:
-            //    collection = 'createERC721Standart';
-            //    break;
-            //case TypeNFT.ERC1155Standart:
-            //    collection = 'createERC1155Standart';
-            //    break;
-            case TypeNFT.ERC721:
+        let collection: string = '';
+        if (withReserve) {
+            if (typeNFT == TypeNFT.ERC721) {
                 collection = 'createERC721';
-                break;
-            case TypeNFT.ERC1155:
+            }
+            if (typeNFT == TypeNFT.ERC1155) {
                 collection = 'createERC1155';
-                break;
+            }
+        } else {
+            if (typeNFT == TypeNFT.ERC721) {
+                collection = 'createERC721Reserveless';
+            }
+            if (typeNFT == TypeNFT.ERC1155) {
+                collection = 'createERC1155Reserveless';
+            }
         }
         if (estimateGas) {
             const gas = await this.nftCenter!.contract.estimateGas[collection](nft, await this.txOptions())

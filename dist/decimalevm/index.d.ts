@@ -3,6 +3,7 @@ import { BigNumberish, ethers, Wallet as HDNodeWallet } from "ethers";
 import { NETWORKS } from "../endpoints";
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
+import { NFTCollectionReserveless } from "./call";
 import { TypeNFT, Token, NFTCollection, ValidotorStake } from "./call";
 import { TokenType } from "./interfaces/delegation";
 import { ValidatorMeta, ValidatorStatus } from "./interfaces/validator";
@@ -75,6 +76,16 @@ export default class DecimalEVM {
         estimateGas: any;
     }>;
     createCollectionERC1155(payload: NFTCollection, estimateGas?: boolean): Promise<{
+        tx: any;
+        nftCollectionAddress: any;
+        estimateGas: any;
+    }>;
+    createCollectionERC721Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<{
+        tx: any;
+        nftCollectionAddress: any;
+        estimateGas: any;
+    }>;
+    createCollectionERC1155Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<{
         tx: any;
         nftCollectionAddress: any;
         estimateGas: any;

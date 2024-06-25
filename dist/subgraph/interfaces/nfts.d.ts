@@ -6,6 +6,9 @@ export interface NFTCollection {
     tokenType: string;
     collectionSupply: string;
     contractURI: string;
+    allowMint: boolean;
+    burnable: boolean;
+    withReserve: boolean;
     nfts: NFTToken[];
 }
 export interface NFTToken {
