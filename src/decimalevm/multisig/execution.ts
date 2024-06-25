@@ -80,11 +80,11 @@ export const safeApproveHash = async (
 ): Promise<SafeSignature> => {
     if (!skipOnChainApproval) {
         if (!signer.provider) throw Error("Provider required for on-chain approval");
-        const chainId = (await signer.provider.getNetwork()).chainId;
-        const safeAddress = safe.address;
-        const typedDataHash = calculateSafeTransactionHash(safeAddress, safeTx, chainId);
+        //const chainId = (await signer.provider.getNetwork()).chainId;
+        //const safeAddress = safe.address;
+        //const typedDataHash = calculateSafeTransactionHash(safeAddress, safeTx, chainId);
         const signerSafe = safe.connect(signer);
-        await signerSafe.approveHash(typedDataHash);
+        await signerSafe.approveHash(safeTx);
     }
     const signerAddress = await signer.getAddress();
     return {

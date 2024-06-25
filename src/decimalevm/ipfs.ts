@@ -47,6 +47,17 @@ export default class IPFS {
     }
 
     // for browser
+
+    public async uploadNFTBlobToIPFS(blob:any, fileName:string, name:string, description:string) {
+        if (blob.size > 100000000) throw new Error('File size should not exceed 100 MB.');
+        const form: any = new FormData();
+        const metadata = this.getBlobMetadata(name, description)
+        form.append('uploading_files', blob, fileName);
+        form.append('uploading_files', metadata, "metadata.json");
+
+        return await this.upload(form, true)
+    }
+
     public getBlobMetadata(name:string, description:string): Blob {
         const metadata = this.getMetadata(name, description)
         return new Blob([JSON.stringify(metadata, null, 0)], { type: "application/json" });

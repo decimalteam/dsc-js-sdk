@@ -61,11 +61,7 @@ export default class Call {
         value: string;
         callData: string;
     }[], estimateGas?: boolean): Promise<any>;
-    createToken(token: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenAddress: any;
-        estimateGas: any;
-    }>;
+    createToken(token: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<any>;
     convertToken(tokenIn: string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     approveToken(contract: ethers.Contract, spender: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     transferToken(contract: ethers.Contract, to: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
@@ -81,6 +77,7 @@ export default class Call {
     delegateToken(validator: string, tokenAddress: string, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, estimateGas?: boolean): Promise<any>;
     withdrawStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
+<<<<<<< HEAD
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
         tx: any;
         error: any;
@@ -101,26 +98,20 @@ export default class Call {
         nftCollectionAddress: any;
         estimateGas: any;
     }>;
+=======
+    applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
+    applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
+    completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
+    createCollection(nft: NFTCollection, typeNFT: TypeNFT, estimateGas?: boolean): Promise<any>;
+>>>>>>> origin/v45_ethers_v5
     setApprovalForAllNFT(contract: ethers.Contract, to: string, approved: boolean, estimateGas?: boolean): Promise<any>;
     transferNFT(contract: ethers.Contract, from: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     disableMintNFT(contract: ethers.Contract, estimateGas?: boolean): Promise<any>;
     burnNFT(contract: ethers.Contract, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     setTokenURINFT(contract: ethers.Contract, tokenId: string | number | bigint, tokenURI: string, estimateGas?: boolean): Promise<any>;
-    mintNFT(contract: ethers.Contract, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenId: any;
-        estimateGas: any;
-    }>;
-    mintNFTWithDELReserve(contract: ethers.Contract, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenId: any;
-        estimateGas: any;
-    }>;
-    mintNFTWithTokenReserve(contract: ethers.Contract, to: string, tokenURI: string, reserveAmount: string | number | bigint, reserveToken: string, sign?: ethers.Signature, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenId: any;
-        estimateGas: any;
-    }>;
+    mintNFT(contract: ethers.Contract, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    mintNFTWithDELReserve(contract: ethers.Contract, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    mintNFTWithTokenReserve(contract: ethers.Contract, to: string, tokenURI: string, reserveAmount: string | number | bigint, reserveToken: string, sign?: ethers.Signature, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     addDELReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, estimateGas?: boolean): Promise<any>;
     addTokenReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     approveNFT721(contract: ethers.Contract, to: string, tokenId: string | number | bigint, estimateGas?: boolean): Promise<any>;
@@ -129,11 +120,7 @@ export default class Call {
     delegateERC1155(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     withdrawStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
-    completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }>;
+    completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
     addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     addValidatorWithETH(validator: string, meta: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     removeValidator(validator: string, estimateGas?: boolean): Promise<any>;
@@ -193,11 +180,7 @@ export default class Call {
     createMultiSig(ownersData: {
         owner: string;
         weight: number;
-    }[], weightThreshold: number, estimateGas?: boolean): Promise<{
-        tx: any;
-        multisigAddress: any;
-        estimateGas: any;
-    }>;
+    }[], weightThreshold: number, estimateGas?: boolean): Promise<any>;
     buildMultiSigTx(txs: MetaTransaction[], safe: ethers.Contract): Promise<SafeTransaction>;
     signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature>;
     executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract, estimateGas?: boolean): Promise<any>;

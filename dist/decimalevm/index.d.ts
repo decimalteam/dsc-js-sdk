@@ -8,6 +8,7 @@ import { TypeNFT, Token, NFTCollection, ValidotorStake } from "./call";
 import { TokenType } from "./interfaces/delegation";
 import { ValidatorMeta, ValidatorStatus } from "./interfaces/validator";
 import { SafeSignature, SafeTransaction } from "./multisig/execution";
+import { Blob } from "buffer";
 export default class DecimalEVM {
     private readonly network;
     private readonly wallet;
@@ -54,11 +55,7 @@ export default class DecimalEVM {
     }[], estimateGas?: boolean): Promise<any>;
     sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
-    createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenAddress: any;
-        estimateGas: any;
-    }>;
+    createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<any>;
     convertToken(tokenIn: string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     approveToken(tokenAddress: string, spender: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     transferToken(tokenAddress: string, to: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
@@ -70,6 +67,7 @@ export default class DecimalEVM {
     sellExactTokensForDEL(tokenAddress: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
     updateDetailsToken(tokenAddress: string, newIdentity: string, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean): Promise<any>;
     permitToken(tokenAddress: string, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean): Promise<any>;
+<<<<<<< HEAD
     createCollectionERC721(payload: NFTCollection, estimateGas?: boolean): Promise<{
         tx: any;
         nftCollectionAddress: any;
@@ -90,18 +88,14 @@ export default class DecimalEVM {
         nftCollectionAddress: any;
         estimateGas: any;
     }>;
+=======
+    createCollectionERC721(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
+    createCollectionERC1155(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
+>>>>>>> origin/v45_ethers_v5
     approveNFT721(nftCollectionAddress: string, to: string, tokenId: string | number | bigint, estimateGas?: boolean): Promise<any>;
     approveForAllNFT(nftCollectionAddress: string, to: string, approved: boolean, estimateGas?: boolean): Promise<any>;
-    mintNFTWithDELReserve(nftCollectionAddress: string, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenId: any;
-        estimateGas: any;
-    }>;
-    mintNFTWithTokenReserve(nftCollectionAddress: string, to: string, tokenURI: string, reserveAmount: string | number | bigint, reserveToken: string, sign?: ethers.Signature, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<{
-        tx: any;
-        tokenId: any;
-        estimateGas: any;
-    }>;
+    mintNFTWithDELReserve(nftCollectionAddress: string, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    mintNFTWithTokenReserve(nftCollectionAddress: string, to: string, tokenURI: string, reserveAmount: string | number | bigint, reserveToken: string, sign?: ethers.Signature, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     addDELReserveNFT(nftCollectionAddress: string, tokenId: string | number | bigint, amountReserve: string | number | bigint, estimateGas?: boolean): Promise<any>;
     addTokenReserveNFT(nftCollectionAddress: string, tokenId: string | number | bigint, amountReserve: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferNFT(nftCollectionAddress: string, from: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
@@ -113,30 +107,14 @@ export default class DecimalEVM {
     delegateToken(validator: string, tokenAddress: string, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, estimateGas?: boolean): Promise<any>;
     withdrawStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
-    applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }>;
-    applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }>;
-    completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }>;
+    applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
+    applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
+    completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
     delegateERC721(validator: string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     delegateERC1155(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     withdrawStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
-    completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<{
-        tx: any;
-        error: any;
-        estimateGas: any;
-    }>;
+    completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
     addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     addValidatorWithETH(meta: ValidatorMeta, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     removeValidator(validator: string, estimateGas?: boolean): Promise<any>;
@@ -150,6 +128,8 @@ export default class DecimalEVM {
     private approveHashMultiSig;
     private executeMultiSigTx;
     private createMultiSig;
+    private decodeSafeTransaction;
+    private decodeData;
     getBalance(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
     getNftType(address: string): Promise<TypeNFT>;
     getNftTypeFromContract(address: string): Promise<TypeNFT>;
@@ -218,7 +198,7 @@ export default class DecimalEVM {
     uploadTokenBufferToIPFS(buffer: Buffer, fileName: string): Promise<{
         image: string;
     }>;
-    getBlobMetadata(name: string, description: string): Promise<import("buffer").Blob>;
+    getBlobMetadata(name: string, description: string): Promise<Blob>;
     uploadNFTFormToIPFS(form: any): Promise<any>;
     uploadTokenFormToIPFS(form: any): Promise<any>;
     getUrlFromCid(cid: string): string;

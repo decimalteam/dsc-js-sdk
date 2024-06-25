@@ -633,7 +633,7 @@ const {tokenAddress} = await decimalEVM.createToken(newToken, reserve)
 
 //Before send the transaction, you can calculate estimate gas price for this function
 const getEstimateGas = true
-const {tokenAddress, estimateGas} = await decimalEVM.createToken(newToken, reserve, getEstimateGas)
+const estimateGas = await decimalEVM.createToken(newToken, reserve, getEstimateGas)
 //To calculate the fee, request the current gasPrice and multiply by the received estimateGas
 const feeData = await decimalEVM.getFeeData()
 const resultFee = BigInt(estimateGas.toString())*BigInt(feeData.gasPrice!.toString())
@@ -1302,7 +1302,6 @@ const result = await decimalEVM.uploadTokenBufferToIPFS(buffer, filename)
 
 #### Example: Upload Token from input (browser)
 ```js
-const description = 'Description NFT2'
 var input = document.querySelector('input[type="file"]')
 
 var data = new FormData()
@@ -1373,13 +1372,21 @@ const result = await decimalEVM.uploadNFTBufferToIPFS(buffer, filename, name, de
 ```js
 const name = 'NameNFT23'
 const description = 'Description NFT2'
-const metadataBlob = await decimalEVM.getBlobMetadata(name, description)
+
+const bytes = new TextEncoder().encode(JSON.stringify({
+            "name": name,
+            "description": description,
+            "image": ""
+        }));
+const blobMetadata = new Blob([bytes], {
+    type: "application/json"
+});
 
 var input = document.querySelector('input[type="file"]')
 
 var data = new FormData()
-data.append('uploading_files', input.files[0])
-data.append('uploading_files', metadataBlob)
+data.append('uploading_files', blobMetadata)
+data.append('uploading_files', metadataBlob, "metadata.json")
 
 const result = await decimalEVM.uploadNFTFormToIPFS(data)
 /* example response
