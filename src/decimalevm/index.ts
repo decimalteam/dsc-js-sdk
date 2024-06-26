@@ -459,6 +459,20 @@ export default class DecimalEVM {
     }
   }
 */
+  public async mintReserveless(nftCollectionAddress: string, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean) {
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftCollectionAddress)
+    const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
+    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
+      case TypeNFT.ERC721:
+        return await this.call!.mintReserveless(nft.contract, to, tokenURI, tokenId, undefined, estimateGas)
+      case TypeNFT.ERC1155:
+        return await this.call!.mintReserveless(nft.contract, to, tokenURI, tokenId, amount, estimateGas)
+      default:
+          throw new Error(`The ${typeNFT} type does not exist`)
+    }
+  }
+
   public async mintNFTWithDELReserve(nftCollectionAddress: string, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean) {
     await this.checkConnect('nft-center');
     const typeNFT = await this.getNftType(nftCollectionAddress)
