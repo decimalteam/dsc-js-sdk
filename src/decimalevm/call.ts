@@ -77,6 +77,8 @@ export default class Call {
     public safe?: DecimalContractEVM;
     public safeFactory?: DecimalContractEVM;
     public multiSend?: DecimalContractEVM;
+    public bridgeV2?: DecimalContractEVM;
+    private bridgeV2Nonce: number = 0;
 
     public constructor(
         network: NETWORKS,
@@ -576,6 +578,28 @@ export default class Call {
         return await this.masterValidator!.contract.updateValidatorMeta(validator, meta, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
+    //bridgeV2
+    public async wrapAndTransferETH(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, chainId: number, estimateGas?: boolean) {
+        const addressToBytes32 = "0x" + to.slice(2).padStart(64, "0")
+        const value = ethers.BigNumber.from(amount).add(ethers.BigNumber.from(serviceFee))
+        if (estimateGas) {
+            return await this.bridgeV2!.contract.estimateGas.wrapAndTransferETH(addressToBytes32, chainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
+        }
+        const tx = await this.bridgeV2!.contract.wrapAndTransferETH(addressToBytes32, chainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value})).then((tx: ethers.ContractTransaction) => tx.wait());
+        this.bridgeV2Nonce += 1;
+        return tx;
+    }
+
+    public async transferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, chainId: number, estimateGas?: boolean) {
+        const addressToBytes32 = "0x" + to.slice(2).padStart(64, "0")
+        if (estimateGas) {
+            return await this.bridgeV2!.contract.estimateGas.transferTokens(tokenAddress, addressToBytes32, amount, chainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
+        }
+        const tx = await this.bridgeV2!.contract.transferTokens(tokenAddress, addressToBytes32, amount, chainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee})).then((tx: ethers.ContractTransaction) => tx.wait());
+        this.bridgeV2Nonce += 1;
+        return tx;
+    }
+
     // -----------view functions----------
     //token-center
     public async checkTokenExists(address:string) {
@@ -871,7 +895,12 @@ export default class Call {
 
         return ethers.utils.splitSignature(signature);
     }
- 
+
+    //bridgeV2
+    public async getBridgeV2ServiceFees() {
+        return await this.bridgeV2!.contract.minimalServiceFees();
+    }
+
     //multisig
     public async createMultiSig(ownersData: {
         owner: string;
