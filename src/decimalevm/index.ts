@@ -47,10 +47,14 @@ export default class DecimalEVM {
     token?: ethers.ContractInterface,
     erc721?: ethers.ContractInterface,
     erc1155?: ethers.ContractInterface,
+    erc721Reserveless?: ethers.ContractInterface,
+    erc1155Reserveless?: ethers.ContractInterface,
   } = {
     token: undefined,
     erc721: undefined,
     erc1155: undefined,
+    erc721Reserveless: undefined,
+    erc1155Reserveless: undefined,
   }
 
   public multisig = <{
@@ -147,19 +151,29 @@ export default class DecimalEVM {
           const [
             erc721ImplAddress,
             erc1155ImplAddress,
+            erc721ReservelessImplAddress,
+            erc1155ReservelessImplAddress,
           ] = await Promise.all([
-            nftCenter.contract.implementation(TypeNFT.ERC721),
-            nftCenter.contract.implementation(TypeNFT.ERC1155),
+            nftCenter.contract.implementation(TypeNFT.ERC721, true),
+            nftCenter.contract.implementation(TypeNFT.ERC1155, true),
+            nftCenter.contract.implementation(TypeNFT.ERC721, false),
+            nftCenter.contract.implementation(TypeNFT.ERC1155, false),
           ])
           const [
             erc721Impl,
             erc1155Impl,
+            erc721ReservelessImpl,
+            erc1155ReservelessImpl,
           ] = await Promise.all([
             this.getContract(erc721ImplAddress),
             this.getContract(erc1155ImplAddress),
+            this.getContract(erc721ReservelessImplAddress),
+            this.getContract(erc1155ReservelessImplAddress),
           ])
           this.abis.erc721 = erc721Impl.abi;
           this.abis.erc1155 = erc1155Impl.abi;
+          this.abis.erc721Reserveless = erc721ReservelessImpl.abi;
+          this.abis.erc1155Reserveless = erc1155ReservelessImpl.abi;
           this.call.setDecimalContractEVM(nftCenter, 'nftCenter')
         }
         break;
