@@ -8,6 +8,7 @@ export interface NFTCollection {
     contractURI: string;
     allowMint: boolean;
     burnable: boolean;
+    refandable: boolean;
     withReserve: boolean;
     nfts: NFTToken[];
 }
