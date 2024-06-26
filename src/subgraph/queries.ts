@@ -329,6 +329,7 @@ export default class Queries {
                 allowMint
                 burnable
                 withReserve
+                refandable
                 nfts {
                   tokenURI
                   tokenId
@@ -365,6 +366,7 @@ export default class Queries {
                 allowMint
                 burnable
                 withReserve
+                refandable
                 nfts {
                   tokenURI
                   tokenId
@@ -405,6 +407,7 @@ export default class Queries {
                     allowMint
                     burnable
                     withReserve
+                    refandable
                 }
                 transfers {
                   from

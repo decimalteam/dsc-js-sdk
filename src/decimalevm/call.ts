@@ -415,6 +415,24 @@ export default class Call {
         }
     }
 
+    public async mintReserveless(contract: ethers.Contract, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any> {
+        if (tokenId !== undefined && amount !== undefined) {
+            if (estimateGas) {
+                return await contract.estimateGas.mint(to, tokenId, amount, tokenURI, '0', ethers.constants.AddressZero, await this.txOptions())
+            }
+            const tx = await contract.mint(to, tokenId, amount, tokenURI, '0', ethers.constants.AddressZero, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155 approve
+            return {tx: tx, tokenId: tokenId};
+        } else {
+            if (estimateGas) {
+                return await contract.estimateGas.mint(to, tokenURI, '0', ethers.constants.AddressZero, await this.txOptions())
+            }
+            const tx = await contract.mint(to, tokenURI, '0', ethers.constants.AddressZero, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721 approve
+            const event = this.parseLog(contract, tx.logs, 'Transfer')
+            return {tx: tx, tokenId: event.args[2]};
+
+        }
+    }
+
     public async mintNFTWithTokenReserve(contract: ethers.Contract, to: string, tokenURI: string, reserveAmount: string | number | bigint, reserveToken: string, sign?: ethers.Signature, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any> {
         if (tokenId !== undefined && amount !== undefined) {
             if (sign != undefined) {
