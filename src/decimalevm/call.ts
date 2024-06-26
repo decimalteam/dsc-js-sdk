@@ -122,6 +122,9 @@ export default class Call {
             case 'multiSend':
                 this.multiSend = decimalContractEVM //for multisig
                 break;
+            case 'bridgeV2':
+                this.bridgeV2 = decimalContractEVM
+                break;
             default:
                 throw new Error(`Unknown contract name`);
           }
@@ -579,23 +582,23 @@ export default class Call {
     }
 
     //bridgeV2
-    public async wrapAndTransferETH(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, chainId: number, estimateGas?: boolean) {
+    public async wrapAndTransferETH(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
         const addressToBytes32 = "0x" + to.slice(2).padStart(64, "0")
         const value = ethers.BigNumber.from(amount).add(ethers.BigNumber.from(serviceFee))
         if (estimateGas) {
-            return await this.bridgeV2!.contract.estimateGas.wrapAndTransferETH(addressToBytes32, chainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
+            return await this.bridgeV2!.contract.estimateGas.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
         }
-        const tx = await this.bridgeV2!.contract.wrapAndTransferETH(addressToBytes32, chainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value})).then((tx: ethers.ContractTransaction) => tx.wait());
+        const tx = await this.bridgeV2!.contract.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value})).then((tx: ethers.ContractTransaction) => tx.wait());
         this.bridgeV2Nonce += 1;
         return tx;
     }
 
-    public async transferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, chainId: number, estimateGas?: boolean) {
+    public async transferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
         const addressToBytes32 = "0x" + to.slice(2).padStart(64, "0")
         if (estimateGas) {
-            return await this.bridgeV2!.contract.estimateGas.transferTokens(tokenAddress, addressToBytes32, amount, chainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
+            return await this.bridgeV2!.contract.estimateGas.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
         }
-        const tx = await this.bridgeV2!.contract.transferTokens(tokenAddress, addressToBytes32, amount, chainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee})).then((tx: ethers.ContractTransaction) => tx.wait());
+        const tx = await this.bridgeV2!.contract.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee})).then((tx: ethers.ContractTransaction) => tx.wait());
         this.bridgeV2Nonce += 1;
         return tx;
     }
@@ -816,6 +819,8 @@ export default class Call {
                 return address ? this.multiCall!.contract.address : this.multiCall!.contract
             case "multi-sig":
                 return address ? this.multiSend!.contract.address : this.multiSend!.contract
+            case "bridge":
+                return address ? this.bridgeV2!.contract.address : this.bridgeV2!.contract
             default:
                 throw new Error(`There is no such contract in the Decimal`)
         }

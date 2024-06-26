@@ -777,6 +777,27 @@ const signTx1 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) 
 const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2, signTx3]) //sign and specify user signatures
 ```
 
+## Bridge
+
+### Transfer DEL
+```js
+const to = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
+const amount = decimalEVM.parseEther(10); // 10 DEL
+const serviceFee = await decimalEVM.getBridgeServiceFees()
+const toChainId = 1 // chain id (1 is ETH, 56 is BSC, 75 is DSC)
+const result = await decimalEVM.bridgeTransferDEL(to, amount, serviceFee, toChainId);
+```
+
+### Transfer Tokens
+```js
+const tokenAddress = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
+const to = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
+const amount = decimalEVM.parseEther(10); // 10 DEL
+const serviceFee = await decimalEVM.getBridgeServiceFees() // Get bridge service fees
+const toChainId = 1 // chain id (1 is ETH, 56 is BSC, 75 is DSC)
+const result = await decimalEVM.bridgeTransferTokens(tokenAddress, to, amount, serviceFee, toChainId)
+```
+
 ## Viewing functions
 
 ### Network
@@ -1059,6 +1080,12 @@ const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 const validatorIsMember = await decimalEVM.validatorIsMember(validator)
 ```
 
+## Bridge
+
+### Get bridge service fees
+```js
+const serviceFee = await decimalEVM.getBridgeServiceFees()
+```
 
 ## Subgraph
 
@@ -1267,6 +1294,42 @@ const account = "0x35119df12afdf848b7ef2536af2411ab0a611c45"
 const result = await subgraph.getWithdrawNFTStakesByAddress(account, first, skip)
 ```
 
+### Bridge
+
+#### Get bridge tokens
+```js
+const result = await subgraph.getBridgeTokens(first, skip)
+```
+
+#### Get bridge tokens by token address
+```js
+const result = await subgraph.getBridgeTokenByAddress(address)
+```
+
+#### Get bridge tokens by token symbol
+```js
+const result = await subgraph.getBridgeTokenBySymbol(symbol)
+```
+
+#### Get bridge transfers
+```js
+const result = await subgraph.getBridgeTransfers(first, skip)
+```
+
+#### Get bridge transfers by `from` address
+```js
+const result = await subgraph.getBridgeTransfersByFrom(address, first, skip)
+```
+
+#### Get bridge transfers by `to` address
+```js
+const result = await subgraph.getBridgeTransfersByTo(address, first, skip)
+```
+
+#### Get bridge transfers by `token` address
+```js
+const result = await subgraph.getBridgeTransfersByToken(address, first, skip)
+```
 
 ## IPFS
 

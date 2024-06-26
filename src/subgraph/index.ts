@@ -4,7 +4,7 @@ import {
     NETWORKS
 } from "../endpoints";
 import { DecimalContract } from "./interfaces/contracts";
-import { Token, AddressBalance } from "./interfaces/tokens";
+import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken } from "./interfaces/nfts";
 
@@ -238,5 +238,59 @@ export default class Subgraph {
     public async subgraphCustomQuery(query: string) {
         return await this.query.subgraphCustomQuery(query)
     }
+
+    //bridge
+    public async getBridgeTokens(first: number, skip: number): Promise<BridgeToken[]> {
+        this.checkFirstAndSkip(first, skip)
+        const options = `(first: ${first}, skip: ${skip})`
+        return await this.query.getBridgeTokens(options)
+    }
+
+    public async getBridgeTokenByAddress(address: string): Promise<BridgeToken> {
+        const verifyAddress = ethers.utils.getAddress(address)
+        const addressToBytes32 = "0x" + verifyAddress.slice(2).padStart(64, "0")
+        const options = `(where: { address: "${addressToBytes32.toLowerCase()}"})`
+        return await this.query.getBridgeToken(options)
+    }
+
+    public async getBridgeTokenBySymbol(symbol: string): Promise<BridgeToken> {
+        const options = `(where: { symbol: "${symbol}"})`
+        return await this.query.getBridgeToken(options)
+    }
+
+    public async getBridgeTransfers(first: number, skip: number): Promise<BridgeTransfer[]> {
+        this.checkFirstAndSkip(first, skip)
+        const options = `(first: ${first}, skip: ${skip})`
+        return await this.query.getBridgeTransfers(options)
+    }
+
+    public async getBridgeTransfersByFrom(address: string, first: number, skip: number): Promise<BridgeTransfer[]> {
+        this.checkFirstAndSkip(first, skip)
+        const verifyAddress = ethers.utils.getAddress(address)
+        const options = `(where: { from: "${verifyAddress.toLowerCase()}"}, first: ${first}, skip: ${skip})`
+        return await this.query.getBridgeTransfers(options)
+    }
+
+    public async getBridgeTransfersByTo(address: string, first: number, skip: number): Promise<BridgeTransfer[]> {
+        this.checkFirstAndSkip(first, skip)
+        const verifyAddress = ethers.utils.getAddress(address)
+        const addressToBytes32 = "0x" + verifyAddress.slice(2).padStart(64, "0")
+        const options = `(where: { to: "${addressToBytes32.toLowerCase()}"}, first: ${first}, skip: ${skip})`
+        return await this.query.getBridgeTransfers(options)
+    }
+
+    public async getBridgeTransfersByToken(address: string, first: number, skip: number): Promise<BridgeTransfer[]> {
+        this.checkFirstAndSkip(first, skip)
+        const verifyAddress = ethers.utils.getAddress(address)
+        const addressToBytes32 = "0x" + verifyAddress.slice(2).padStart(64, "0")
+        const options = `(where: {token_: {address: "${addressToBytes32.toLowerCase()}"}}, first: ${first}, skip: ${skip})`
+        return await this.query.getBridgeTransfers(options)
+    }
+    
+    //othres bridge
+    public async subgraphBridgeCustomQuery(query: string) {
+        return await this.query.subgraphBridgeCustomQuery(query)
+    }
+
     
 }

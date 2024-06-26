@@ -203,6 +203,13 @@ export default class DecimalEVM {
           this.call.setDecimalContractEVM(safeFactory, 'safeFactory')
         }
         break;
+      case 'bridge':
+        if (!this.call.bridgeV2) {
+          //const bridgeV2 = await this.getContract(getBridgeAddresses(this.network));
+          //this.call.setDecimalContractEVM(bridgeV2, 'bridgeV2')
+          throw Error('Bridge functions are currently unavailable')
+        }
+        break;
       default:
         throw new Error(`Unknown contract pack name '${contractName}'`);
     }
@@ -790,6 +797,17 @@ export default class DecimalEVM {
     }
   }
 
+  public async bridgeTransferDEL(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
+    await this.checkConnect('bridge');
+    return await this.call!.wrapAndTransferETH(to, amount, serviceFee, toChainId, estimateGas);
+  }
+
+  public async bridgeTransferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
+    await this.checkConnect('bridge');
+    //TODO check chainId
+    return await this.call!.transferTokens(tokenAddress, to, amount, serviceFee, toChainId, estimateGas);
+  }
+
   // view function
 
   public async getBalance(address: string) {
@@ -1049,6 +1067,11 @@ export default class DecimalEVM {
   public async validatorIsMember(validator: string) {
     await this.checkConnect('master-validator');
     return await this.call!.validatorIsMember(validator)
+  }
+
+  public async getBridgeServiceFees() {
+    await this.checkConnect('bridge');
+    return await this.call!.getBridgeV2ServiceFees()
   }
 
   //utils

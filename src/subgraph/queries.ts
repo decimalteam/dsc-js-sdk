@@ -1,9 +1,10 @@
 import {
     NETWORKS,
-    getSubgraphEndpoint
+    getSubgraphEndpoint,
+    getSubgraphBridgeEndpoint
 } from "../endpoints";
 import { DecimalContract } from "./interfaces/contracts";
-import { Token, AddressBalance } from "./interfaces/tokens";
+import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken } from "./interfaces/nfts";
 import fetch from "node-fetch";
@@ -17,8 +18,8 @@ export default class Queries {
         this.network = network
     }
 
-    private async query(q:string) {
-        let results = await fetch(getSubgraphEndpoint(this.network), {
+    private async query(q:string, endpoint: string) {  
+        const results = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json"
@@ -27,10 +28,11 @@ export default class Queries {
                 query: q
             })
         })
-        let characters = await results.json();
+        const characters = await results.json();
         return characters.data;
     }
 
+    //subgraph contract-center
     public async getDecimalContracts(): Promise<DecimalContract[]> {
         const result = await this.query(`{
             decimalContracts {
@@ -39,7 +41,7 @@ export default class Queries {
                 address
                 implementation
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.decimalContracts
     }
 
@@ -60,7 +62,7 @@ export default class Queries {
                 creator
                 tokenType
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.tokens
     }
     public async getToken(options:string): Promise<Token> {
@@ -80,7 +82,7 @@ export default class Queries {
                 creator
                 tokenType
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.tokens[0]
     }
     
@@ -104,7 +106,7 @@ export default class Queries {
                     tokenType
                 }
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.balances
     }
 
@@ -128,7 +130,7 @@ export default class Queries {
                 amount
                 tokenType
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.stakes
     }
 
@@ -157,7 +159,7 @@ export default class Queries {
                 unfreezeTimestamp
                 tokenType
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.transferStakes
     }
 
@@ -183,7 +185,7 @@ export default class Queries {
                 unfreezeTimestamp
                 tokenType
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.withdrawStakes
     }
 
@@ -194,7 +196,7 @@ export default class Queries {
                 address
                 status
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.validators
     }
 
@@ -205,7 +207,7 @@ export default class Queries {
                 address
                 status
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.validator
     }
 
@@ -219,7 +221,7 @@ export default class Queries {
                     address
                 }
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.penalties
     }
 
@@ -233,7 +235,7 @@ export default class Queries {
                         address
                     }
                 }
-            }`)
+            }`, getSubgraphEndpoint(this.network))
         if (resultPenalties.penalties.length == 0) return {
             sumAmountToPenalty: [],
             sumAmountToPenaltyAll: []
@@ -260,7 +262,7 @@ export default class Queries {
 
         const result = await this.query(`{
             ${queryBlocks}
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         console.log(result)
 
         const validatorMap: { [k: string]: bigint } = {}
@@ -310,7 +312,7 @@ export default class Queries {
     }
 
     public async subgraphCustomQuery(query: string) {
-        const result = await this.query(query)
+        const result = await this.query(query, getSubgraphEndpoint(this.network))
         return result
     }
 
@@ -346,7 +348,7 @@ export default class Queries {
                   }
                 }
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.nftcollections
     }
 
@@ -382,7 +384,7 @@ export default class Queries {
                   }
                 }
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.nftcollections[0]
     }
 
@@ -418,7 +420,7 @@ export default class Queries {
                   amount
                 }
             }
-        }`)
+        }`, getSubgraphEndpoint(this.network))
         return result.nfttokens
     }
 
@@ -427,8 +429,112 @@ export default class Queries {
             nftcollection${options} {
                 tokenType
             }
-          }`)
+          }`, getSubgraphEndpoint(this.network))
         if (result.nftcollection == null) return null
         return result.nftcollection.tokenType
+    }
+
+    //subgraph bridge
+    public async getBridgeTokens(options: string): Promise<BridgeToken[]> {
+        const result = await this.query(`{
+            tokens${options} {
+                address
+                chainId
+                decimals
+                name
+                symbol
+            }
+        }`, getSubgraphBridgeEndpoint(this.network))
+        const r = result.tokens.map((token:any) => {
+            return {
+                ...token,
+                address: "0x" + token.address.slice(26),
+            }
+        })
+        return r
+    }
+
+    public async getBridgeToken(options: string): Promise<BridgeToken> {
+        const result = await this.query(`{
+            tokens${options} {
+                address
+                chainId
+                decimals
+                name
+                symbol
+            }
+        }`, getSubgraphBridgeEndpoint(this.network))
+        const r = result.tokens.map((token:any) => {
+            return {
+                ...token,
+                address: "0x" + token.address.slice(26),
+            }
+        })
+        return r[0]
+    }
+
+    public async getBridgeTransfers(options: string): Promise<BridgeTransfer[]> {
+        const result = await this.query(`{
+            transfers${options} {
+                from
+                to
+                amount
+                toChainId
+                fee
+                nonce
+                payload
+                transferType
+                token {
+                    address
+                    chainId
+                    decimals
+                    name
+                    symbol
+                }
+            }
+        }`, getSubgraphBridgeEndpoint(this.network))
+        const r = result.transfers.map((transfer:any) => {
+            transfer.token.address = "0x" + transfer.token.address.slice(26);
+            return {
+                ...transfer,
+                to: "0x" + transfer.to.slice(26),
+            }
+        })
+        return r
+    }
+
+    public async getBridgeTransfer(options: string): Promise<BridgeTransfer> {
+        const result = await this.query(`{
+            transfers${options} {
+                from
+                to
+                amount
+                toChainId
+                fee
+                nonce
+                payload
+                transferType
+                token {
+                    address
+                    chainId
+                    decimals
+                    name
+                    symbol
+                }
+            }
+        }`, getSubgraphBridgeEndpoint(this.network))
+        const r = result.transfers.map((transfer:any) => {
+            transfer.token.address = "0x" + transfer.token.address.slice(26);
+            return {
+                ...transfer,
+                to: "0x" + transfer.to.slice(26),
+            }
+        })
+        return r[0]
+    }
+
+    public async subgraphBridgeCustomQuery(query: string) {
+        const result = await this.query(query, getSubgraphBridgeEndpoint(this.network))
+        return result
     }
 }

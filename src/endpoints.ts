@@ -24,6 +24,10 @@ export function getSubgraphEndpoint(network: NETWORKS): string {
   return subgraphEndpoints[network];
 }
 
+export function getSubgraphBridgeEndpoint(network: NETWORKS): string {
+  return subgraphBridgeEndpoints[network];
+}
+
 export function getIpfsEndpoints(network: NETWORKS): string {
   return ipfsEndpoints[network];
 }
@@ -111,6 +115,12 @@ const subgraphEndpoints = {
   [NETWORKS.DEVNET]: "https://devnet-thegraph.decimalchain.com/subgraphs/name/contract-center",
   [NETWORKS.TESTNET]: "https://testnet-thegraph.decimalchain.com/subgraphs/name/contract-center",
   [NETWORKS.MAINNET]: "https://mainnet-thegraph.decimalchain.com/subgraphs/name/contract-center",
+};
+
+const subgraphBridgeEndpoints = {
+  [NETWORKS.DEVNET]: "https://devnet-thegraph.decimalchain.com/subgraphs/name/bridge",
+  [NETWORKS.TESTNET]: "https://testnet-thegraph.decimalchain.com/subgraphs/name/bridge",
+  [NETWORKS.MAINNET]: "https://mainnet-thegraph.decimalchain.com/subgraphs/name/bridge",
 };
 
 const ipfsEndpoints = { //TODO?

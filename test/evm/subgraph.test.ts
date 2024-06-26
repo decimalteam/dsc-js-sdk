@@ -46,8 +46,8 @@ describe('Subgraph', () => {
 
         const resultGetTokens = await subgraph.getTokens(1000, 0)
         console.log(resultGetTokens)
-        const resultGetTokensByOwner = await subgraph.getTokensByOwner(Account, 1000, 0)
-        console.log(resultGetTokensByOwner)
+        const resultGetTokensByCreator = await subgraph.getTokensByCreator(Account, 1000, 0)
+        console.log(resultGetTokensByCreator)
     })
     test('get token by symbol, get token by address', async() => {
         // Sdk.
@@ -231,5 +231,42 @@ describe('Subgraph', () => {
         const resultGetNftCollectionType = await subgraph.getNftCollectionType("0x07c0f327e1e21501607ad67dd64d454ec045aef7")
         console.log(resultGetNftCollectionType)
     })
+
+    test('get bridge tokens, get bridge token by address, get bridge token by symbol', async() => {
+        // Sdk.
+        const { Subgraph, DecimalNetworks } = SDK;
+
+        const subgraph = new Subgraph(DecimalNetworks.testnet)
+
+        const resultGetBridgeTokens = await subgraph.getBridgeTokens(1000, 0)
+        console.log(resultGetBridgeTokens)
+        
+        if (resultGetBridgeTokens.length > 0) {
+            const resultGetBridgeTokenByAddress = await subgraph.getBridgeTokenByAddress(resultGetBridgeTokens[0].address)
+            console.log(resultGetBridgeTokenByAddress)
+    
+            const resultGetBridgeTokenBySymbol = await subgraph.getBridgeTokenBySymbol(resultGetBridgeTokens[0].symbol)
+            console.log(resultGetBridgeTokenBySymbol)
+        }
+    })
+
+    test('get bridge transfers, get bridge transfers by from, get bridge transfers by to, get bridge transfers by token address', async() => {
+        // Sdk.
+        const { Subgraph, DecimalNetworks } = SDK;
+
+        const subgraph = new Subgraph(DecimalNetworks.testnet)
+
+        const resultGetBridgeTransfers = await subgraph.getBridgeTransfers(1000, 0)
+        console.log(resultGetBridgeTransfers)
+
+        const resultGetBridgeTransfersByFrom = await subgraph.getBridgeTransfersByFrom(resultGetBridgeTransfers[0].from, 1000, 0)
+        console.log(resultGetBridgeTransfersByFrom)
+
+        const resultGetBridgeTransfersByTo = await subgraph.getBridgeTransfersByTo(resultGetBridgeTransfers[0].to, 1000, 0)
+        console.log(resultGetBridgeTransfersByTo)
+
+        const resultGetBridgeTransfersByToken = await subgraph.getBridgeTransfersByToken(resultGetBridgeTransfers[0].token.address, 1000, 0)
+        console.log(resultGetBridgeTransfersByToken)
+    });
     
 })
