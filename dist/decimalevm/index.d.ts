@@ -3,6 +3,7 @@ import { BigNumberish, ethers, Wallet as HDNodeWallet } from "ethers";
 import { NETWORKS } from "../endpoints";
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
+import { NFTCollectionReserveless } from "./call";
 import { TypeNFT, Token, NFTCollection, ValidotorStake } from "./call";
 import { TokenType } from "./interfaces/delegation";
 import { ValidatorMeta, ValidatorStatus } from "./interfaces/validator";
@@ -68,6 +69,8 @@ export default class DecimalEVM {
     permitToken(tokenAddress: string, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean): Promise<any>;
     createCollectionERC721(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
     createCollectionERC1155(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
+    createCollectionERC721Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<any>;
+    createCollectionERC1155Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<any>;
     approveNFT721(nftCollectionAddress: string, to: string, tokenId: string | number | bigint, estimateGas?: boolean): Promise<any>;
     approveForAllNFT(nftCollectionAddress: string, to: string, approved: boolean, estimateGas?: boolean): Promise<any>;
     mintNFTWithDELReserve(nftCollectionAddress: string, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;

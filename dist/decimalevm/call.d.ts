@@ -33,6 +33,7 @@ export type NFTCollection = {
     burnable: boolean;
     refundable: boolean;
 };
+export type NFTCollectionReserveless = Omit<NFTCollection, 'refundable'>;
 export type ValidotorStake = {
     token: string;
     amount: ethers.BigNumberish;
@@ -79,7 +80,7 @@ export default class Call {
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
-    createCollection(nft: NFTCollection, typeNFT: TypeNFT, estimateGas?: boolean): Promise<any>;
+    createCollection(nft: NFTCollection | NFTCollectionReserveless, typeNFT: TypeNFT, withReserve: boolean, estimateGas?: boolean): Promise<any>;
     setApprovalForAllNFT(contract: ethers.Contract, to: string, approved: boolean, estimateGas?: boolean): Promise<any>;
     transferNFT(contract: ethers.Contract, from: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     disableMintNFT(contract: ethers.Contract, estimateGas?: boolean): Promise<any>;

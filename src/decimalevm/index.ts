@@ -9,7 +9,7 @@ import {
 } from "../endpoints";
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
-import Call from "./call";
+import Call, { NFTCollectionReserveless } from "./call";
 import {TypeNFT, Token, NFTCollection, ValidotorStake} from "./call";
 import { TokenType } from "./interfaces/delegation";
 import { ValidatorMeta, ValidatorStatus } from "./interfaces/validator";
@@ -392,25 +392,25 @@ export default class DecimalEVM {
     const token = await this.getContract(tokenAddress, this.abis?.token)
     return await this.call!.permitToken(token.contract, owner, spender, amount, sign, estimateGas)
   }
-/*
-  public async createCollectionERC721Standart(payload:NFTCollection, estimateGas?: boolean) {
-    if (!this.call) throw this.isNotConnected;
-    return await this.call.createCollection(payload, TypeNFT.ERC721Standart, estimateGas)
-  }
 
-  public async createCollectionERC1155Standart(payload:NFTCollection, estimateGas?: boolean) {
-    if (!this.call) throw this.isNotConnected;
-    return await this.call.createCollection(payload, TypeNFT.ERC1155Standart, estimateGas)
-  }
-*/
   public async createCollectionERC721(payload:NFTCollection, estimateGas?: boolean) {
     await this.checkConnect('nft-center');
-    return await this.call!.createCollection(payload, TypeNFT.ERC721, estimateGas)
+    return await this.call!.createCollection(payload, TypeNFT.ERC721, true, estimateGas)
   }
 
   public async createCollectionERC1155(payload:NFTCollection, estimateGas?: boolean) {
     await this.checkConnect('nft-center');
-    return await this.call!.createCollection(payload, TypeNFT.ERC1155, estimateGas)
+    return await this.call!.createCollection(payload, TypeNFT.ERC1155, true, estimateGas)
+  }
+
+  public async createCollectionERC721Reserveless(payload:NFTCollectionReserveless, estimateGas?: boolean) {
+    await this.checkConnect('nft-center');
+    return await this.call!.createCollection(payload, TypeNFT.ERC721, false, estimateGas)
+  }
+
+  public async createCollectionERC1155Reserveless(payload:NFTCollectionReserveless, estimateGas?: boolean) {
+    await this.checkConnect('nft-center');
+    return await this.call!.createCollection(payload, TypeNFT.ERC1155, false, estimateGas)
   }
 
   public async approveNFT721(nftCollectionAddress: string, to: string, tokenId: string | number | bigint, estimateGas?: boolean) {
