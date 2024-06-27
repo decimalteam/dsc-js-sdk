@@ -8,6 +8,7 @@ export declare function getNewApiEndpoint(network: NETWORKS): string;
 export declare function getWeb3Endpoint(network: NETWORKS): string;
 export declare function getRestNodeEndpoint(network: NETWORKS): string;
 export declare function getSubgraphEndpoint(network: NETWORKS): string;
+export declare function getSubgraphBridgeEndpoint(network: NETWORKS): string;
 export declare function getIpfsEndpoints(network: NETWORKS): string;
 export declare function getMultiCallAddresses(network: NETWORKS): string;
 export declare function getMultiSigAddresses(network: NETWORKS): {

@@ -17,3 +17,21 @@ export interface AddressBalance {
     amount: string;
     token: Token;
 }
+export interface BridgeToken {
+    address: string;
+    chainId: string;
+    decimals: string;
+    name: string;
+    symbol: string;
+}
+export interface BridgeTransfer {
+    from: string;
+    to: string;
+    amount: string;
+    toChainId: string;
+    fee: string;
+    nonce: string;
+    payload: string;
+    transferType: string;
+    token: BridgeToken;
+}

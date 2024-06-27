@@ -110,6 +110,8 @@ export default class DecimalEVM {
     private createMultiSig;
     private decodeSafeTransaction;
     private decodeData;
+    bridgeTransferDEL(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
+    bridgeTransferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
     getBalance(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
     getNftType(address: string): Promise<TypeNFT>;
     getNftTypeFromContract(address: string): Promise<TypeNFT>;
@@ -161,6 +163,7 @@ export default class DecimalEVM {
     getValidatorStatus(validator: string): Promise<ValidatorStatus>;
     validatorIsActive(validator: string): Promise<any>;
     validatorIsMember(validator: string): Promise<any>;
+    getBridgeServiceFees(): Promise<any>;
     parseEther(amount: string | number | bigint | BigNumberish): string;
     formatEther(amount: string | number | bigint | BigNumberish): string;
     getAddress(address: string): string;
