@@ -920,8 +920,8 @@ export default class Call {
     }
 
     //bridgeV2
-    public async getBridgeV2ServiceFees() {
-        return await this.bridgeV2!.contract.minimalServiceFees();
+    public async getBridgeV2ServiceFees(toChainId: number) {
+        return await this.bridgeV2!.contract.minimalServiceFees(toChainId);
     }
 
     //multisig
