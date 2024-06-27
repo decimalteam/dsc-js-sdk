@@ -228,6 +228,13 @@ export default class Subgraph {
         return await this.query.getNftCollections(options)
     }
 
+    public async getNftCollectionByUser(address: string, first: number, skip: number): Promise<NFTCollection[]> {
+        this.checkFirstAndSkip(first, skip)
+        const verifyAddress = ethers.utils.getAddress(address)
+        const options = `(where: { balances_: { user: "${verifyAddress.toLowerCase()}" } })`
+        return await this.query.getNftCollections(options)
+    }
+
     public async getNftCollectionType(address: string): Promise<string | null> {
         const verifyAddress = ethers.utils.getAddress(address)
         const options = `(id: "${verifyAddress.toLowerCase()}" )`

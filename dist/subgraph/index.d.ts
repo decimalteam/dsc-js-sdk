@@ -40,6 +40,7 @@ export default class Subgraph {
     getNftsByCollection(address: string, first: number, skip: number): Promise<NFTToken[]>;
     getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFTToken[]>;
     getNftCollectionByCreatorAndUser(address: string, first: number, skip: number): Promise<NFTCollection[]>;
+    getNftCollectionByUser(address: string, first: number, skip: number): Promise<NFTCollection[]>;
     getNftCollectionType(address: string): Promise<string | null>;
     subgraphCustomQuery(query: string): Promise<any>;
     getBridgeTokens(first: number, skip: number): Promise<BridgeToken[]>;
