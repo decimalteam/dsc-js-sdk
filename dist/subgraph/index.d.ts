@@ -1,6 +1,6 @@
 import { NETWORKS } from "../endpoints";
 import { DecimalContract } from "./interfaces/contracts";
-import { Token, AddressBalance } from "./interfaces/tokens";
+import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken } from "./interfaces/nfts";
 export default class Subgraph {
@@ -40,6 +40,15 @@ export default class Subgraph {
     getNftsByCollection(address: string, first: number, skip: number): Promise<NFTToken[]>;
     getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFTToken[]>;
     getNftCollectionByCreatorAndUser(address: string, first: number, skip: number): Promise<NFTCollection[]>;
+    getNftCollectionByUser(address: string, first: number, skip: number): Promise<NFTCollection[]>;
     getNftCollectionType(address: string): Promise<string | null>;
     subgraphCustomQuery(query: string): Promise<any>;
+    getBridgeTokens(first: number, skip: number): Promise<BridgeToken[]>;
+    getBridgeTokenByAddress(address: string): Promise<BridgeToken>;
+    getBridgeTokenBySymbol(symbol: string): Promise<BridgeToken>;
+    getBridgeTransfers(first: number, skip: number): Promise<BridgeTransfer[]>;
+    getBridgeTransfersByFrom(address: string, first: number, skip: number): Promise<BridgeTransfer[]>;
+    getBridgeTransfersByTo(address: string, first: number, skip: number): Promise<BridgeTransfer[]>;
+    getBridgeTransfersByToken(address: string, first: number, skip: number): Promise<BridgeTransfer[]>;
+    subgraphBridgeCustomQuery(query: string): Promise<any>;
 }

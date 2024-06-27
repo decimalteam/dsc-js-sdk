@@ -1,6 +1,6 @@
 import { NETWORKS } from "../endpoints";
 import { DecimalContract } from "./interfaces/contracts";
-import { Token, AddressBalance } from "./interfaces/tokens";
+import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken } from "./interfaces/nfts";
 export default class Queries {
@@ -23,4 +23,9 @@ export default class Queries {
     getNftCollection(options: string): Promise<NFTCollection>;
     getNfts(options: string): Promise<NFTToken[]>;
     getNftCollectionType(options: string): Promise<string | null>;
+    getBridgeTokens(options: string): Promise<BridgeToken[]>;
+    getBridgeToken(options: string): Promise<BridgeToken>;
+    getBridgeTransfers(options: string): Promise<BridgeTransfer[]>;
+    getBridgeTransfer(options: string): Promise<BridgeTransfer>;
+    subgraphBridgeCustomQuery(query: string): Promise<any>;
 }

@@ -107,8 +107,8 @@ export default class Call {
     pauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
     unpauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
     updateValidatorMeta(validator: string, meta: string, estimateGas?: boolean): Promise<any>;
-    wrapAndTransferETH(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, chainId: number, estimateGas?: boolean): Promise<any>;
-    transferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, chainId: number, estimateGas?: boolean): Promise<any>;
+    wrapAndTransferETH(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
+    transferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
     checkTokenExists(address: string): Promise<any>;
     getAddressTokenBySymbol(symbol: string): Promise<any>;
     getCommissionSymbol(symbol: string): Promise<any>;
