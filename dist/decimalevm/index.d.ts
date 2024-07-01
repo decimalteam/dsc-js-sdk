@@ -163,7 +163,7 @@ export default class DecimalEVM {
     getValidatorStatus(validator: string): Promise<ValidatorStatus>;
     validatorIsActive(validator: string): Promise<any>;
     validatorIsMember(validator: string): Promise<any>;
-    getBridgeServiceFees(): Promise<any>;
+    getBridgeServiceFees(toChainId: number): Promise<any>;
     parseEther(amount: string | number | bigint | BigNumberish): string;
     formatEther(amount: string | number | bigint | BigNumberish): string;
     getAddress(address: string): string;

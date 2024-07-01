@@ -783,8 +783,8 @@ const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [sig
 ```js
 const to = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
 const amount = decimalEVM.parseEther(10); // 10 DEL
-const serviceFee = await decimalEVM.getBridgeServiceFees()
 const toChainId = 1 // chain id (1 is ETH, 56 is BSC, 75 is DSC)
+const serviceFee = await decimalEVM.getBridgeServiceFees(toChainId)
 const result = await decimalEVM.bridgeTransferDEL(to, amount, serviceFee, toChainId);
 ```
 
@@ -793,8 +793,12 @@ const result = await decimalEVM.bridgeTransferDEL(to, amount, serviceFee, toChai
 const tokenAddress = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
 const to = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
 const amount = decimalEVM.parseEther(10); // 10 DEL
-const serviceFee = await decimalEVM.getBridgeServiceFees() // Get bridge service fees
 const toChainId = 1 // chain id (1 is ETH, 56 is BSC, 75 is DSC)
+const serviceFee = await decimalEVM.getBridgeServiceFees(toChainId) // Get bridge service fees
+
+const bridgeAddress = await decimalEVM.getDecimalContractAddress('bridge')
+await decimalEVM.approveToken(tokenAddress, bridgeAddress, amount)
+
 const result = await decimalEVM.bridgeTransferTokens(tokenAddress, to, amount, serviceFee, toChainId)
 ```
 
@@ -1084,7 +1088,7 @@ const validatorIsMember = await decimalEVM.validatorIsMember(validator)
 
 ### Get bridge service fees
 ```js
-const serviceFee = await decimalEVM.getBridgeServiceFees()
+const serviceFee = await decimalEVM.getBridgeServiceFees(toChainId)
 ```
 
 ## Subgraph
@@ -1252,6 +1256,19 @@ const account = "0x35119df12afdf848b7ef2536af2411ab0a611c45"
 const result = await subgraph.getAddressBalancesNfts(account, first, skip)
 ```
 
+#### Get NFT balances by account and by NFT Collection address
+```js
+const account = "0x35119df12afdf848b7ef2536af2411ab0a611c45"
+const nftCollectionAddress = "0x15ea2325268864227d7eaf6a4b76cafbeec3050d"
+const result = await subgraph.getAddressBalancesNftsByCollection(account, nftCollectionAddress, first, skip)
+```
+
+#### Get NFT by NFT Collection address and by tokenId
+```js
+const nftCollectionAddress = "0x15ea2325268864227d7eaf6a4b76cafbeec3050d"
+const tokenId = 0
+const result = await subgraph.getNftByCollectionAndTokenId(nftCollectionAddress, tokenId)
+```
 
 ### Delegation NFT
 

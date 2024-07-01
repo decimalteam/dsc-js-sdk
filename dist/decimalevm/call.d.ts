@@ -159,7 +159,7 @@ export default class Call {
     getDecimalContract(contractName: string, address?: boolean): string | ethers.Contract;
     getSignPermitERC721(contract: ethers.Contract, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature>;
     getSignPermitERC1155(contract: ethers.Contract, spender: string): Promise<ethers.Signature>;
-    getBridgeV2ServiceFees(): Promise<any>;
+    getBridgeV2ServiceFees(toChainId: number): Promise<any>;
     createMultiSig(ownersData: {
         owner: string;
         weight: number;

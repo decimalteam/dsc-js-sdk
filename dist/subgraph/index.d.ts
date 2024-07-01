@@ -38,7 +38,9 @@ export default class Subgraph {
     getNftCollectionByAddress(address: string): Promise<NFTCollection>;
     getNfts(first: number, skip: number): Promise<NFTToken[]>;
     getNftsByCollection(address: string, first: number, skip: number): Promise<NFTToken[]>;
+    getNftByCollectionAndTokenId(address: string, tokenId: string | number): Promise<NFTToken>;
     getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFTToken[]>;
+    getAddressBalancesNftsByCollection(address: string, addressCollection: string, first: number, skip: number): Promise<NFTToken[]>;
     getNftCollectionByCreatorAndUser(address: string, first: number, skip: number): Promise<NFTCollection[]>;
     getNftCollectionByUser(address: string, first: number, skip: number): Promise<NFTCollection[]>;
     getNftCollectionType(address: string): Promise<string | null>;
