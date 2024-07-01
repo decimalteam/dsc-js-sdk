@@ -10,6 +10,11 @@ export interface NFTCollection {
     burnable: boolean;
     refundable: boolean;
     withReserve: boolean;
+
+    txHash: string
+    blockNumber: string
+    timestamp: string
+
     nfts: NFTToken[];
 }
 
@@ -38,5 +43,6 @@ export interface NFTTransfer  {
     collection?: NFTCollection;
     txHash: string;
     blockNumber: string;
+    timestamp: string;
     amount: string;
 }

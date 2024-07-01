@@ -330,6 +330,9 @@ export default class Queries {
                 burnable
                 withReserve
                 refundable
+                txHash
+                blockNumber
+                timestamp
                 nfts {
                   tokenURI
                   tokenId
@@ -339,6 +342,7 @@ export default class Queries {
                     to
                     txHash
                     blockNumber
+                    timestamp
                     amount
                   }
                   balances {
@@ -367,6 +371,9 @@ export default class Queries {
                 burnable
                 withReserve
                 refundable
+                txHash
+                blockNumber
+                timestamp
                 nfts {
                   tokenURI
                   tokenId
@@ -376,6 +383,7 @@ export default class Queries {
                     to
                     txHash
                     blockNumber
+                    timestamp
                     amount
                   }
                   balances {
@@ -408,12 +416,16 @@ export default class Queries {
                     burnable
                     withReserve
                     refundable
+                    txHash
+                    blockNumber
+                    timestamp
                 }
                 transfers {
                   from
                   to
                   txHash
                   blockNumber
+                  timestamp
                   amount
                 }
                 balances {
@@ -434,6 +446,7 @@ export default class Queries {
                 to
                 txHash
                 blockNumber
+                timestamp
                 amount
                 nft {
                     tokenURI
@@ -452,6 +465,9 @@ export default class Queries {
                     burnable
                     withReserve
                     refundable
+                    txHash
+                    blockNumber
+                    timestamp
                 }
             }
         }`, getSubgraphEndpoint(this.network))
