@@ -6,7 +6,7 @@ import {
 import { DecimalContract } from "./interfaces/contracts";
 import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
-import { NFTCollection, NFTToken } from "./interfaces/nfts";
+import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 
 export default class Subgraph {
 
@@ -239,6 +239,16 @@ export default class Subgraph {
         const verifyAddress = ethers.utils.getAddress(address)
         const options = `(id: "${verifyAddress.toLowerCase()}" )`
         return await this.query.getNftCollectionType(options)
+    }
+
+    public async getNftTransfersByUser(user: string): Promise<NFTTransfer[]> {
+        const options = `(where: {
+            or: [
+                { to: "${user}" },
+                { from: "${user}" },
+            ]
+        })`
+        return await this.query.getNftTransfers(options)
     }
 
     //othres

@@ -6,7 +6,7 @@ import {
 import { DecimalContract } from "./interfaces/contracts";
 import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
-import { NFTCollection, NFTToken } from "./interfaces/nfts";
+import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 import fetch from "node-fetch";
 
 export default class Queries {
@@ -425,6 +425,37 @@ export default class Queries {
             }
         }`, getSubgraphEndpoint(this.network))
         return result.nfttokens
+    }
+
+    public async getNftTransfers(options:string): Promise<NFTTransfer[]> {
+        const result = await this.query(`{
+            nfttransfers${options} {
+                from
+                to
+                txHash
+                blockNumber
+                amount
+                nft {
+                    tokenURI
+                    tokenId
+                    supply
+                }
+                collection {
+                    address
+                    symbol
+                    name
+                    creator
+                    tokenType
+                    collectionSupply
+                    contractURI
+                    allowMint
+                    burnable
+                    withReserve
+                    refundable
+                }
+            }
+        }`, getSubgraphEndpoint(this.network))
+        return result.nfttransfers
     }
 
     public async getNftCollectionType(options:string): Promise<string | null> {
