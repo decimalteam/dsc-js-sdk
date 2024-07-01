@@ -1263,6 +1263,12 @@ const nftCollectionAddress = "0x15ea2325268864227d7eaf6a4b76cafbeec3050d"
 const result = await subgraph.getAddressBalancesNftsByCollection(account, nftCollectionAddress, first, skip)
 ```
 
+#### Get NFT by NFT Collection address and by tokenId
+```js
+const nftCollectionAddress = "0x15ea2325268864227d7eaf6a4b76cafbeec3050d"
+const tokenId = 0
+const result = await subgraph.getNftByCollectionAndTokenId(nftCollectionAddress, tokenId)
+```
 
 ### Delegation NFT
 
