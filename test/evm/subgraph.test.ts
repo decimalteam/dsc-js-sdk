@@ -175,6 +175,9 @@ describe('Subgraph', () => {
 
         const resultGetAddressBalancesNfts = await subgraph.getAddressBalancesNfts(nft.balances[0].user.address, 1000, 0)
         console.log(resultGetAddressBalancesNfts)
+
+        const resultGetAddressBalancesNftsByCollection = await subgraph.getAddressBalancesNftsByCollection(nft.balances[0].user.address, nft.collection!.address, 1000, 0)
+        console.log(resultGetAddressBalancesNftsByCollection)
     })
 
 

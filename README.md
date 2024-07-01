@@ -1256,6 +1256,13 @@ const account = "0x35119df12afdf848b7ef2536af2411ab0a611c45"
 const result = await subgraph.getAddressBalancesNfts(account, first, skip)
 ```
 
+#### Get NFT balances by account and by NFT Collection address
+```js
+const account = "0x35119df12afdf848b7ef2536af2411ab0a611c45"
+const nftCollectionAddress = "0x15ea2325268864227d7eaf6a4b76cafbeec3050d"
+const result = await subgraph.getAddressBalancesNftsByCollection(account, nftCollectionAddress, first, skip)
+```
+
 
 ### Delegation NFT
 
