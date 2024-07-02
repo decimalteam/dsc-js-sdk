@@ -127,6 +127,8 @@ export default class DecimalEVM {
       await this.checkConnect('master-validator')
       await this.checkConnect('multi-call')
       await this.checkConnect('multi-sig')
+      //TODO bridge
+      //TODO checks
     }
   }
   
@@ -226,6 +228,12 @@ export default class DecimalEVM {
           const abi = (await this.getContract(bridgeContarcts.implementation)).abi
           const bridgeV2 = await this.getContract(bridgeContarcts.id, abi);
           this.call.setDecimalContractEVM(bridgeV2, 'bridgeV2')
+        }
+        break;
+      case 'checks':
+        if (!this.call.checks) {
+          //TODO
+          //this.call.setDecimalContractEVM(checks, 'checks')
         }
         break;
       default:
@@ -840,6 +848,21 @@ export default class DecimalEVM {
     return await this.call!.transferTokens(tokenAddress, to, amount, serviceFee, toChainId, estimateGas);
   }
 
+  public async createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean) {
+    await this.checkConnect('checks');
+    return await this.call!.createChecksDEL(passwords, amount, dueBlock, estimateGas);
+  }
+
+  public async createChecksToken(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, tokenAddress: string, sign?: ethers.Signature, estimateGas?: boolean) {
+    await this.checkConnect('checks');
+    return await this.call!.createChecksToken(passwords, amount, dueBlock, tokenAddress, sign, estimateGas);
+  }
+
+  public async redeemChecks(passwords: string[], checks: string[], estimateGas?: boolean) {
+    await this.checkConnect('checks');
+    return await this.call!.redeemChecks(passwords, checks, estimateGas);
+  }
+
   // view function
 
   public async getBalance(address: string) {
@@ -1117,6 +1140,14 @@ export default class DecimalEVM {
   }
   public getAddress(address: string){
     return ethers.utils.getAddress(address)
+  }
+
+  public getRandomPassword(count: number, length: number): string[] {
+    const passwords = [];
+    for (let i = 0; i < count; i++) {
+      passwords.push(ethers.utils.hexlify(ethers.utils.randomBytes(length)).slice(2))
+    }
+    return passwords;
   }
 
   private async getNFTContract(address: string, typeNFT: TypeNFT) {

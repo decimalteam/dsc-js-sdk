@@ -802,6 +802,76 @@ await decimalEVM.approveToken(tokenAddress, bridgeAddress, amount)
 const result = await decimalEVM.bridgeTransferTokens(tokenAddress, to, amount, serviceFee, toChainId)
 ```
 
+## Checks
+
+### Create checks DEL
+```js
+const latestBlock = await decimalEVM.getLatestBlock()
+const dueBlock = latestBlock!.number + 200; // given the redeem to cash the check in the next 200 blocks
+
+const countChecks = 5; // count of checks
+const passwords = decimalEVM.getRandomPassword(countChecks, 15) // generating passwords with a length of 15
+
+const amount = 2 // the amount for each check
+const amountWei = decimalEVM.parseEther(amount) // the amount in wei for each check
+const totalAmount = decimalEVM.parseEther(passwords.length * amount) //Calculating full amount of the charge to display full amount to user
+
+const gas = await decimalEVM.createChecksDEL(passwords, amountWei, dueBlock, true)
+const {tx, checks} = await decimalEVM.createChecksDEL(passwords, amountWei, dueBlock);
+```
+
+### Create checks Token (approve)
+```js
+const latestBlock = await decimalEVM.getLatestBlock()
+const dueBlock = latestBlock!.number + 200; // given the redeem to cash the check in the next 200 blocks
+
+const countChecks = 5; // count of checks
+const passwords = decimalEVM.getRandomPassword(countChecks, 15) // generating passwords with a length of 15
+
+const amount = 2 // the amount for each check
+const amountWei = decimalEVM.parseEther(amount) // the amount in wei for each check
+const totalAmount = decimalEVM.parseEther(passwords.length * amount) //Calculating full amount of the charge to approve and display full amount to user
+const tokenAddress = "0xe1E885a848DC0c0867E119E7e80289f98e27256C"
+const checksAddress = await decimalEVM.getDecimalContractAddress('checks') // get address checks contract
+
+await decimalEVM.approveToken(tokenAddress, checksAddress, totalAmount) // approve total amount
+//const gas = await decimalEVM.createChecksToken(passwords, amountWei, dueBlock, tokenAddress, undefined, true)  //get gas
+const {tx, checks} = await decimalEVM.createChecksToken(passwords, amountWei, dueBlock, tokenAddress);
+```
+
+### Create checks Token (permit)
+```js
+const latestBlock = await decimalEVM.getLatestBlock()
+const dueBlock = latestBlock!.number + 200; // given the redeem to cash the check in the next 200 blocks
+
+const countChecks = 5; // count of checks
+const passwords = decimalEVM.getRandomPassword(countChecks, 15) // generating passwords with a length of 15
+
+const amount = 2 // the amount for each check
+const amountWei = decimalEVM.parseEther(amount) // the amount in wei for each check
+const totalAmount = decimalEVM.parseEther(passwords.length * amount) //Calculating full amount of the charge to approve and display full amount to user
+const tokenAddress = "0xe1E885a848DC0c0867E119E7e80289f98e27256C"
+const checksAddress = await decimalEVM.getDecimalContractAddress('checks') // get address checks contract
+
+const sign = await decimalEVM.getSignPermitToken(tokenAddress, checksAddress, totalAmount) //get sign for permit
+//const gas = await decimalEVM.createChecksToken(passwords, amountWei, dueBlock, tokenAddress, sign, true)  //get gas
+const {tx, checks} = await decimalEVM.createChecksToken(passwords, amountWei, dueBlock, tokenAddress, sign);
+```
+
+### Redeem checks
+```js
+const passwords = [
+  'password1234567890', //password for check 1
+  'passwordQWERTYUIOP'  //password for check 2
+]
+const checks = [
+  '0x6f0951dcc2e7c2a14e109d33f88fc3cc50cd5b4644a89f9b51b6b4ebce1b6c9f', //check 1
+  '0x82f6cbb019188ed8f6be9f271a46f4edbb61d85d9c8ace6fa67e04ab42f33024' //check 2
+]
+const tx = await decimalEVM.redeemChecks(passwords, checks)
+```
+
+
 ## Viewing functions
 
 ### Network
