@@ -3,7 +3,7 @@ import {
     getSubgraphEndpoint,
     getSubgraphBridgeEndpoint
 } from "../endpoints";
-import { DecimalContract } from "./interfaces/contracts";
+import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
 import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
@@ -485,6 +485,16 @@ export default class Queries {
     }
 
     //subgraph bridge
+    public async getBridgeContracts(): Promise<DecimalBridgeContract> {
+        const result = await this.query(`{
+            bridges {
+                id
+                implementation
+            }
+        }`, getSubgraphBridgeEndpoint(this.network))
+        return result.bridges[0]
+    }
+
     public async getBridgeTokens(options: string): Promise<BridgeToken[]> {
         const result = await this.query(`{
             tokens${options} {

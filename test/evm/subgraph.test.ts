@@ -7,7 +7,7 @@ const Account = "0x4e8f97244dc1e570742d9e8cf28c4413c4a8aede"
 
 describe('Subgraph', () => {
 
-    test('get Decimal contracts', async() => {
+    test('get Decimal contracts and Bridge contracts', async() => {
         // Sdk.
         const { Subgraph, DecimalNetworks } = SDK;
 
@@ -15,6 +15,9 @@ describe('Subgraph', () => {
 
         const resultGetDecimalContracts = await subgraph.getDecimalContracts()
         console.log(resultGetDecimalContracts)
+
+        const resultGetBridgeContracts = await subgraph.getBridgeContracts()
+        console.log(resultGetBridgeContracts)
     })
 
     test('get validators, get validator penalties', async() => {
@@ -274,5 +277,5 @@ describe('Subgraph', () => {
         const resultGetBridgeTransfersByToken = await subgraph.getBridgeTransfersByToken(resultGetBridgeTransfers[0].token.address, 1000, 0)
         console.log(resultGetBridgeTransfersByToken)
     });
-    
+
 })

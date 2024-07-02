@@ -4,3 +4,8 @@ export interface DecimalContract {
     address: string;
     implementation: string;
 }
+
+export interface DecimalBridgeContract {
+    id: string;
+    implementation: string;
+}

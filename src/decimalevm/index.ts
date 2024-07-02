@@ -222,12 +222,9 @@ export default class DecimalEVM {
         break;
       case 'bridge':
         if (!this.call.bridgeV2) {
-          const bridgeAddress = { //TODO delete
-            [NETWORKS.DEVNET]: "0x516098F096b795CDD6512BCFd18e642C557d31De", 
-            [NETWORKS.TESTNET]: "0x827eA5381aDB912Ed0befDA26AfE8CDc5A5e050a",
-            [NETWORKS.MAINNET]: "",
-          }
-          const bridgeV2 = await this.getContract(bridgeAddress[this.network], bridgeAbi); //TODO delete abi
+          const bridgeContarcts = await this.subgraph.getBridgeContracts()
+          const abi = (await this.getContract(bridgeContarcts.implementation)).abi
+          const bridgeV2 = await this.getContract(bridgeContarcts.id, abi);
           this.call.setDecimalContractEVM(bridgeV2, 'bridgeV2')
         }
         break;
