@@ -97,6 +97,11 @@ export default class DecimalEVM {
       this.apiUrl = getNewApiEndpoint(this.network);
       this.subgraph = new Subgraph(this.network)
       this.ipfs = new IPFS(this.network)
+      this.call = new Call(
+        this.network,
+        this.provider,
+        this.account
+      )
   }
 
   private async getContract(address: string, abi?: any) {
@@ -107,15 +112,6 @@ export default class DecimalEVM {
   }
 
   public async connect(contractName?: string) {
-    if (!this.call) {
-      this.contractAddesses = await this.subgraph.getDecimalContracts()
-
-      this.call = new Call(
-        this.network,
-        this.provider,
-        this.account
-      )
-    }
     if (contractName) {
       await this.checkConnect(contractName)
     } else {
@@ -243,6 +239,7 @@ export default class DecimalEVM {
   }
 
   private async initFromImplementation( contractName: string) {
+    if (!this.contractAddesses) this.contractAddesses = await this.subgraph.getDecimalContracts();
     const contract = this.contractAddesses?.find((contract) => contract.name == contractName)
     if (!contract) throw new Error(`${contractName } not found in thegraph`);
     const abi = (await this.getContract(contract.implementation)).abi
