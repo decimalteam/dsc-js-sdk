@@ -138,7 +138,7 @@ export default class DecimalEVM {
       case 'contract-center':
         if (!this.call.contractCenter) {
           const contractCenter = await this.initFromImplementation('contract-center');
-          this.call.setDecimalContractEVM(contractCenter, 'delegation')
+          this.call.setDecimalContractEVM(contractCenter, 'contractCenter')
         }
         break;
       case 'token-center':
@@ -191,7 +191,7 @@ export default class DecimalEVM {
       case 'delegation-nft':
         if (!this.call.delegationNft) {
           const delegationNft = await this.initFromImplementation('delegation-nft');
-          this.call.setDecimalContractEVM(delegationNft, 'delegation')
+          this.call.setDecimalContractEVM(delegationNft, 'delegationNft')
         }
         break;
       case 'master-validator':
@@ -860,7 +860,12 @@ export default class DecimalEVM {
 
   public async redeemChecks(passwords: string[], checks: string[], estimateGas?: boolean) {
     await this.checkConnect('checks');
-    return await this.call!.redeemChecks(passwords, checks, estimateGas);
+    return await this.call!.redeemChecks(passwords, checks, false, estimateGas);
+  }
+
+  public async redeemChecksTest(passwords: string[], checks: string[]) {
+    await this.checkConnect('checks');
+    return await this.call!.redeemChecks(passwords, checks, true, false);
   }
 
   // view function

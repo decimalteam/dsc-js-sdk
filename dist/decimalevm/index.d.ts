@@ -112,6 +112,10 @@ export default class DecimalEVM {
     private decodeData;
     bridgeTransferDEL(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
     bridgeTransferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
+    createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    createChecksToken(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, tokenAddress: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
+    redeemChecks(passwords: string[], checks: string[], estimateGas?: boolean): Promise<any>;
+    redeemChecksTest(passwords: string[], checks: string[]): Promise<any>;
     getBalance(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
     getNftType(address: string): Promise<TypeNFT>;
     getNftTypeFromContract(address: string): Promise<TypeNFT>;
@@ -167,6 +171,7 @@ export default class DecimalEVM {
     parseEther(amount: string | number | bigint | BigNumberish): string;
     formatEther(amount: string | number | bigint | BigNumberish): string;
     getAddress(address: string): string;
+    getRandomPassword(count: number, length: number): string[];
     private getNFTContract;
     getDecimalContractAddress(contract: string): Promise<string>;
     getDecimalContract(contract: string): Promise<ethers.Contract>;

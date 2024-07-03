@@ -11,13 +11,11 @@ export default class DecimalContractEVM {
   private readonly account: HDNodeWallet;
   public readonly contract: ethers.Contract;
   public readonly abi: ethers.ContractInterface;
-  public readonly tx_hash: string | null;
-  private constructor(network: NETWORKS, account: HDNodeWallet, contract: ethers.Contract, abi: ethers.ContractInterface, tx_hash: string | null) {
+  private constructor(network: NETWORKS, account: HDNodeWallet, contract: ethers.Contract, abi: ethers.ContractInterface) {
     this.network = network
     this.account = account;
     this.contract = contract;
     this.abi = abi;
-    this.tx_hash = tx_hash;
   }
 
   public static async getContract(
@@ -28,20 +26,18 @@ export default class DecimalContractEVM {
     jsonInterface?: ethers.ContractInterface
   ): Promise<DecimalContractEVM> {
     let abi;
-    let tx_hash = null;
     if (jsonInterface) {
         abi = jsonInterface;
     } else {
       try {
         const { data } = await axios.request({
           method: "get",
-          url: `v1/contracts/${address.toLowerCase()}`,
+          url: `v1/contracts/compact/${address.toLowerCase()}`,
           baseURL: apiEndpoint,
           params: {},
           data: null
         });
         abi = data.Result?.abi
-        tx_hash = data.Result?.tx_hash
       } catch {
         throw new Error(`Error loading abi. Contract ${address} not found`);
       }
@@ -56,8 +52,7 @@ export default class DecimalContractEVM {
         network,
         account,
         contract,
-        abi,
-        tx_hash
+        abi
     );
   }
 

@@ -52,6 +52,7 @@ export default class Call {
     safe?: DecimalContractEVM;
     safeFactory?: DecimalContractEVM;
     multiSend?: DecimalContractEVM;
+    checks?: DecimalContractEVM;
     bridgeV2?: DecimalContractEVM;
     private bridgeV2Nonce;
     constructor(network: NETWORKS, provider: ethers.providers.JsonRpcProvider, account: HDNodeWallet);
@@ -109,6 +110,9 @@ export default class Call {
     updateValidatorMeta(validator: string, meta: string, estimateGas?: boolean): Promise<any>;
     wrapAndTransferETH(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
     transferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
+    createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    createChecksToken(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, tokenAddress: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
+    redeemChecks(passwords: string[], checks: string[], callStatic?: boolean, estimateGas?: boolean): Promise<any>;
     checkTokenExists(address: string): Promise<any>;
     getAddressTokenBySymbol(symbol: string): Promise<any>;
     getCommissionSymbol(symbol: string): Promise<any>;
@@ -160,6 +164,7 @@ export default class Call {
     getSignPermitERC721(contract: ethers.Contract, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature>;
     getSignPermitERC1155(contract: ethers.Contract, spender: string): Promise<ethers.Signature>;
     getBridgeV2ServiceFees(toChainId: number): Promise<any>;
+    getChecksNonces(): Promise<any>;
     createMultiSig(ownersData: {
         owner: string;
         weight: number;

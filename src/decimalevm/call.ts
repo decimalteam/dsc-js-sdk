@@ -665,7 +665,18 @@ export default class Call {
         }
     }
 
-    public async redeemChecks(passwords: string[], checks: string[], estimateGas?: boolean) {
+    public async redeemChecks(passwords: string[], checks: string[], callStatic?: boolean, estimateGas?: boolean) {
+        if (callStatic) {
+            try {
+                await this.checks!.contract.callStatic.redeemChecks(passwords, checks);
+                return null;
+            } catch (err: any) {
+                if (err?.revert?.name != null) {
+                    return err.revert.name
+                }
+                throw new Error(err)
+            }
+        }
         if (estimateGas) {
             return await this.checks!.contract.estimateGas.redeemChecks(passwords, checks);
         }

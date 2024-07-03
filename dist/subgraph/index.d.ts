@@ -1,5 +1,5 @@
 import { NETWORKS } from "../endpoints";
-import { DecimalContract } from "./interfaces/contracts";
+import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
 import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
@@ -46,6 +46,7 @@ export default class Subgraph {
     getNftCollectionType(address: string): Promise<string | null>;
     getNftTransfersByUser(user: string): Promise<NFTTransfer[]>;
     subgraphCustomQuery(query: string): Promise<any>;
+    getBridgeContracts(): Promise<DecimalBridgeContract>;
     getBridgeTokens(first: number, skip: number): Promise<BridgeToken[]>;
     getBridgeTokenByAddress(address: string): Promise<BridgeToken>;
     getBridgeTokenBySymbol(symbol: string): Promise<BridgeToken>;
