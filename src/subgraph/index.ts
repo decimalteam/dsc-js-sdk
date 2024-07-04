@@ -255,13 +255,13 @@ export default class Subgraph {
         return await this.query.getNftCollectionType(options)
     }
 
-    public async getNftTransfersByUser(user: string): Promise<NFTTransfer[]> {
+    public async getNftTransfersByUser(user: string, first: number, skip: number): Promise<NFTTransfer[]> {
         const options = `(where: {
             or: [
                 { to: "${user}" },
                 { from: "${user}" },
             ]
-        })`
+        }, first: ${first}, skip: ${skip})`
         return await this.query.getNftTransfers(options)
     }
 
