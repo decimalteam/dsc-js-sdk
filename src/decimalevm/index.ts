@@ -97,6 +97,11 @@ export default class DecimalEVM {
       this.apiUrl = getNewApiEndpoint(this.network);
       this.subgraph = new Subgraph(this.network)
       this.ipfs = new IPFS(this.network)
+      this.call = new Call(
+        this.network,
+        this.provider,
+        this.account
+      )
   }
 
   private async getContract(address: string, abi?: any) {
@@ -107,15 +112,6 @@ export default class DecimalEVM {
   }
 
   public async connect(contractName?: string) {
-    if (!this.call) {
-      this.contractAddesses = await this.subgraph.getDecimalContracts()
-
-      this.call = new Call(
-        this.network,
-        this.provider,
-        this.account
-      )
-    }
     if (contractName) {
       await this.checkConnect(contractName)
     } else {
@@ -127,6 +123,8 @@ export default class DecimalEVM {
       await this.checkConnect('master-validator')
       await this.checkConnect('multi-call')
       await this.checkConnect('multi-sig')
+      //TODO bridge
+      //TODO checks
     }
   }
   
@@ -136,7 +134,7 @@ export default class DecimalEVM {
       case 'contract-center':
         if (!this.call.contractCenter) {
           const contractCenter = await this.initFromImplementation('contract-center');
-          this.call.setDecimalContractEVM(contractCenter, 'delegation')
+          this.call.setDecimalContractEVM(contractCenter, 'contractCenter')
         }
         break;
       case 'token-center':
@@ -189,7 +187,7 @@ export default class DecimalEVM {
       case 'delegation-nft':
         if (!this.call.delegationNft) {
           const delegationNft = await this.initFromImplementation('delegation-nft');
-          this.call.setDecimalContractEVM(delegationNft, 'delegation')
+          this.call.setDecimalContractEVM(delegationNft, 'delegationNft')
         }
         break;
       case 'master-validator':
@@ -228,6 +226,12 @@ export default class DecimalEVM {
           this.call.setDecimalContractEVM(bridgeV2, 'bridgeV2')
         }
         break;
+      case 'checks':
+        if (!this.call.checks) {
+          //TODO
+          //this.call.setDecimalContractEVM(checks, 'checks')
+        }
+        break;
       default:
         throw new Error(`Unknown contract pack name '${contractName}'`);
     }
@@ -235,6 +239,7 @@ export default class DecimalEVM {
   }
 
   private async initFromImplementation( contractName: string) {
+    if (!this.contractAddesses) this.contractAddesses = await this.subgraph.getDecimalContracts();
     const contract = this.contractAddesses?.find((contract) => contract.name == contractName)
     if (!contract) throw new Error(`${contractName } not found in thegraph`);
     const abi = (await this.getContract(contract.implementation)).abi
@@ -840,6 +845,26 @@ export default class DecimalEVM {
     return await this.call!.transferTokens(tokenAddress, to, amount, serviceFee, toChainId, estimateGas);
   }
 
+  public async createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean) {
+    await this.checkConnect('checks');
+    return await this.call!.createChecksDEL(passwords, amount, dueBlock, estimateGas);
+  }
+
+  public async createChecksToken(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, tokenAddress: string, sign?: ethers.Signature, estimateGas?: boolean) {
+    await this.checkConnect('checks');
+    return await this.call!.createChecksToken(passwords, amount, dueBlock, tokenAddress, sign, estimateGas);
+  }
+
+  public async redeemChecks(passwords: string[], checks: string[], estimateGas?: boolean) {
+    await this.checkConnect('checks');
+    return await this.call!.redeemChecks(passwords, checks, false, estimateGas);
+  }
+
+  public async redeemChecksTest(passwords: string[], checks: string[]) {
+    await this.checkConnect('checks');
+    return await this.call!.redeemChecks(passwords, checks, true, false);
+  }
+
   // view function
 
   public async getBalance(address: string) {
@@ -1117,6 +1142,14 @@ export default class DecimalEVM {
   }
   public getAddress(address: string){
     return ethers.utils.getAddress(address)
+  }
+
+  public getRandomPassword(count: number, length: number): string[] {
+    const passwords = [];
+    for (let i = 0; i < count; i++) {
+      passwords.push(ethers.utils.hexlify(ethers.utils.randomBytes(length)).slice(2))
+    }
+    return passwords;
   }
 
   private async getNFTContract(address: string, typeNFT: TypeNFT) {

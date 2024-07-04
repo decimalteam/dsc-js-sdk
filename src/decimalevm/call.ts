@@ -77,6 +77,7 @@ export default class Call {
     public safe?: DecimalContractEVM;
     public safeFactory?: DecimalContractEVM;
     public multiSend?: DecimalContractEVM;
+    public checks?: DecimalContractEVM;
     public bridgeV2?: DecimalContractEVM;
     private bridgeV2Nonce: number = 0;
 
@@ -124,6 +125,9 @@ export default class Call {
                 break;
             case 'bridgeV2':
                 this.bridgeV2 = decimalContractEVM
+                break;
+            case 'checks':
+                this.checks = decimalContractEVM
                 break;
             default:
                 throw new Error(`Unknown contract name`);
@@ -621,6 +625,64 @@ export default class Call {
         return tx;
     }
 
+    //checks
+    public async createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean): Promise<any> {
+        const nonce = await this.checks!.contract.nonces();
+        const passwordHashes = passwords.map((password) => {
+            return ethers.utils.solidityKeccak256(['string'], [password])
+        })
+
+        const value = ethers.BigNumber.from(passwordHashes.length).mul(ethers.BigNumber.from(amount))
+        if (estimateGas) {
+            return await this.checks!.contract.estimateGas.createChecksDEL(passwordHashes, amount, dueBlock, nonce, await this.txOptions({value: value}))
+        }
+        const checks = await this.checks!.contract.callStatic.createChecksDEL(passwordHashes, amount, dueBlock, nonce, await this.txOptions({value: value}))
+        const tx = await this.checks!.contract.createChecksDEL(passwordHashes, amount, dueBlock, nonce, await this.txOptions({value: value})).then((tx: ethers.ContractTransaction) => tx.wait());
+        return {tx: tx, checks: checks};
+
+    }
+
+    public async createChecksToken(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, tokenAddress: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any> {
+        const nonce = await this.checks!.contract.nonces();
+        const passwordHashes = passwords.map((password) => {
+            return ethers.utils.solidityKeccak256(['string'], [password])
+        })
+        if (sign == undefined) {
+            if (estimateGas) {
+                return await this.checks!.contract.estimateGas.createChecksToken(passwordHashes, amount, dueBlock, nonce, tokenAddress, await this.txOptions())
+            }
+            const checks = await this.checks!.contract.createChecksToken(passwordHashes, amount, dueBlock, nonce, tokenAddress, await this.txOptions())
+            const tx = await this.checks!.contract.createChecksToken(passwordHashes, amount, dueBlock, nonce, tokenAddress, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            return {tx: tx, checks: checks};
+        } else {
+            const deadline = ethers.constants.MaxUint256
+            if (estimateGas) {
+                return await this.checks!.contract.estimateGas.createChecksTokenByPermit(passwordHashes, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            }
+            const checks = await this.checks!.contract.createChecksTokenByPermit(passwordHashes, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            const tx = await this.checks!.contract.createChecksTokenByPermit(passwordHashes, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            return {tx: tx, checks: checks};
+        }
+    }
+
+    public async redeemChecks(passwords: string[], checks: string[], callStatic?: boolean, estimateGas?: boolean) {
+        if (callStatic) {
+            try {
+                await this.checks!.contract.callStatic.redeemChecks(passwords, checks);
+                return null;
+            } catch (err: any) {
+                if (err?.revert?.name != null) {
+                    return err.revert.name
+                }
+                throw new Error(err)
+            }
+        }
+        if (estimateGas) {
+            return await this.checks!.contract.estimateGas.redeemChecks(passwords, checks);
+        }
+        return await this.checks!.contract.redeemChecks(passwords, checks).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
     // -----------view functions----------
     //token-center
     public async checkTokenExists(address:string) {
@@ -839,6 +901,8 @@ export default class Call {
                 return address ? this.multiSend!.contract.address : this.multiSend!.contract
             case "bridge":
                 return address ? this.bridgeV2!.contract.address : this.bridgeV2!.contract
+            case "checks":
+                return address ? this.checks!.contract.address : this.checks!.contract
             default:
                 throw new Error(`There is no such contract in the Decimal`)
         }
@@ -922,6 +986,11 @@ export default class Call {
     //bridgeV2
     public async getBridgeV2ServiceFees(toChainId: number) {
         return await this.bridgeV2!.contract.minimalServiceFees(toChainId);
+    }
+
+    //checks
+    public async getChecksNonces() {
+        return await this.checks!.contract.nonces();
     }
 
     //multisig

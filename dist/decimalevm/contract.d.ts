@@ -5,7 +5,6 @@ export default class DecimalContractEVM {
     private readonly account;
     readonly contract: ethers.Contract;
     readonly abi: ethers.ContractInterface;
-    readonly tx_hash: string | null;
     private constructor();
     static getContract(network: NETWORKS, apiEndpoint: string, account: HDNodeWallet, address: string, jsonInterface?: ethers.ContractInterface): Promise<DecimalContractEVM>;
     static verifyСontract(apiEndpoint: string, address: string, contract_code: string, compiler: string, optimizer: string, runs: string, evm_version: string): Promise<boolean>;
