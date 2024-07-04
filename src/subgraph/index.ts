@@ -256,10 +256,29 @@ export default class Subgraph {
     }
 
     public async getNftTransfersByUser(user: string): Promise<NFTTransfer[]> {
+        const verifyAddress = ethers.utils.getAddress(user)
         const options = `(where: {
             or: [
-                { to: "${user}" },
-                { from: "${user}" },
+                { to: "${verifyAddress}" },
+                { from: "${verifyAddress}" },
+            ]
+        })`
+        return await this.query.getNftTransfers(options)
+    }
+
+    public async getNftTransfersByNftAndUser(collection: string, tokenId: string | number, user: string): Promise<NFTTransfer[]> {
+        collection = ethers.utils.getAddress(collection)
+        user = ethers.utils.getAddress(user)
+        const options = `(where: {
+            and: [
+                {
+                    or: [
+                        { to: "${user}" },
+                        { from: "${user}" },
+                    ]
+                },
+                { collection: "${collection}" },
+                { nft_: { tokenId: "${tokenId}" }}
             ]
         })`
         return await this.query.getNftTransfers(options)
