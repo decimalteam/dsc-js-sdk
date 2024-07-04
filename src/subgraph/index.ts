@@ -269,8 +269,8 @@ export default class Subgraph {
 
     public async getNftTransfersByNftAndUser(collection: string, tokenId: string | number, user: string, first: number, skip: number): Promise<NFTTransfer[]> {
         this.checkFirstAndSkip(first, skip)
-        collection = ethers.utils.getAddress(collection)
-        user = ethers.utils.getAddress(user)
+        collection = ethers.utils.getAddress(collection).toLowerCase()
+        user = ethers.utils.getAddress(user).toLowerCase()
         const options = `(where: {
             and: [
                 {
