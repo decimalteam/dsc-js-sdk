@@ -260,8 +260,8 @@ export default class Subgraph {
         const verifyAddress = ethers.utils.getAddress(user)
         const options = `(where: {
             or: [
-                { to: "${verifyAddress}" },
-                { from: "${verifyAddress}" },
+                { to: "${verifyAddress.toLowerCase()}" },
+                { from: "${verifyAddress.toLowerCase()}" },
             ]
         }, first: ${first}, skip: ${skip})`
         return await this.query.getNftTransfers(options)
