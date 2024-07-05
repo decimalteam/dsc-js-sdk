@@ -263,7 +263,7 @@ export default class Subgraph {
                 { to: "${verifyAddress.toLowerCase()}" },
                 { from: "${verifyAddress.toLowerCase()}" },
             ]
-        }, first: ${first}, skip: ${skip})`
+        }, first: ${first}, skip: ${skip}, orderBy: timestamp, orderDirection: desc)`
         return await this.query.getNftTransfers(options)
     }
 
@@ -282,7 +282,7 @@ export default class Subgraph {
                 { collection: "${collection}" },
                 { nft_: { tokenId: "${tokenId}" }}
             ]
-        }, first: ${first}, skip: ${skip})`
+        }, first: ${first}, skip: ${skip}, orderBy: timestamp, orderDirection: desc)`
         return await this.query.getNftTransfers(options)
     }
 
