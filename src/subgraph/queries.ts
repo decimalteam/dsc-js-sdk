@@ -337,7 +337,7 @@ export default class Queries {
                   tokenURI
                   tokenId
                   supply
-                  transfers {
+                  transfers(orderBy: timestamp, orderDirection: desc) {
                     from
                     to
                     txHash
@@ -378,7 +378,7 @@ export default class Queries {
                   tokenURI
                   tokenId
                   supply
-                  transfers {
+                  transfers(orderBy: timestamp, orderDirection: desc) {
                     from
                     to
                     txHash
@@ -420,7 +420,7 @@ export default class Queries {
                     blockNumber
                     timestamp
                 }
-                transfers {
+                transfers(orderBy: timestamp, orderDirection: desc) {
                   from
                   to
                   txHash
