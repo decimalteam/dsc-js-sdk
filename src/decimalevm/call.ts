@@ -1027,4 +1027,7 @@ export default class Call {
         return await executeTx(safe, safeTx, signatures, estimateGas);
     }
 
+    public async getNonceMultiSig(safe: ethers.Contract) {
+        return await safe.nonce();
+    }
 }

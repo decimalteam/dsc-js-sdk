@@ -75,6 +75,17 @@ export default class DecimalEVM {
     signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
     approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
     executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
+    getNonce: (safeAddress: string) => Promise<any>;
+    getCurrentApproveTransactions: (safeAddress: string) => Promise<SafeTransaction[]>;
+    getSignatureForParticipant: (participantAddress: string) => Promise<SafeSignature>
+    decodeTransaction: (safeTx: SafeTransaction) => {
+      action: string;
+      tokenType: string;
+      token: string;
+      to: string;
+      tokenId?: string;
+      amount?: string;
+    }
   }>{
     create: this.createMultiSig.bind(this),
     buildTxSendDEL: this.buildMultiSigTxSendDEL.bind(this),
@@ -83,6 +94,10 @@ export default class DecimalEVM {
     signTx: this.signMultiSigTx.bind(this),
     approveHash: this.approveHashMultiSig.bind(this),
     executeTx: this.executeMultiSigTx.bind(this),
+    getNonce: this.getNonceMultiSig.bind(this),
+    getCurrentApproveTransactions: this.getCurrentApproveTransactions.bind(this),
+    getSignatureForParticipant: this.getSignatureForParticipant.bind(this),
+    decodeTransaction: this.decodeMultiSigSafeTransaction.bind(this),
   };
   
 
@@ -757,6 +772,18 @@ export default class DecimalEVM {
     return await safeApproveHash(this.account, safe.contract, safeTx)
   }
 
+  private async getSignatureForParticipant(participantAddress: string): Promise<SafeSignature> {
+    await this.checkConnect('multi-sig');
+    return {
+      signer: participantAddress,
+      data:
+          "0x000000000000000000000000" +
+          participantAddress.slice(2) +
+          "0000000000000000000000000000000000000000000000000000000000000000" +
+          "01",
+    };
+ }
+
   private async executeMultiSigTx(safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
@@ -782,7 +809,30 @@ export default class DecimalEVM {
     return await this.call!.createMultiSig(ownersData, weightThreshold, estimateGas) 
   }
 
-  private decodeSafeTransaction(safeTx: SafeTransaction): {
+  private async getNonceMultiSig(safeAddress: string) {
+    await this.checkConnect('multi-sig');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    return await this.call!.getNonceMultiSig(safe.contract)
+  }
+
+  private async getCurrentApproveTransactions(safeAddress: string) {
+    await this.checkConnect('multi-sig');
+    const nonce = await this.getNonceMultiSig(safeAddress)
+    const transactionData = await this.subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(safeAddress, nonce, 1000, 0)
+    return <SafeTransaction[]>transactionData.map((trancastion: any) => {
+      return {
+        ...trancastion,
+        safeTxGas: ethers.BigNumber.from(trancastion.safeTxGas),
+        baseGas: ethers.BigNumber.from(trancastion.baseGas),
+        gasPrice: ethers.BigNumber.from(trancastion.gasPrice),
+        nonce: ethers.BigNumber.from(trancastion.nonce),
+        value: ethers.BigNumber.from(trancastion.value),
+        operation: Number(trancastion.operation),
+      }
+    })
+  }
+
+  private decodeMultiSigSafeTransaction(safeTx: SafeTransaction): {
     action: string;
     tokenType: string;
     token: string;
@@ -828,7 +878,8 @@ export default class DecimalEVM {
   private decodeData(interFace: string, data: string) {
     try {
       const iFace = new ethers.utils.Interface([interFace]);
-      return iFace.decodeFunctionData(iFace.functions[0].name, data)
+      const func = iFace.functions[Object.keys(iFace.functions)[0]]
+      return iFace.decodeFunctionData(func.name, data)
     } catch {
       return undefined
     }

@@ -7,9 +7,9 @@ jest.setTimeout(2000000)
 const mnemonic1 = 'dutch clap mystery cost crush yellow unfair race like casual pole genre local zero liberty vibrant assist banana pact network churn pause finger dirt';
 const mnemonic2 = 'concert kid human author paddle rather outdoor wood slab wrap pioneer genuine ghost eight visa weather hybrid either route fortune alone seven nerve black';
 const mnemonic3 = 'arm twice crater feature rifle verb junk habit child cattle exclude tomato rather metal later asset wolf grief oppose turkey easy nature boy begin';
-let multisigAddress = '0xc0cD8C373b0ACDBd4Fcc692c19d0065dAcE18030'
+let multisigAddress = '0x5502b6e571d3a8a175b7c0f49b0ed1704538b410'
 // safe (0xB9d348f311Bde4aDEDC7ad265E5D5527A90df115 - testnet)
-// safe (0xc0cD8C373b0ACDBd4Fcc692c19d0065dAcE18030 - devnet)
+// safe (0x5502b6e571d3a8a175b7c0f49b0ed1704538b410 - devnet)
 describe('multisig', () => {
 
     test('create multisig wallet', async() => {
@@ -145,11 +145,52 @@ describe('multisig', () => {
         //const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, "0x0000000000000000000000000000000000000099", tokenId, amount) // send erc1155
         const signTx1 = await decimalEVM1.multisig.signTx(multisigAddress, safeTx)
         const signTx2 = await decimalEVM2.multisig.signTx(multisigAddress, safeTx)
-        const signTx3 = await decimalEVM2.multisig.signTx(multisigAddress, safeTx)
+        const signTx3 = await decimalEVM3.multisig.signTx(multisigAddress, safeTx)
         const result = await decimalEVM1.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2, signTx3])
         console.log(result)
 
     });
+
+    test('send tokens (get and build and sign the transaction of the first participant)', async() => {
+        const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+        const decimalWallet1 = new Wallet(mnemonic1);
+        const decimalWallet2 = new Wallet(mnemonic2);
+        const decimalWallet3 = new Wallet(mnemonic3);
+
+        const decimalEVM1 = new DecimalEVM(decimalWallet1, DecimalNetworks.devnet);
+        const decimalEVM2 = new DecimalEVM(decimalWallet2, DecimalNetworks.devnet);
+        const decimalEVM3 = new DecimalEVM(decimalWallet3, DecimalNetworks.devnet);
+
+        await decimalEVM1.connect('multi-sig')
+        await decimalEVM1.connect('token-center')
+        await decimalEVM2.connect('multi-sig')
+        await decimalEVM3.connect('multi-sig')
+
+        //prepare
+        const amount = decimalEVM1.parseEther('100')
+        const tokenAddress = "0xe1E885a848DC0c0867E119E7e80289f98e27256C"
+        await decimalEVM1.transferToken(tokenAddress, multisigAddress, amount)
+
+        //first participant build and approve transaction
+        const safeTx = await decimalEVM1.multisig.buildTxSendToken(multisigAddress, tokenAddress, "0x0000000000000000000000000000000000000099", amount)
+        await decimalEVM1.multisig.approveHash(multisigAddress, safeTx)
+
+        //get approved transaction
+        const safeTxs = await decimalEVM1.multisig.getCurrentApproveTransactions(multisigAddress);
+        const decodeSafeTx = decimalEVM1.multisig.decodeTransaction(safeTxs[0]) // decode firs transaction
+        console.log(decodeSafeTx)
+        if (decodeSafeTx.tokenType == 'ERC20') {
+            //build and sign the transaction of the first participant
+            const safeTx_ = await decimalEVM1.multisig.buildTxSendToken(multisigAddress, decodeSafeTx.token, decodeSafeTx.to, decodeSafeTx.amount!.toString())
+            const signTx1 = await decimalEVM2.multisig.getSignatureForParticipant(decimalWallet1.evmAddress!)
+            const signTx2 = await decimalEVM2.multisig.signTx(multisigAddress, safeTx_)
+            //const signTx2 = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx_) // or approveHash
+
+            //execute transaction
+            const result = await decimalEVM1.multisig.executeTx(multisigAddress, safeTx_, [signTx1, signTx2])
+            console.log(result)
+        }
+    })
 })
 
 

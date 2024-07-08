@@ -28,6 +28,10 @@ export function getSubgraphBridgeEndpoint(network: NETWORKS): string {
   return subgraphBridgeEndpoints[network];
 }
 
+export function getSubgraphMultiSigEndpoint(network: NETWORKS): string {
+  return subgraphMultiSigEndpoints[network];
+}
+
 export function getIpfsEndpoints(network: NETWORKS): string {
   return ipfsEndpoints[network];
 }
@@ -121,6 +125,12 @@ const subgraphBridgeEndpoints = {
   [NETWORKS.DEVNET]: "https://devnet-thegraph.decimalchain.com/subgraphs/name/bridge",
   [NETWORKS.TESTNET]: "https://testnet-thegraph.decimalchain.com/subgraphs/name/bridge",
   [NETWORKS.MAINNET]: "https://mainnet-thegraph.decimalchain.com/subgraphs/name/bridge",
+};
+
+const subgraphMultiSigEndpoints = {
+  [NETWORKS.DEVNET]: "https://devnet-thegraph.decimalchain.com/subgraphs/name/multisig-wallet",
+  [NETWORKS.TESTNET]: "https://testnet-thegraph.decimalchain.com/subgraphs/name/multisig-wallet",
+  [NETWORKS.MAINNET]: "https://mainnet-thegraph.decimalchain.com/subgraphs/name/multisig-wallet",
 };
 
 const ipfsEndpoints = { //TODO?

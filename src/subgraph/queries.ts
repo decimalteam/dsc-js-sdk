@@ -1,12 +1,14 @@
 import {
     NETWORKS,
     getSubgraphEndpoint,
-    getSubgraphBridgeEndpoint
+    getSubgraphBridgeEndpoint,
+    getSubgraphMultiSigEndpoint
 } from "../endpoints";
 import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
 import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
+import { MultisigWallets, TransactionData } from "./interfaces/multisig";
 import fetch from "node-fetch";
 
 export default class Queries {
@@ -596,5 +598,46 @@ export default class Queries {
     public async subgraphBridgeCustomQuery(query: string) {
         const result = await this.query(query, getSubgraphBridgeEndpoint(this.network))
         return result
+    }
+
+    //subgraph muiltisig
+    public async getMultisigWallets(options: string): Promise<MultisigWallets[]> {
+        const result = await this.query(`{
+            multisigWallets${options} {
+                address
+                id
+                threshold
+                participants {
+                  address
+                  status
+                  weight
+                }
+            }
+        }`, getSubgraphMultiSigEndpoint(this.network))
+        return result.multisigWallets
+    }
+
+    public async getMultisigApproveTransactions(options: string): Promise<TransactionData[]> {
+        const result = await this.query(`{
+            approves${options} {
+                transactionData {
+                  baseGas
+                  data
+                  gasPrice
+                  gasToken
+                  nonce
+                  operation
+                  refundReceiver
+                  safeTxGas
+                  to
+                  value
+                }
+              }
+        }`, getSubgraphMultiSigEndpoint(this.network))
+
+        const r = result.approves.map((approve: any) => {
+            return approve.transactionData
+        })
+        return r
     }
 }

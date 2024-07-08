@@ -7,6 +7,7 @@ import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
 import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
+import { MultisigWallets, TransactionData } from "./interfaces/multisig";
 
 export default class Subgraph {
 
@@ -348,5 +349,24 @@ export default class Subgraph {
         return await this.query.subgraphBridgeCustomQuery(query)
     }
 
+    //multisig
+    public async getMultisigWallets(first: number, skip: number): Promise<MultisigWallets[]> {
+        this.checkFirstAndSkip(first, skip)
+        const options = `(first: ${first}, skip: ${skip})`
+        return await this.query.getMultisigWallets(options)
+    }
+    public async getMultisigWalletsByParticipant(addressParticipant: string, first: number, skip: number): Promise<MultisigWallets[]> {
+        this.checkFirstAndSkip(first, skip)
+        const verifyAddress = ethers.utils.getAddress(addressParticipant)
+        const options = `(where: {participants_: {address: "${verifyAddress.toLowerCase()}"}}, first: ${first}, skip: ${skip})`
+        return await this.query.getMultisigWallets(options)
+    }
+
+    public async getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig: string, nonce: string | number, first: number, skip: number): Promise<TransactionData[]> {
+        this.checkFirstAndSkip(first, skip)
+        const verifyAddress = ethers.utils.getAddress(addressMultisig)
+        const options = `(where: {transactionData_: {nonce: "${nonce.toString()}"}, wallet_: {address: "${verifyAddress.toLowerCase()}"}}, first: ${first}, skip: ${skip})`
+        return await this.query.getMultisigApproveTransactions(options)
+    }
     
 }

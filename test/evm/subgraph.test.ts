@@ -278,4 +278,27 @@ describe('Subgraph', () => {
         console.log(resultGetBridgeTransfersByToken)
     });
 
+
+    test('get multisig wallets, get multisig wallets by participant, get approve trancations by multisig addres and nonce', async() => {
+        // Sdk.
+        const { Subgraph, DecimalNetworks } = SDK;
+
+        const subgraph = new Subgraph(DecimalNetworks.devnet)
+
+        const resultGetMultisigWallets = await subgraph.getMultisigWallets(1000, 0)
+        console.log(resultGetMultisigWallets)
+
+        if (resultGetMultisigWallets.length > 0) {
+            const multisigWallet = resultGetMultisigWallets[0];
+            const participant = multisigWallet.participants[0].address
+            const resultGetMultisigWalletsByParticipant = await subgraph.getMultisigWalletsByParticipant(participant, 1000, 0)
+            console.log(resultGetMultisigWalletsByParticipant)
+        }
+
+        const addressMultisig = "0x5502b6e571d3a8a175b7c0f49b0ed1704538b410"
+        const approveTransactions = await subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig, 0, 1000, 0)
+        console.log(approveTransactions)
+
+    });
+
 })
