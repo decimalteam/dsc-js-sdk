@@ -347,7 +347,7 @@ export default class Queries {
                     timestamp
                     amount
                   }
-                  balances {
+                  balances(where: { amount_not: "0" }) {
                     user {
                       address
                     }
@@ -388,7 +388,7 @@ export default class Queries {
                     timestamp
                     amount
                   }
-                  balances {
+                  balances(where: { amount_not: "0" }) {
                     user {
                       address
                     }
@@ -430,7 +430,7 @@ export default class Queries {
                   timestamp
                   amount
                 }
-                balances {
+                balances(where: { amount_not: "0" }) {
                   user {
                     address
                   }

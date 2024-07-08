@@ -219,7 +219,10 @@ export default class Subgraph {
     public async getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFTToken[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { balances_: { user: "${verifyAddress.toLowerCase()}" } }, first: ${first}, skip: ${skip})`
+        const options = `(where: { balances_: { 
+            user: "${verifyAddress.toLowerCase()}",
+            amount_not: "0"
+        }}, first: ${first}, skip: ${skip})`
         return await this.query.getNfts(options)
     }
 
@@ -227,7 +230,13 @@ export default class Subgraph {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
         const verifyAddressCollection = ethers.utils.getAddress(addressCollection)
-        const options = `(where: { collection: "${verifyAddressCollection.toLowerCase()}", balances_: { user: "${verifyAddress.toLowerCase()}" } }, first: ${first}, skip: ${skip})`
+        const options = `(where: { 
+            collection: "${verifyAddressCollection.toLowerCase()}", 
+            balances_: { 
+                user: "${verifyAddress.toLowerCase()}",
+                amount_not: "0"
+            } 
+        }, first: ${first}, skip: ${skip})`
         return await this.query.getNfts(options)
     }
 
@@ -237,16 +246,25 @@ export default class Subgraph {
         const options = `(where: {
             or: [
                 { creator: "${verifyAddress.toLowerCase()}" },
-                { balances_: { user: "${verifyAddress.toLowerCase()}" } }
+                { 
+                    balances_: { 
+                        user: "${verifyAddress.toLowerCase()}",
+                        amount_not: "0"
+                    }
+                }
             ]
         })`
         return await this.query.getNftCollections(options)
     }
 
+    // 
     public async getNftCollectionByUser(address: string, first: number, skip: number): Promise<NFTCollection[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { balances_: { user: "${verifyAddress.toLowerCase()}" } })`
+        const options = `(where: { balances_: { 
+            user: "${verifyAddress.toLowerCase()}",
+            amount_not: "0"
+        }})`
         return await this.query.getNftCollections(options)
     }
 
