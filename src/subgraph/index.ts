@@ -63,47 +63,47 @@ export default class Subgraph {
     // stakes token
     public async getStakes(first: number, skip: number): Promise<Stake[]> {
         this.checkFirstAndSkip(first, skip)
-        const options = `(where: {tokenType: ERC20}, first: ${first}, skip: ${skip})`
+        const options = `(where: {tokenType: DRC20}, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
     
     public async getStakesByAddress(address: string, first: number, skip: number): Promise<Stake[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { tokenType: ERC20, delegator: "${verifyAddress}" }, first: ${first}, skip: ${skip})`
+        const options = `(where: { tokenType: DRC20, delegator: "${verifyAddress}" }, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
 
     public async getStakesByValidotor(address: string, first: number, skip: number): Promise<Stake[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { tokenType: ERC20, validator: "${verifyAddress.toLowerCase()}" }, first: ${first}, skip: ${skip})`
+        const options = `(where: { tokenType: DRC20, validator: "${verifyAddress.toLowerCase()}" }, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
 
     public async getTransferStakes(first: number, skip: number): Promise<TransferStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const options = `(where: { tokenType: ERC20 }, first: ${first}, skip: ${skip})`
+        const options = `(where: { tokenType: DRC20 }, first: ${first}, skip: ${skip})`
         return await this.query.getTransferStakes(options)
     }
     
     public async getTransferStakesByAddress(address: string, first: number, skip: number): Promise<TransferStake[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { delegator: "${verifyAddress}", tokenType: ERC20}, first: ${first}, skip: ${skip})`
+        const options = `(where: { delegator: "${verifyAddress}", tokenType: DRC20}, first: ${first}, skip: ${skip})`
         return await this.query.getTransferStakes(options)
     }
 
     public async getWithdrawStakes(first: number, skip: number): Promise<WithdrawStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const options = `(where: { tokenType: ERC20 }, first: ${first}, skip: ${skip})`
+        const options = `(where: { tokenType: DRC20 }, first: ${first}, skip: ${skip})`
         return await this.query.getWithdrawStakes(options)
     }
 
     public async getWithdrawStakesByAddress(address: string, first: number, skip: number): Promise<WithdrawStake[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { delegator: "${verifyAddress}", tokenType: ERC20}, first: ${first}, skip: ${skip})`
+        const options = `(where: { delegator: "${verifyAddress}", tokenType: DRC20}, first: ${first}, skip: ${skip})`
         return await this.query.getWithdrawStakes(options)
     }
 

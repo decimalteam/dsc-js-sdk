@@ -847,13 +847,13 @@ export default class DecimalEVM {
       to: safeTx.to,
       amount: safeTx.value.toString()
     }
-    const resultTransferERC20 = this.decodeData("function transfer(address to, uint256 value)", safeTx.data)
-    if (resultTransferERC20) return {
+    const resultTransferDRC20 = this.decodeData("function transfer(address to, uint256 value)", safeTx.data)
+    if (resultTransferDRC20) return {
       action: 'transfer',
-      tokenType: 'ERC20',
+      tokenType: 'DRC20',
       token: safeTx.to,
-      to: resultTransferERC20[0],
-      amount: resultTransferERC20[1]
+      to: resultTransferDRC20[0],
+      amount: resultTransferDRC20[1]
     }
     const resultTransferDRC721 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)", safeTx.data)
     if (resultTransferDRC721) return {

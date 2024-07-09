@@ -1,6 +1,6 @@
 export enum TokenType {
     Unknown,
-    ERC20,
+    DRC20,
     DRC721,
     DRC1155
 }

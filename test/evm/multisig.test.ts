@@ -179,7 +179,7 @@ describe('multisig', () => {
         const safeTxs = await decimalEVM1.multisig.getCurrentApproveTransactions(multisigAddress);
         const decodeSafeTx = decimalEVM1.multisig.decodeTransaction(safeTxs[0]) // decode firs transaction
         console.log(decodeSafeTx)
-        if (decodeSafeTx.tokenType == 'ERC20') {
+        if (decodeSafeTx.tokenType == 'DRC20') {
             //build and sign the transaction of the first participant
             const safeTx_ = await decimalEVM1.multisig.buildTxSendToken(multisigAddress, decodeSafeTx.token, decodeSafeTx.to, decodeSafeTx.amount!.toString())
             const signTx1 = await decimalEVM2.multisig.getSignatureForParticipant(decimalWallet1.evmAddress!)
