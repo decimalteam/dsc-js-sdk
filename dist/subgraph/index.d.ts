@@ -3,6 +3,7 @@ import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
 import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
+import { MultisigWallets, TransactionData } from "./interfaces/multisig";
 export default class Subgraph {
     private readonly network;
     private readonly query;
@@ -56,4 +57,7 @@ export default class Subgraph {
     getBridgeTransfersByTo(address: string, first: number, skip: number): Promise<BridgeTransfer[]>;
     getBridgeTransfersByToken(address: string, first: number, skip: number): Promise<BridgeTransfer[]>;
     subgraphBridgeCustomQuery(query: string): Promise<any>;
+    getMultisigWallets(first: number, skip: number): Promise<MultisigWallets[]>;
+    getMultisigWalletsByParticipant(addressParticipant: string, first: number, skip: number): Promise<MultisigWallets[]>;
+    getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig: string, nonce: string | number, first: number, skip: number): Promise<TransactionData[]>;
 }

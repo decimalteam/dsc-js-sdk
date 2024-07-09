@@ -36,6 +36,17 @@ export default class DecimalEVM {
         signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
         approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
         executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
+        getNonce: (safeAddress: string) => Promise<any>;
+        getCurrentApproveTransactions: (safeAddress: string) => Promise<SafeTransaction[]>;
+        getSignatureForParticipant: (participantAddress: string) => Promise<SafeSignature>;
+        decodeTransaction: (safeTx: SafeTransaction) => {
+            action: string;
+            tokenType: string;
+            token: string;
+            to: string;
+            tokenId?: string;
+            amount?: string;
+        };
     };
     constructor(wallet: Wallet, network: NETWORKS);
     private getContract;
@@ -67,10 +78,10 @@ export default class DecimalEVM {
     sellExactTokensForDEL(tokenAddress: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
     updateDetailsToken(tokenAddress: string, newIdentity: string, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean): Promise<any>;
     permitToken(tokenAddress: string, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean): Promise<any>;
-    createCollectionERC721(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
-    createCollectionERC1155(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
-    createCollectionERC721Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<any>;
-    createCollectionERC1155Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<any>;
+    createCollectionDRC721(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
+    createCollectionDRC1155(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
+    createCollectionDRC721Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<any>;
+    createCollectionDRC1155Reserveless(payload: NFTCollectionReserveless, estimateGas?: boolean): Promise<any>;
     approveNFT721(nftCollectionAddress: string, to: string, tokenId: string | number | bigint, estimateGas?: boolean): Promise<any>;
     approveForAllNFT(nftCollectionAddress: string, to: string, approved: boolean, estimateGas?: boolean): Promise<any>;
     mintReserveless(nftCollectionAddress: string, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
@@ -90,8 +101,8 @@ export default class DecimalEVM {
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
-    delegateERC721(validator: string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
-    delegateERC1155(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
+    delegateDRC721(validator: string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
+    delegateDRC1155(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     withdrawStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
@@ -106,9 +117,12 @@ export default class DecimalEVM {
     private buildMultiSigTxSendNFT;
     private signMultiSigTx;
     private approveHashMultiSig;
+    private getSignatureForParticipant;
     private executeMultiSigTx;
     private createMultiSig;
-    private decodeSafeTransaction;
+    private getNonceMultiSig;
+    private getCurrentApproveTransactions;
+    private decodeMultiSigSafeTransaction;
     private decodeData;
     bridgeTransferDEL(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
     bridgeTransferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
@@ -162,8 +176,8 @@ export default class DecimalEVM {
         Withdraw: any;
         Transfer: any;
     }>;
-    getSignPermitERC721(address: string, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature>;
-    getSignPermitERC1155(address: string, spender: string): Promise<ethers.Signature>;
+    getSignPermitDRC721(address: string, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature>;
+    getSignPermitDRC1155(address: string, spender: string): Promise<ethers.Signature>;
     getValidatorStatus(validator: string): Promise<ValidatorStatus>;
     validatorIsActive(validator: string): Promise<any>;
     validatorIsMember(validator: string): Promise<any>;

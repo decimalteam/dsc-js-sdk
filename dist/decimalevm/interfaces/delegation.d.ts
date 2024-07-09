@@ -1,8 +1,8 @@
 export declare enum TokenType {
     Unknown = 0,
     ERC20 = 1,
-    ERC721 = 2,
-    ERC1155 = 3
+    DRC721 = 2,
+    DRC1155 = 3
 }
 export interface Stake {
     validator: string;

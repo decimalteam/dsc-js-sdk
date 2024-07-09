@@ -3,6 +3,7 @@ import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
 import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
+import { MultisigWallets, TransactionData } from "./interfaces/multisig";
 export default class Queries {
     private readonly network;
     constructor(network: NETWORKS);
@@ -30,4 +31,6 @@ export default class Queries {
     getBridgeTransfers(options: string): Promise<BridgeTransfer[]>;
     getBridgeTransfer(options: string): Promise<BridgeTransfer>;
     subgraphBridgeCustomQuery(query: string): Promise<any>;
+    getMultisigWallets(options: string): Promise<MultisigWallets[]>;
+    getMultisigApproveTransactions(options: string): Promise<TransactionData[]>;
 }

@@ -5,8 +5,8 @@ import { ValidatorStatus } from "./interfaces/validator";
 import { NETWORKS } from "../endpoints";
 import { MetaTransaction, SafeSignature, SafeTransaction } from "./multisig/execution";
 export declare enum TypeNFT {
-    ERC721 = 0,
-    ERC1155 = 1
+    DRC721 = 0,
+    DRC1155 = 1
 }
 export declare enum FreezeType {
     Unknown = 0,
@@ -97,8 +97,8 @@ export default class Call {
     addTokenReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     approveNFT721(contract: ethers.Contract, to: string, tokenId: string | number | bigint, estimateGas?: boolean): Promise<any>;
     transferBatchNFT1155(contract: ethers.Contract, from: string, to: string, tokenIds: string[] | number[], amounts: string[] | number[], estimateGas?: boolean): Promise<any>;
-    delegateERC721(validator: string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
-    delegateERC1155(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
+    delegateDRC721(validator: string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
+    delegateDRC1155(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     withdrawStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
     completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
@@ -161,8 +161,8 @@ export default class Call {
     validatorIsActive(validator: string): Promise<any>;
     validatorIsMember(validator: string): Promise<any>;
     getDecimalContract(contractName: string, address?: boolean): string | ethers.Contract;
-    getSignPermitERC721(contract: ethers.Contract, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature>;
-    getSignPermitERC1155(contract: ethers.Contract, spender: string): Promise<ethers.Signature>;
+    getSignPermitDRC721(contract: ethers.Contract, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature>;
+    getSignPermitDRC1155(contract: ethers.Contract, spender: string): Promise<ethers.Signature>;
     getBridgeV2ServiceFees(toChainId: number): Promise<any>;
     getChecksNonces(): Promise<any>;
     createMultiSig(ownersData: {
@@ -172,4 +172,5 @@ export default class Call {
     buildMultiSigTx(txs: MetaTransaction[], safe: ethers.Contract): Promise<SafeTransaction>;
     signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature>;
     executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract, estimateGas?: boolean): Promise<any>;
+    getNonceMultiSig(safe: ethers.Contract): Promise<any>;
 }
