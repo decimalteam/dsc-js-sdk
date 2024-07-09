@@ -405,15 +405,15 @@ export default class Call {
     public async mintNFTWithDELReserve(contract: ethers.Contract, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any> {
         if (tokenId !== undefined && amount !== undefined) {
             if (estimateGas) {
-                return await contract.estimateGas.mintByETH(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve}))
+                return await contract.estimateGas.mintByDEL(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve}))
             }
-            const tx = await contract.mintByETH(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //1155
+            const tx = await contract.mintByDEL(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //1155
             return {tx: tx, tokenId: tokenId};
         } else {
             if (estimateGas) {
-                return await contract.estimateGas.mintByETH(to, tokenURI, await this.txOptions({ value: reserve}))
+                return await contract.estimateGas.mintByDEL(to, tokenURI, await this.txOptions({ value: reserve}))
             }
-            const tx = await contract.mintByETH(to, tokenURI, await this.txOptions({ value: reserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //721
+            const tx = await contract.mintByDEL(to, tokenURI, await this.txOptions({ value: reserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //721
             const event = this.parseLog(contract, tx.logs, 'Transfer')
             return {tx: tx, tokenId: event.args[2]};
         }
@@ -474,8 +474,8 @@ export default class Call {
         }
     }
     public async addDELReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.addReserveByETH(tokenId, await this.txOptions({ value: amountReserve}))
-        return await contract.addReserveByETH(tokenId, await this.txOptions({ value: amountReserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155
+        if (estimateGas) return await contract.estimateGas.addReserveByDEL(tokenId, await this.txOptions({ value: amountReserve}))
+        return await contract.addReserveByDEL(tokenId, await this.txOptions({ value: amountReserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155
     }
 
     public async addTokenReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
