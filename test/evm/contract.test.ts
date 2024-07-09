@@ -7,7 +7,7 @@ const mnemonic = 'dutch clap mystery cost crush yellow unfair race like casual p
 
 import {
 	abi as tokenCenterAbi
-} from "../../src/decimalevm/abi/DecimalTokenCenter.json";
+} from "../../test/evm/abi/DecimalTokenCenter.json";
 
 describe('Contract', () => {
  
@@ -166,11 +166,13 @@ describe('Contract', () => {
 
         const callDatas = [{
             target: "0xBEc675cA5ACdB12eAE9F31909C96C6c8961F8C69",
+            value: 0,
             iface: "function transfer(address to, uint amount)",
             params: ["0x0000000000000000000000000000000000000001", decimalEVM.parseEther("1.0")]
         },
         {
             target: "0xBEc675cA5ACdB12eAE9F31909C96C6c8961F8C69",
+            value: 0,
             iface: "function transfer(address to, uint amount)",
             params: ["0x0000000000000000000000000000000000000002", decimalEVM.parseEther("1.0")]
         }]

@@ -20,14 +20,7 @@ import {
 	abi as multiCallAbi
 } from "./abi/Multicall.json";
 import {
-	abi as bridgeAbi
-} from "./abi/DecimalBridge.json"; //TODO delete
-import {
-  buildContractCall,
   buildSafeTransaction,
-  executeTx,
-  executeTxWithSigners,
-  MetaTransaction,
   safeApproveHash,
   SafeSignature,
   SafeTransaction
