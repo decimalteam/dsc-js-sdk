@@ -206,10 +206,10 @@ const newNFT: any = {
   allowMint: true //is mint allowed for the nft collection
 }
 
-const {nftCollectionAddress} = await decimalEVM.createCollectionERC721Standart(newNFT) // create collection ERC721 without reserve
-//const {nftCollectionAddress} = await decimalEVM.createCollectionERC1155Standart(newNFT) // create collection ERC1155 without reserve
-//const {nftCollectionAddress} = await decimalEVM.createCollectionERC721(newNFT) // create collection ERC721 with reserve
-//const {nftCollectionAddress} = await decimalEVM.createCollectionERC1155(newNFT) // create collection ERC1155 with reserve
+const {nftCollectionAddress} = await decimalEVM.createCollectionDRC721Reserveless(newNFT) // create collection DRC721 without reserve
+//const {nftCollectionAddress} = await decimalEVM.createCollectionDRC1155Reserveless(newNFT) // create collection DRC1155 without reserve
+//const {nftCollectionAddress} = await decimalEVM.createCollectionDRC721(newNFT) // create collection DRC721 with reserve
+//const {nftCollectionAddress} = await decimalEVM.createCollectionDRC1155(newNFT) // create collection DRC1155 with reserve
 ```
 
 ### Mint NFT for NFT Collection
@@ -218,11 +218,11 @@ const {nftCollectionAddress} = await decimalEVM.createCollectionERC721Standart(n
 ```js
 const to = decimalWallet.evmAddress
 const tokenURI = "/ipfs/QmShfT7LRyjN4ZFNyGAK5YftGU7sa9xqTTukzPiYPsrLFk"
-const {tokenId} = await decimalEVM.mintNFT(nftCollectionAddress, to, tokenURI) // mint NFT for NFT Collection ERC721 without reserve
+const {tokenId} = await decimalEVM.mintNFT(nftCollectionAddress, to, tokenURI) // mint NFT for NFT Collection DRC721 without reserve
 
 //const tokenId = 0
 //const amount = 20
-//const {tokenId} = await decimalEVM.mintNFT(nftCollectionAddress, to, tokenURI, tokenId, amount) // mint NFT for NFT Collection ERC1155 without reserve
+//const {tokenId} = await decimalEVM.mintNFT(nftCollectionAddress, to, tokenURI, tokenId, amount) // mint NFT for NFT Collection DRC1155 without reserve
 ```
 
 #### Mint NFT for NFT Collection with DEL reserve
@@ -231,12 +231,12 @@ const to = decimalWallet.evmAddress
 const tokenURI = "/ipfs/QmShfT7LRyjN4ZFNyGAK5YftGU7sa9xqTTukzPiYPsrLFk"
 
 const reserve = decimalEVM.parseEther(1); // 1 del
-const {tokenId} = await decimalEVM.mintNFTWithDELReserve(nftCollectionAddress, to, tokenURI, reserve) // mint NFT for NFT Collection ERC721 with DEL reserve
+const {tokenId} = await decimalEVM.mintNFTWithDELReserve(nftCollectionAddress, to, tokenURI, reserve) // mint NFT for NFT Collection DRC721 with DEL reserve
 
 //const tokenId = 0
 //const amount = 20
 //const reserve = decimalEVM.parseEther(1*amount); // =20 del
-//const {tokenId} = await decimalEVM.mintNFTWithDELReserve(nftCollectionAddress, to, tokenURI, reserve, tokenId, amount) // mint NFT for NFT Collection ERC1155 with DEL reserve
+//const {tokenId} = await decimalEVM.mintNFTWithDELReserve(nftCollectionAddress, to, tokenURI, reserve, tokenId, amount) // mint NFT for NFT Collection DRC1155 with DEL reserve
 ```
 
 #### Mint NFT for NFT Collection with Token reserve (approve Token)
@@ -246,13 +246,13 @@ const tokenURI = "/ipfs/QmShfT7LRyjN4ZFNyGAK5YftGU7sa9xqTTukzPiYPsrLFk"
 
 const reserve = decimalEVM.parseEther(1); // 1 del
 await decimalEVM.approveToken(tokenAddress, nftCollectionAddress, reserve)
-const {tokenId} = await decimalEVM.mintNFTWithTokenReserve(nftCollectionAddress, to, tokenURI, reserve, tokenAddress) // mint NFT for NFT Collection ERC721 with Token reserve
+const {tokenId} = await decimalEVM.mintNFTWithTokenReserve(nftCollectionAddress, to, tokenURI, reserve, tokenAddress) // mint NFT for NFT Collection DRC721 with Token reserve
 undefi
 //const tokenId = 0
 //const amount = 20
 //const reserve = decimalEVM.parseEther(1*amount); // =20 del
 //await decimalEVM.approveToken(tokenAddress, nftCollectionAddress, reserve)
-//const {tokenId} = await decimalEVM.mintNFTWithTokenReserve(nftCollectionAddress, to, tokenURI, reserve, tokenAddress, undefined, tokenId, amount) // mint NFT for NFT Collection ERC1155 with Token reserve
+//const {tokenId} = await decimalEVM.mintNFTWithTokenReserve(nftCollectionAddress, to, tokenURI, reserve, tokenAddress, undefined, tokenId, amount) // mint NFT for NFT Collection DRC1155 with Token reserve
  ```
 
 #### Mint NFT for NFT Collection with Token reserve (permit Token)
@@ -262,13 +262,13 @@ const tokenURI = "/ipfs/QmShfT7LRyjN4ZFNyGAK5YftGU7sa9xqTTukzPiYPsrLFk"
 
 const reserve = decimalEVM.parseEther(1); // 1 del
 const sign = await decimalEVM.getSignPermitToken(tokenAddress, nftCollectionAddress, reserve)
-const {tokenId} = await decimalEVM.mintNFTWithTokenReserve(nftCollectionAddress, to, tokenURI, reserve, tokenAddress, sign) // mint NFT for NFT Collection ERC721 with Token reserve
+const {tokenId} = await decimalEVM.mintNFTWithTokenReserve(nftCollectionAddress, to, tokenURI, reserve, tokenAddress, sign) // mint NFT for NFT Collection DRC721 with Token reserve
 
 //const tokenId = 0
 //const amount = 20
 //const reserve = decimalEVM.parseEther(1*amount); // =20 del
 //const sign = await decimalEVM.getSignPermitToken(tokenAddress, nftCollectionAddress, reserve)
-//const {tokenId} = await decimalEVM.mintNFTWithTokenReserve(nftCollectionAddress, to, tokenURI, reserve, tokenAddress, sign, tokenId, amount) // mint NFT for NFT Collection ERC1155 with Token reserve
+//const {tokenId} = await decimalEVM.mintNFTWithTokenReserve(nftCollectionAddress, to, tokenURI, reserve, tokenAddress, sign, tokenId, amount) // mint NFT for NFT Collection DRC1155 with Token reserve
  ```
 
 ### Add reserve to NFT
@@ -279,8 +279,8 @@ const {tokenId} = await decimalEVM.mintNFTWithTokenReserve(nftCollectionAddress,
 const tokenId = 0
 const reserve = decimalEVM.parseEther(1); // 1 del
 await decimalEVM.addDELReserveNFT(nftCollectionAddress, tokenId, reserve)
-// Only the owner can add a reserve to ERC721
-// Anyone can add a reserve to ERC1155
+// Only the owner can add a reserve to DRC721
+// Anyone can add a reserve to DRC1155
 ```
 
 #### Add Token reserve to NFT (approve Token)
@@ -290,8 +290,8 @@ const tokenId = 0
 const reserve = decimalEVM.parseEther(1); // 1 del
 await decimalEVM.approveToken(tokenAddress, nftCollectionAddress, reserve)
 await decimalEVM.addTokenReserveNFT(nftCollectionAddress, tokenId, reserve)
-// Only the owner can add a reserve to ERC721
-// Anyone can add a reserve to ERC1155
+// Only the owner can add a reserve to DRC721
+// Anyone can add a reserve to DRC1155
 ```
 
 #### Add Token reserve to NFT (permit Token)
@@ -301,19 +301,19 @@ const tokenId = 0
 const reserve = decimalEVM.parseEther(1); // 1 del
 const sign = await decimalEVM.getSignPermitToken(tokenAddress, nftCollectionAddress, reserve)
 await decimalEVM.addTokenReserveNFT(nftCollectionAddress, tokenId, reserve, sign)
-// Only the owner can add a reserve to ERC721
-// Anyone can add a reserve to ERC1155
+// Only the owner can add a reserve to DRC721
+// Anyone can add a reserve to DRC1155
 ```
 
 ### Transfer NFT
 ```js
 const tokenId = 0
-await decimalEVM.transferNFT(nftCollectionAddress, from, to, tokenId) // for ERC721
+await decimalEVM.transferNFT(nftCollectionAddress, from, to, tokenId) // for DRC721
 //const amount = 20
-//await decimalEVM.transferNFT(nftCollectionAddress, from, to, tokenId, amount) // for ERC1155
+//await decimalEVM.transferNFT(nftCollectionAddress, from, to, tokenId, amount) // for DRC1155
 ```
 
-### Transfer batch for ERC1155
+### Transfer batch for DRC1155
 ```js
 const tokenIds = [0, 1] // array tokenIds
 const amounts = [10, 20] // array amounts of tokenIds
@@ -330,9 +330,9 @@ await decimalEVM.disableMintNFT(nftCollectionAddress)
 ### Burn NFT
 ```js
 const tokenId = 0
-await decimalEVM.burnNFT(nftCollectionAddress, tokenId) // for ERC721
+await decimalEVM.burnNFT(nftCollectionAddress, tokenId) // for DRC721
 //const amount = 20
-//await decimalEVM.burnNFT(nftCollectionAddress, tokenId, amount) // for ERC1155
+//await decimalEVM.burnNFT(nftCollectionAddress, tokenId, amount) // for DRC1155
 ```
 <!-- ### Set BaseURI for NFT Collection
 ```js
@@ -349,10 +349,10 @@ await decimalEVM.setTokenURINFT(nftCollectionAddress, tokenId, tokenURI)
 
 ### Approve NFT
 
-#### Approve for NFT ERC721
+#### Approve for NFT DRC721
 ```js
 const tokenId = 0
-await decimalEVM.approveNFT721(nftCollectionAddress, to, tokenId) // ERC721
+await decimalEVM.approveNFT721(nftCollectionAddress, to, tokenId) // DRC721
 ```
 
 #### Approve for all NFT
@@ -466,14 +466,14 @@ const tokenId = 0 // tokenId of NFT
 const delegationNftAddress = await decimalEVM.getDecimalContractAddress('delegation-nft')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
-//delegate ERC721
+//delegate DRC721
 await decimalEVM.approveNFT721(nftCollectionAddress, delegationNftAddress, tokenId)
-await decimalEVM.delegateERC721(validator, nftCollectionAddress, tokenId)
+await decimalEVM.delegateDRC721(validator, nftCollectionAddress, tokenId)
 
-//delegate ERC1155
+//delegate DRC1155
 //const amount = decimalEVM.parseEther(1) //1 token
 //await decimalEVM.approveForAllNFT(nftCollectionAddress, delegationNftAddress, true)
-//await decimalEVM.delegateERC1155(validator, nftCollectionAddress, tokenId, amount)
+//await decimalEVM.delegateDRC1155(validator, nftCollectionAddress, tokenId, amount)
 ```
 
 ### Delegation NFT (permit NFT)
@@ -482,14 +482,14 @@ const tokenId = 0 // tokenId of NFT
 const delegationNftAddress = await decimalEVM.getDecimalContractAddress('delegation-nft')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
-//delegate ERC721
-const sign = await decimalEVM.getSignPermitERC721(nftCollectionAddress, delegationNftAddress, tokenId)
-await decimalEVM.delegateERC721(validator, nftCollectionAddress, tokenId, sign)
+//delegate DRC721
+const sign = await decimalEVM.getSignPermitDRC721(nftCollectionAddress, delegationNftAddress, tokenId)
+await decimalEVM.delegateDRC721(validator, nftCollectionAddress, tokenId, sign)
 
-//delegate ERC1155
+//delegate DRC1155
 //const amount = decimalEVM.parseEther(1) //1 token
-//const sign = await decimalEVM.getSignPermitERC1155(nftCollectionAddress, delegationNftAddress)
-//await decimalEVM.delegateERC1155(validator, nftCollectionAddress, tokenId, amount, sign)
+//const sign = await decimalEVM.getSignPermitDRC1155(nftCollectionAddress, delegationNftAddress)
+//await decimalEVM.delegateDRC1155(validator, nftCollectionAddress, tokenId, amount, sign)
 ```
 
 ### Transfer stake NFT
@@ -499,13 +499,13 @@ const newValidator = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
                                                           // Get stakes from subgraph TODO
 let stakes = await decimalEVM.getNFTStakesByMember(owner) // Or get your stakes from smart contract
 const stake = stakes[0] // first stake (for example)
-// stake.tokenType will give the NFT type (ERC721 or ERC1155)
+// stake.tokenType will give the NFT type (DRC721 or DRC1155)
 // or get the NFT type from TODO
 
-// transfer stake ERC721
+// transfer stake DRC721
 await decimalEVM.transferStakeNFT(stake.validator, stake.token, stake.tokenId, newValidator)
 
-// transfer stake ERC1155
+// transfer stake DRC1155
 //await decimalEVM.transferStakeNFT(stake.validator, stake.token, stake.tokenId, newValidator, stake.amount)
 ```
 
@@ -515,13 +515,13 @@ await decimalEVM.transferStakeNFT(stake.validator, stake.token, stake.tokenId, n
 let stakes = await decimalEVM.getNFTStakesByMember(owner) // Or get your stakes from smart contract
 
 const stake = stakes[0] // first stake (for example)
-// stake.tokenType will give the NFT type (ERC721 or ERC1155)
+// stake.tokenType will give the NFT type (DRC721 or DRC1155)
 // or get the NFT type from TODO
 
-// withdraw stake ERC721
+// withdraw stake DRC721
 await decimalEVM.withdrawStakeNFT(stake.validator, stake.token, stake.tokenId)
 
-// withdraw stake ERC1155
+// withdraw stake DRC1155
 //await decimalEVM.withdrawStakeNFT(stake.validator, stake.token, stake.tokenId, stake.amount)
 ```
 
@@ -745,8 +745,8 @@ const safeTx = await decimalEVM1.multisig.buildTxSendToken(multisigAddress, toke
 const to = "0x0000000000000000000000000000000000000099";
 const tokenAddress = "0x65Dad3283BCE73E5EfBbaB8B0183dF5FdF4506e5"
 const tokenId = 0;
-const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, to, tokenId, ) // send erc721
-//const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, to, tokenId, amount) // send erc1155
+const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, to, tokenId, ) // send drc721
+//const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, to, tokenId, amount) // send drc1155
 ```
 
 ### Sign and execute transaction
@@ -966,7 +966,7 @@ const result = await decimalEVM.getNftType(nftCollectionAddress)
 const result = await decimalEVM.getNftTypeFromContract(nftCollectionAddress)
  ```
 
-#### Get approved to spend of ERC721
+#### Get approved to spend of DRC721
 ```js
 const result = await decimalEVM.getApprovedNFT721(nftCollectionAddress, tokenId)
 // the output example: 0x70997970c51812dc3a010c7d01b50e0d17dc79c8
@@ -978,7 +978,7 @@ const result = await decimalEVM.isApprovedForAllNFT(nftCollectionAddress, owner,
 // the output example: true
  ```
 
-#### Owner of ERC721
+#### Owner of DRC721
 ```js
 const result = await decimalEVM.ownerOfNFT721(nftCollectionAddress, tokenId)
 ```
@@ -997,9 +997,9 @@ const result = await decimalEVM.getAllowMintNFT(nftCollectionAddress)
 ```js
 const account = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
 
-// For ERC721
+// For DRC721
 const result = await decimalEVM.balanceOfNFT(nftCollectionAddress, account)
-// For ERC1155
+// For DRC1155
 const result = await decimalEVM.balanceOfNFT(nftCollectionAddress, account, tokenId)
 ```
 
@@ -1009,13 +1009,13 @@ const interfaceId = "0x01ffc9a7"
 const result = await decimalEVM.supportsInterfaceNFT(nftCollectionAddress, interfaceId) 
 ```
 
-#### Get rate tokenId of ERC1155
+#### Get rate tokenId of DRC1155
 ```js
 const tokenId = 0
 const result = await decimalEVM.getRateNFT1155(nftCollectionAddress, tokenId)
 ```
 
-#### Calculate amount reserve for repeat mint ERC1155
+#### Calculate amount reserve for repeat mint DRC1155
 ```js
 const tokenId = 0
 const quantity = 10 // 10 quantity for mint
@@ -1027,11 +1027,11 @@ const result = await decimalEVM.calcReserveNFT1155(nftCollectionAddress, tokenId
 const spender = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"; // address of who will be allowed to spend amount
 const amount = decimalEVM.parseEther(1);
 
-// for ERC721
-const sign = await decimalEVM.getSignPermitERC721(nftCollectionAddress, spender, tokenId)
+// for DRC721
+const sign = await decimalEVM.getSignPermitDRC721(nftCollectionAddress, spender, tokenId)
 
-// for ERC1155
-//const sign = await decimalEVM.getSignPermitERC1155(nftCollectionAddress, spender)
+// for DRC1155
+//const sign = await decimalEVM.getSignPermitDRC1155(nftCollectionAddress, spender)
 ```
 
 #### Get reserve NFT
@@ -1042,7 +1042,7 @@ const result = await decimalEVM.getReserveNFT(nftCollectionAddress, tokenId)
 {
   token: '0x0000000000000000000000000000000000000000',
   amount: '1000000000000000000',
-  reserveType: 'ERC1155'
+  reserveType: 'DRC1155'
 }
 if token is 0x0000000000000000000000000000000000000000, then is DEL reserve
 */
@@ -1053,7 +1053,7 @@ if token is 0x0000000000000000000000000000000000000000, then is DEL reserve
 const result = await decimalEVM.getRefundableNFT(nftCollectionAddress)
 ```
 
-#### Get supply tokenId of ERC1155
+#### Get supply tokenId of DRC1155
 ```js
 const tokenId = 0
 const result = await decimalEVM.getSupplyNFT1155(nftCollectionAddress, tokenId)

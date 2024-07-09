@@ -48,16 +48,16 @@ export default class DecimalEVM {
   private contarcts: { [address: string]: DecimalContractEVM } = {}
   private abis: { 
     token?: ethers.ContractInterface,
-    erc721?: ethers.ContractInterface,
-    erc1155?: ethers.ContractInterface,
-    erc721Reserveless?: ethers.ContractInterface,
-    erc1155Reserveless?: ethers.ContractInterface,
+    drc721?: ethers.ContractInterface,
+    drc1155?: ethers.ContractInterface,
+    drc721Reserveless?: ethers.ContractInterface,
+    drc1155Reserveless?: ethers.ContractInterface,
   } = {
     token: undefined,
-    erc721: undefined,
-    erc1155: undefined,
-    erc721Reserveless: undefined,
-    erc1155Reserveless: undefined,
+    drc721: undefined,
+    drc1155: undefined,
+    drc721Reserveless: undefined,
+    drc1155Reserveless: undefined,
   }
 
   public multisig = <{
@@ -165,31 +165,31 @@ export default class DecimalEVM {
         if (!this.call.nftCenter) {
           const nftCenter = await this.initFromImplementation('nft-center');
           const [
-            erc721ImplAddress,
-            erc1155ImplAddress,
-            erc721ReservelessImplAddress,
-            erc1155ReservelessImplAddress,
+            drc721ImplAddress,
+            drc1155ImplAddress,
+            drc721ReservelessImplAddress,
+            drc1155ReservelessImplAddress,
           ] = await Promise.all([
-            nftCenter.contract.implementation(TypeNFT.ERC721, true),
-            nftCenter.contract.implementation(TypeNFT.ERC1155, true),
-            nftCenter.contract.implementation(TypeNFT.ERC721, false),
-            nftCenter.contract.implementation(TypeNFT.ERC1155, false),
+            nftCenter.contract.implementation(TypeNFT.DRC721, true),
+            nftCenter.contract.implementation(TypeNFT.DRC1155, true),
+            nftCenter.contract.implementation(TypeNFT.DRC721, false),
+            nftCenter.contract.implementation(TypeNFT.DRC1155, false),
           ])
           const [
-            erc721Impl,
-            erc1155Impl,
-            erc721ReservelessImpl,
-            erc1155ReservelessImpl,
+            drc721Impl,
+            drc1155Impl,
+            drc721ReservelessImpl,
+            drc1155ReservelessImpl,
           ] = await Promise.all([
-            this.getContract(erc721ImplAddress),
-            this.getContract(erc1155ImplAddress),
-            this.getContract(erc721ReservelessImplAddress),
-            this.getContract(erc1155ReservelessImplAddress),
+            this.getContract(drc721ImplAddress),
+            this.getContract(drc1155ImplAddress),
+            this.getContract(drc721ReservelessImplAddress),
+            this.getContract(drc1155ReservelessImplAddress),
           ])
-          this.abis.erc721 = erc721Impl.abi;
-          this.abis.erc1155 = erc1155Impl.abi;
-          this.abis.erc721Reserveless = erc721ReservelessImpl.abi;
-          this.abis.erc1155Reserveless = erc1155ReservelessImpl.abi;
+          this.abis.drc721 = drc721Impl.abi;
+          this.abis.drc1155 = drc1155Impl.abi;
+          this.abis.drc721Reserveless = drc721ReservelessImpl.abi;
+          this.abis.drc1155Reserveless = drc1155ReservelessImpl.abi;
           this.call.setDecimalContractEVM(nftCenter, 'nftCenter')
         }
         break;
@@ -438,30 +438,30 @@ export default class DecimalEVM {
     return await this.call!.permitToken(token.contract, owner, spender, amount, sign, estimateGas)
   }
 
-  public async createCollectionERC721(payload:NFTCollection, estimateGas?: boolean) {
+  public async createCollectionDRC721(payload:NFTCollection, estimateGas?: boolean) {
     await this.checkConnect('nft-center');
-    return await this.call!.createCollection(payload, TypeNFT.ERC721, true, estimateGas)
+    return await this.call!.createCollection(payload, TypeNFT.DRC721, true, estimateGas)
   }
 
-  public async createCollectionERC1155(payload:NFTCollection, estimateGas?: boolean) {
+  public async createCollectionDRC1155(payload:NFTCollection, estimateGas?: boolean) {
     await this.checkConnect('nft-center');
-    return await this.call!.createCollection(payload, TypeNFT.ERC1155, true, estimateGas)
+    return await this.call!.createCollection(payload, TypeNFT.DRC1155, true, estimateGas)
   }
 
-  public async createCollectionERC721Reserveless(payload:NFTCollectionReserveless, estimateGas?: boolean) {
+  public async createCollectionDRC721Reserveless(payload:NFTCollectionReserveless, estimateGas?: boolean) {
     await this.checkConnect('nft-center');
-    return await this.call!.createCollection(payload, TypeNFT.ERC721, false, estimateGas)
+    return await this.call!.createCollection(payload, TypeNFT.DRC721, false, estimateGas)
   }
 
-  public async createCollectionERC1155Reserveless(payload:NFTCollectionReserveless, estimateGas?: boolean) {
+  public async createCollectionDRC1155Reserveless(payload:NFTCollectionReserveless, estimateGas?: boolean) {
     await this.checkConnect('nft-center');
-    return await this.call!.createCollection(payload, TypeNFT.ERC1155, false, estimateGas)
+    return await this.call!.createCollection(payload, TypeNFT.DRC1155, false, estimateGas)
   }
 
   public async approveNFT721(nftCollectionAddress: string, to: string, tokenId: string | number | bigint, estimateGas?: boolean) {
     await this.checkConnect('nft-center');
     const typeNFT = await this.getNftType(nftCollectionAddress) 
-    if (/*typeNFT != TypeNFT.ERC721Standart && */ typeNFT != TypeNFT.ERC721) throw new Error(`Only for ERC721 and ERC721Standart`);
+    if (/*typeNFT != TypeNFT.DRC721Standart && */ typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721 and DRC721Standart`);
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     return await this.call!.approveNFT721(nft.contract, to, tokenId, estimateGas)
   }
@@ -478,12 +478,12 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      case TypeNFT.ERC721:
-      case TypeNFT.ERC1155:
+      case TypeNFT.DRC721:
+      case TypeNFT.DRC1155:
         throw new Error(`The ${typeNFT} type is not supported by the mintNFT() method. Try mintNFTWithDELReserve() or mintNFTWithTokenReserve()`)
-      case TypeNFT.ERC721Standart:
+      case TypeNFT.DRC721Standart:
         return await this.call.mintNFT(nft.contract, to, tokenURI, undefined, undefined, estimateGas)
-      case TypeNFT.ERC1155Standart:
+      case TypeNFT.DRC1155Standart:
         return await this.call.mintNFT(nft.contract, to, tokenURI, tokenId, amount, estimateGas)
       default:
           throw new Error(`The ${typeNFT} type does not exist`)
@@ -495,9 +495,9 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      case TypeNFT.ERC721:
+      case TypeNFT.DRC721:
         return await this.call!.mintReserveless(nft.contract, to, tokenURI, tokenId, undefined, estimateGas)
-      case TypeNFT.ERC1155:
+      case TypeNFT.DRC1155:
         return await this.call!.mintReserveless(nft.contract, to, tokenURI, tokenId, amount, estimateGas)
       default:
           throw new Error(`The ${typeNFT} type does not exist`)
@@ -509,12 +509,12 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.ERC721Standart:
-      //case TypeNFT.ERC1155Standart:
+      //case TypeNFT.DRC721Standart:
+      //case TypeNFT.DRC1155Standart:
       //  throw new Error(`The ${typeNFT} type is not supported by the mintNFTWithDELReserve() and mintNFTWithTokenReserve() methods. Try mintNFT()`)
-      case TypeNFT.ERC721:
+      case TypeNFT.DRC721:
         return await this.call!.mintNFTWithDELReserve(nft.contract, to, tokenURI, reserve, undefined, undefined, estimateGas)
-      case TypeNFT.ERC1155:
+      case TypeNFT.DRC1155:
         return await this.call!.mintNFTWithDELReserve(nft.contract, to, tokenURI, reserve, tokenId, amount, estimateGas)
       default:
           throw new Error(`The ${typeNFT} type does not exist`)
@@ -526,12 +526,12 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.ERC721Standart:
-      //case TypeNFT.ERC1155Standart:
+      //case TypeNFT.DRC721Standart:
+      //case TypeNFT.DRC1155Standart:
       //  throw new Error(`The ${typeNFT} type is not supported by the mintNFTWithDELReserve() and mintNFTWithTokenReserve() methods. Try mintNFT()`)
-      case TypeNFT.ERC721:
+      case TypeNFT.DRC721:
         return await this.call!.mintNFTWithTokenReserve(nft.contract, to, tokenURI, reserveAmount, reserveToken, sign, undefined, undefined, estimateGas)
-      case TypeNFT.ERC1155:
+      case TypeNFT.DRC1155:
         return await this.call!.mintNFTWithTokenReserve(nft.contract, to, tokenURI, reserveAmount, reserveToken, sign, tokenId, amount, estimateGas)
       default:
           throw new Error(`The ${typeNFT} type does not exist`)
@@ -543,11 +543,11 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.ERC721Standart:
-      //case TypeNFT.ERC1155Standart:
+      //case TypeNFT.DRC721Standart:
+      //case TypeNFT.DRC1155Standart:
       //  throw new Error(`The ${typeNFT} type is not supported by the addDELReserveNFT() and addTokenReserveNFT() methods.`)
-      case TypeNFT.ERC721:
-      case TypeNFT.ERC1155:
+      case TypeNFT.DRC721:
+      case TypeNFT.DRC1155:
         return await this.call!.addDELReserveNFT(nft.contract, tokenId, amountReserve, estimateGas)
       default:
           throw new Error(`The ${typeNFT} type does not exist`)
@@ -559,11 +559,11 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.ERC721Standart:
-      //case TypeNFT.ERC1155Standart:
+      //case TypeNFT.DRC721Standart:
+      //case TypeNFT.DRC1155Standart:
       //  throw new Error(`The ${typeNFT} type is not supported by the addDELReserveNFT() and addTokenReserveNFT() methods.`)
-      case TypeNFT.ERC721:
-      case TypeNFT.ERC1155:
+      case TypeNFT.DRC721:
+      case TypeNFT.DRC1155:
         return await this.call!.addTokenReserveNFT(nft.contract, tokenId, amountReserve, sign, estimateGas)
       default:
           throw new Error(`The ${typeNFT} type does not exist`)
@@ -575,11 +575,11 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.ERC721Standart:
-      case TypeNFT.ERC721:
+      //case TypeNFT.DRC721Standart:
+      case TypeNFT.DRC721:
         return await this.call!.transferNFT(nft.contract, from, to, tokenId, undefined, estimateGas)
-      //case TypeNFT.ERC1155Standart:
-      case TypeNFT.ERC1155:
+      //case TypeNFT.DRC1155Standart:
+      case TypeNFT.DRC1155:
         return await this.call!.transferNFT(nft.contract, from, to, tokenId, amount, estimateGas)
       default:
         throw new Error(`The ${typeNFT} type does not exist`)
@@ -590,7 +590,7 @@ export default class DecimalEVM {
     await this.checkConnect('nft-center');
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    if (/*typeNFT != TypeNFT.ERC1155Standart &&*/ typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC1155 and ERC1155Standart`);
+    if (/*typeNFT != TypeNFT.DRC1155Standart &&*/ typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155 and DRC1155Standart`);
     return await this.call!.transferBatchNFT1155(nft.contract, from, to, tokenIds, amounts, estimateGas)
   }
 
@@ -606,11 +606,11 @@ export default class DecimalEVM {
     const typeNFT: TypeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.ERC721Standart:
-      case TypeNFT.ERC721:
+      //case TypeNFT.DRC721Standart:
+      case TypeNFT.DRC721:
         return await this.call!.burnNFT(nft.contract, tokenId, undefined, estimateGas)
-      //case TypeNFT.ERC1155Standart:
-      case TypeNFT.ERC1155:
+      //case TypeNFT.DRC1155Standart:
+      case TypeNFT.DRC1155:
         return await this.call!.burnNFT(nft.contract, tokenId, amount, estimateGas)
       default:
         throw new Error(`The ${typeNFT} type does not exist`)
@@ -665,31 +665,31 @@ export default class DecimalEVM {
     return await this.call!.completeStakeToken(indexes, estimateGas)
   }
 
-  public async delegateERC721(validator:string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
+  public async delegateDRC721(validator:string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
     await this.checkConnect('delegation-nft');
     const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.ERC721) throw new Error(`Only for ERC721`);
-    return await this.call!.delegateERC721(validator, nftAddress, tokenId, sign, estimateGas)
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
+    return await this.call!.delegateDRC721(validator, nftAddress, tokenId, sign, estimateGas)
   }
 
-  public async delegateERC1155(validator:string, nftAddress: string, tokenId: string | number | bigint, amount:string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
+  public async delegateDRC1155(validator:string, nftAddress: string, tokenId: string | number | bigint, amount:string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
     await this.checkConnect('delegation-nft');
     const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC1155`);
-    return await this.call!.delegateERC1155(validator, nftAddress, tokenId, amount, sign, estimateGas)
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
+    return await this.call!.delegateDRC1155(validator, nftAddress, tokenId, amount, sign, estimateGas)
   }
 
   public async transferStakeNFT(validator:string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?:string | number | bigint, estimateGas?: boolean) {
     await this.checkConnect('delegation-nft');
     const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.ERC721 && typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC721 and ERC1155`);
+    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
     return await this.call!.transferStakeNFT(validator, nftAddress, tokenId, newValidator, amount, estimateGas)
   }
 
   public async withdrawStakeNFT(validator:string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean) {
     await this.checkConnect('delegation-nft');
     const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.ERC721 && typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC721 and ERC1155`);
+    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
     return await this.call!.withdrawStakeNFT(validator, nftAddress, tokenId, amount, estimateGas)
   }
   public async completeStakeNFT(indexes:string[] | number[], estimateGas?: boolean) {
@@ -855,22 +855,22 @@ export default class DecimalEVM {
       to: resultTransferERC20[0],
       amount: resultTransferERC20[1]
     }
-    const resultTransferERC721 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)", safeTx.data)
-    if (resultTransferERC721) return {
+    const resultTransferDRC721 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)", safeTx.data)
+    if (resultTransferDRC721) return {
       action: 'transfer',
-      tokenType: 'ERC721',
+      tokenType: 'DRC721',
       token: safeTx.to,
-      to: resultTransferERC721[1],
-      tokenId: resultTransferERC721[2],
+      to: resultTransferDRC721[1],
+      tokenId: resultTransferDRC721[2],
     }
-    const resultTransferERC1155 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes data)", safeTx.data)
-    if (resultTransferERC1155) return {
+    const resultTransferDRC1155 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes data)", safeTx.data)
+    if (resultTransferDRC1155) return {
       action: 'transfer',
-      tokenType: 'ERC1155',
+      tokenType: 'DRC1155',
       token: safeTx.to,
-      to: resultTransferERC1155[1],
-      tokenId: resultTransferERC1155[2],
-      amount: resultTransferERC1155[3]
+      to: resultTransferDRC1155[1],
+      tokenId: resultTransferDRC1155[2],
+      amount: resultTransferDRC1155[3]
     }
     throw Error('Dot')
   }
@@ -993,7 +993,7 @@ export default class DecimalEVM {
   public async getApprovedNFT721(address: string, tokenId: string | number | bigint) {
     await this.checkConnect('nft-center');
     const typeNFT = await this.getNftType(address)
-    if (/*typeNFT != TypeNFT.ERC721Standart &&*/ typeNFT != TypeNFT.ERC721) throw new Error(`Only for ERC721 and ERC721Standart`);
+    if (/*typeNFT != TypeNFT.DRC721Standart &&*/ typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721 and DRC721Standart`);
     const nft = await this.getNFTContract(address, typeNFT)
     return await this.call!.getApprovedNFT721(nft.contract, tokenId) 
   }
@@ -1015,7 +1015,7 @@ export default class DecimalEVM {
   public async ownerOfNFT721(address: string, tokenId: string | number | bigint) {
     await this.checkConnect('nft-center');
     const typeNFT = await this.getNftType(address)
-    if (/*typeNFT != TypeNFT.ERC721Standart &&*/ typeNFT != TypeNFT.ERC721) throw new Error(`Only for ERC721 and ERC721Standart`);
+    if (/*typeNFT != TypeNFT.DRC721Standart &&*/ typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721 and DRC721Standart`);
     const nft = await this.getNFTContract(address, typeNFT)
     return await this.call!.ownerOfNFT721(nft.contract, tokenId) 
   }
@@ -1025,11 +1025,11 @@ export default class DecimalEVM {
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.ERC721Standart:
-      case TypeNFT.ERC721:
+      //case TypeNFT.DRC721Standart:
+      case TypeNFT.DRC721:
         return await this.call!.getTokenURINFT721(nft.contract, tokenId)
-      //case TypeNFT.ERC1155Standart:
-      case TypeNFT.ERC1155:
+      //case TypeNFT.DRC1155Standart:
+      case TypeNFT.DRC1155:
         return await this.call!.getTokenURINFT1155(nft.contract, tokenId)
       default:
         throw new Error(`The ${typeNFT} type does not exist`)
@@ -1041,11 +1041,11 @@ export default class DecimalEVM {
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.ERC721Standart:
-      case TypeNFT.ERC721:
+      //case TypeNFT.DRC721Standart:
+      case TypeNFT.DRC721:
         return await this.call!.balanceOfNFT(nft.contract, account)
-      //case TypeNFT.ERC1155Standart:
-      case TypeNFT.ERC1155:
+      //case TypeNFT.DRC1155Standart:
+      case TypeNFT.DRC1155:
         if (tokenId === undefined) throw new Error(`You need to specify the tokenId`)
         return await this.call!.balanceOfNFT(nft.contract, account, tokenId)
       default:
@@ -1064,7 +1064,7 @@ export default class DecimalEVM {
     await this.checkConnect('nft-center');
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC1155`);
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
     return await this.call!.getRateNFT1155(nft.contract, tokenId) 
   }
 
@@ -1077,7 +1077,7 @@ export default class DecimalEVM {
     await this.checkConnect('nft-center');
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT != TypeNFT.ERC721 && typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC721 and ERC1155`);
+    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
     return await this.call!.getReserveNFT(nft.contract, tokenId) 
   }
   
@@ -1085,7 +1085,7 @@ export default class DecimalEVM {
     await this.checkConnect('nft-center');
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT != TypeNFT.ERC721 && typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC721 and ERC1155`);
+    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
     return await this.call!.getRefundableNFT(nft.contract) 
   }
 
@@ -1093,7 +1093,7 @@ export default class DecimalEVM {
     await this.checkConnect('nft-center');
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC1155`);
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
     return await this.call!.getSupplyNFT1155(nft.contract, tokenId) 
   }
 
@@ -1146,20 +1146,20 @@ export default class DecimalEVM {
     return await this.call!.getFreezeTimeNFT()
   }
 
-  public async getSignPermitERC721(address: string, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature> {
+  public async getSignPermitDRC721(address: string, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature> {
     await this.checkConnect('nft-center');
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT != TypeNFT.ERC721) throw new Error(`Only for ERC721`);
-    return await this.call!.getSignPermitERC721(nft.contract, spender, tokenId)
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
+    return await this.call!.getSignPermitDRC721(nft.contract, spender, tokenId)
   }
 
-  public async getSignPermitERC1155(address: string, spender: string): Promise<ethers.Signature> {
+  public async getSignPermitDRC1155(address: string, spender: string): Promise<ethers.Signature> {
     await this.checkConnect('nft-center');
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
-    if (typeNFT != TypeNFT.ERC1155) throw new Error(`Only for ERC1155`);
-    return await this.call!.getSignPermitERC1155(nft.contract, spender)
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
+    return await this.call!.getSignPermitDRC1155(nft.contract, spender)
   }
 
   public async getValidatorStatus(validator: string): Promise<ValidatorStatus> {
@@ -1205,14 +1205,14 @@ export default class DecimalEVM {
 
   private async getNFTContract(address: string, typeNFT: TypeNFT) {
     switch (typeNFT as TypeNFT) {
-      //case TypeNFT.ERC721Standart:
+      //case TypeNFT.DRC721Standart:
       //  return await this.getContract(address)
-      //case TypeNFT.ERC1155Standart:
+      //case TypeNFT.DRC1155Standart:
       //  return await this.getContract(address)
-      case TypeNFT.ERC721:
-        return await this.getContract(address, this.abis?.erc721)
-      case TypeNFT.ERC1155:
-        return await this.getContract(address, this.abis?.erc1155)
+      case TypeNFT.DRC721:
+        return await this.getContract(address, this.abis?.drc721)
+      case TypeNFT.DRC1155:
+        return await this.getContract(address, this.abis?.drc1155)
       default:
         throw new Error(`type ${typeNFT} not exist`)
     }

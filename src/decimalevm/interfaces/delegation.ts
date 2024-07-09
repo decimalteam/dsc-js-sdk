@@ -1,8 +1,8 @@
 export enum TokenType {
     Unknown,
     ERC20,
-    ERC721,
-    ERC1155
+    DRC721,
+    DRC1155
 }
 
 export interface Stake {

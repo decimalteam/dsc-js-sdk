@@ -141,8 +141,8 @@ describe('multisig', () => {
 
         const tokenAddress = "0x65Dad3283BCE73E5EfBbaB8B0183dF5FdF4506e5"
         const tokenId = 0;
-        const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, "0x0000000000000000000000000000000000000099", tokenId, ) // send erc721
-        //const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, "0x0000000000000000000000000000000000000099", tokenId, amount) // send erc1155
+        const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, "0x0000000000000000000000000000000000000099", tokenId, ) // send drc721
+        //const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, "0x0000000000000000000000000000000000000099", tokenId, amount) // send drc1155
         const signTx1 = await decimalEVM1.multisig.signTx(multisigAddress, safeTx)
         const signTx2 = await decimalEVM2.multisig.signTx(multisigAddress, safeTx)
         const signTx3 = await decimalEVM3.multisig.signTx(multisigAddress, safeTx)

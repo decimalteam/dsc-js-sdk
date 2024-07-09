@@ -110,44 +110,44 @@ export default class Subgraph {
     // stakes nft
     public async getNFTStakes(first: number, skip: number): Promise<Stake[]>  {
         this.checkFirstAndSkip(first, skip)
-        const options = `(where: { tokenType_in: [ERC721, ERC1155]}, first: ${first}, skip: ${skip})`
+        const options = `(where: { tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
     
     public async getNFTStakesByAddress(address: string, first: number, skip: number): Promise<Stake[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [ERC721, ERC1155]}, first: ${first}, skip: ${skip})`
+        const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
 
     public async getNFTStakesByValidotor(address: string, first: number, skip: number): Promise<Stake[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { validator: "${verifyAddress.toLowerCase()}", tokenType_in: [ERC721, ERC1155]}, first: ${first}, skip: ${skip})`
+        const options = `(where: { validator: "${verifyAddress.toLowerCase()}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
 
     public async getTransferNFTStakes(first: number, skip: number): Promise<TransferStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const options = `(where: { tokenType_in: [ERC721, ERC1155] }, first: ${first}, skip: ${skip})`
+        const options = `(where: { tokenType_in: [DRC721, DRC1155] }, first: ${first}, skip: ${skip})`
         return await this.query.getTransferStakes(options)
     }
     public async getTransferNFTStakesByAddress(address: string, first: number, skip: number): Promise<TransferStake[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [ERC721, ERC1155]}, first: ${first}, skip: ${skip})`
+        const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getTransferStakes(options)
     }
     public async getWithdrawNFTStakes(first: number, skip: number): Promise<WithdrawStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const options = `(where: { tokenType_in: [ERC721, ERC1155] }, first: ${first}, skip: ${skip})`
+        const options = `(where: { tokenType_in: [DRC721, DRC1155] }, first: ${first}, skip: ${skip})`
         return await this.query.getWithdrawStakes(options)
     }
     public async getWithdrawNFTStakesByAddress(address: string, first: number, skip: number): Promise<WithdrawStake[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
-        const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [ERC721, ERC1155]}, first: ${first}, skip: ${skip})`
+        const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getWithdrawStakes(options) 
     }
 

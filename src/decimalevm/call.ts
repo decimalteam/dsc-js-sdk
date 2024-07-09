@@ -20,10 +20,10 @@ import {
 import { buildMultiSendSafeTx } from "./multisig/multisend";
 
 export enum TypeNFT {
-    ERC721,
-    ERC1155,
-    //ERC721Standart,
-    //ERC1155Standart,
+    DRC721,
+    DRC1155,
+    //DRC721Standart,
+    //DRC1155Standart,
 }
 
 export enum FreezeType {
@@ -319,18 +319,18 @@ export default class Call {
     public async createCollection(nft:NFTCollection | NFTCollectionReserveless, typeNFT: TypeNFT, withReserve: boolean, estimateGas?: boolean): Promise<any> {
         let collection: string = '';
         if (withReserve) {
-            if (typeNFT == TypeNFT.ERC721) {
-                collection = 'createERC721';
+            if (typeNFT == TypeNFT.DRC721) {
+                collection = 'createDRC721';
             }
-            if (typeNFT == TypeNFT.ERC1155) {
-                collection = 'createERC1155';
+            if (typeNFT == TypeNFT.DRC1155) {
+                collection = 'createDRC1155';
             }
         } else {
-            if (typeNFT == TypeNFT.ERC721) {
-                collection = 'createERC721Reserveless';
+            if (typeNFT == TypeNFT.DRC721) {
+                collection = 'createDRC721Reserveless';
             }
-            if (typeNFT == TypeNFT.ERC1155) {
-                collection = 'createERC1155Reserveless';
+            if (typeNFT == TypeNFT.DRC1155) {
+                collection = 'createDRC1155Reserveless';
             }
         }
         if (estimateGas) {
@@ -505,45 +505,45 @@ export default class Call {
     
 
     //delegation nft
-    public async delegateERC721(validator:string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
+    public async delegateDRC721(validator:string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign == undefined) {
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateERC721(validator, nftAddress, tokenId, await this.txOptions())
-            return await this.delegationNft!.contract.delegateERC721(validator, nftAddress, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateDRC721(validator, nftAddress, tokenId, await this.txOptions())
+            return await this.delegationNft!.contract.delegateDRC721(validator, nftAddress, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         } else {
             const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateByPermitERC721(validator, nftAddress, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await this.delegationNft!.contract.delegateByPermitERC721(validator, nftAddress, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateByPermitDRC721(validator, nftAddress, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            return await this.delegationNft!.contract.delegateByPermitDRC721(validator, nftAddress, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         }
     }
 
-    public async delegateERC1155(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
+    public async delegateDRC1155(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign == undefined) {
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateERC1155(validator, nftAddress, tokenId, amount, await this.txOptions())
-            return await this.delegationNft!.contract.delegateERC1155(validator, nftAddress, tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateDRC1155(validator, nftAddress, tokenId, amount, await this.txOptions())
+            return await this.delegationNft!.contract.delegateDRC1155(validator, nftAddress, tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         } else {
             const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateByPermitERC1155(validator, nftAddress, tokenId, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await this.delegationNft!.contract.delegateByPermitERC1155(validator, nftAddress, tokenId, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateByPermitDRC1155(validator, nftAddress, tokenId, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            return await this.delegationNft!.contract.delegateByPermitDRC1155(validator, nftAddress, tokenId, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         }
     }
 
     public async transferStakeNFT(validator:string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?:string | number | bigint, estimateGas?: boolean) {
         if (amount == undefined) {
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.transferERC721(validator, nftAddress, tokenId, newValidator, await this.txOptions())
-            return await this.delegationNft!.contract.transferERC721(validator, nftAddress, tokenId, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            if (estimateGas) return await this.delegationNft!.contract.estimateGas.transferDRC721(validator, nftAddress, tokenId, newValidator, await this.txOptions())
+            return await this.delegationNft!.contract.transferDRC721(validator, nftAddress, tokenId, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         } else {
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.transferERC1155(validator, nftAddress, tokenId, amount, newValidator, await this.txOptions())
-            return await this.delegationNft!.contract.transferERC1155(validator, nftAddress, tokenId, amount, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); 
+            if (estimateGas) return await this.delegationNft!.contract.estimateGas.transferDRC1155(validator, nftAddress, tokenId, amount, newValidator, await this.txOptions())
+            return await this.delegationNft!.contract.transferDRC1155(validator, nftAddress, tokenId, amount, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); 
         }
     }
 
     public async withdrawStakeNFT(validator:string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean) {
         if (amount == undefined) {
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.withdrawERC721(validator, nftAddress, tokenId, await this.txOptions())
-            return await this.delegationNft!.contract.withdrawERC721(validator, nftAddress, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            if (estimateGas) return await this.delegationNft!.contract.estimateGas.withdrawDRC721(validator, nftAddress, tokenId, await this.txOptions())
+            return await this.delegationNft!.contract.withdrawDRC721(validator, nftAddress, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         } else {
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.withdrawERC1155(validator, nftAddress, tokenId, amount, await this.txOptions())
-            return await this.delegationNft!.contract.withdrawERC1155(validator, nftAddress, tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            if (estimateGas) return await this.delegationNft!.contract.estimateGas.withdrawDRC1155(validator, nftAddress, tokenId, amount, await this.txOptions())
+            return await this.delegationNft!.contract.withdrawDRC1155(validator, nftAddress, tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         }
     }
 
@@ -760,9 +760,9 @@ export default class Call {
 
     public async balanceOfNFT(contract: ethers.Contract, account: string, tokenId?: string | number | bigint) {
         if (tokenId !== undefined) {
-            return await contract.balanceOf(account, tokenId); // erc1155, erc1155standart
+            return await contract.balanceOf(account, tokenId); // drc1155, drc1155standart
         } else {
-            return await contract.balanceOf(account); // erc721, erc721standart 
+            return await contract.balanceOf(account); // drc721, drc721standart 
         }
     }
 
@@ -908,7 +908,7 @@ export default class Call {
         }
     }
 
-    public async getSignPermitERC721(
+    public async getSignPermitDRC721(
         contract: ethers.Contract,
         spender: string,
         tokenId: string | number | bigint,
@@ -947,7 +947,7 @@ export default class Call {
         return ethers.utils.splitSignature(signature);
     }
 
-    public async getSignPermitERC1155(
+    public async getSignPermitDRC1155(
         contract: ethers.Contract,
         spender: string
     ): Promise<ethers.Signature> {
