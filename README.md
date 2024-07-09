@@ -777,6 +777,54 @@ const signTx1 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) 
 const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2, signTx3]) //sign and specify user signatures
 ```
 
+### Get and build and sign the transaction of previously approved transaction
+```js
+//If one of the participants has made an approve transaction, you can get this transaction details and make an approve too or execute
+const safeTxs = await decimalEVM.multisig.getCurrentApproveTransactions(multisigAddress); //get approved transaction
+const safeTx = safeTxs[0]; // for example, take the first transaction
+const decodeSafeTx = decimalEVM.multisig.decodeTransaction(safeTx) // decode transaction
+/* examples result decode safeTx
+// if transfer DEL
+{
+      action: 'transfer',
+      tokenType: 'Native',
+      token: 'DEL',
+      to: "0x0000000000000000000000000000000000000099",
+      amount: 10000000000000000000
+}
+// if transfer DRC20 token
+{
+  action: 'transfer',
+  tokenType: 'DRC20',
+  token: '0x5c089e1b93fef3d7f7672e8d515eba846f42b924',
+  to: "0x0000000000000000000000000000000000000099",
+  amount: 10000000000000000000
+}
+// if transfer nft DRC721
+{
+      action: 'transfer',
+      tokenType: 'DRC721',
+      token: '0x5c089e1b93fef3d7f7672e8d515eba846f42b924',
+      to: "0x0000000000000000000000000000000000000099",
+      tokenId: 1,
+}
+// if transfer nft DRC1155
+{
+      action: 'transfer',
+      tokenType: 'DRC1155',
+      token: '0x5c089e1b93fef3d7f7672e8d515eba846f42b924',
+      to: "0x0000000000000000000000000000000000000099",
+      tokenId: 1,
+      amount: 20
+    }
+*/
+const signTx1 = await decimalEVM.multisig.getSignatureForParticipant(decimalWallet1.evmAddress!) //get sign for a participant who has previously made an approve transaction
+const signTx2 = await decimalEVM.multisig.signTx(multisigAddress, safeTx) // sign transaction
+//const signTx2 = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx_) // or approve transaction
+
+const result = await decimalEVM1.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2]) //execute transaction
+```
+
 ## Bridge
 
 ### Transfer DEL
