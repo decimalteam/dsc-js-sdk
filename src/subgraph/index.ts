@@ -281,6 +281,7 @@ export default class Subgraph {
             or: [
                 { to: "${verifyAddress.toLowerCase()}" },
                 { from: "${verifyAddress.toLowerCase()}" },
+                { initializer: "${verifyAddress.toLowerCase()}" },
             ]
         }, first: ${first}, skip: ${skip}, orderBy: timestamp, orderDirection: desc)`
         return await this.query.getNftTransfers(options)
@@ -296,6 +297,7 @@ export default class Subgraph {
                     or: [
                         { to: "${user}" },
                         { from: "${user}" },
+                        { initializer: "${user}" },
                     ]
                 },
                 { collection: "${collection}" },

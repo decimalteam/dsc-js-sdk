@@ -39,6 +39,7 @@ export interface NFTBalance {
 export interface NFTTransfer  {
     from: string;
     to: string;
+    initializer: string;
     nft?: NFTToken;
     collection?: NFTCollection;
     txHash: string;
