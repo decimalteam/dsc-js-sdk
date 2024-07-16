@@ -382,7 +382,10 @@ export default class Subgraph {
         return await this.query.getMultisigWallets(options)
     }
 
-    public async getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig: string, nonce: string | number, first: number, skip: number): Promise<TransactionData[]> {
+    public async getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig: string, nonce: string | number, first: number, skip: number): Promise<{
+        transactions: TransactionData[],
+        approvers: string[]
+    }> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(addressMultisig)
         const options = `(where: {transactionData_: {nonce: "${nonce.toString()}"}, wallet_: {address: "${verifyAddress.toLowerCase()}"}}, first: ${first}, skip: ${skip})`

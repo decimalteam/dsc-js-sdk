@@ -59,5 +59,8 @@ export default class Subgraph {
     subgraphBridgeCustomQuery(query: string): Promise<any>;
     getMultisigWallets(first: number, skip: number): Promise<MultisigWallets[]>;
     getMultisigWalletsByParticipant(addressParticipant: string, first: number, skip: number): Promise<MultisigWallets[]>;
-    getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig: string, nonce: string | number, first: number, skip: number): Promise<TransactionData[]>;
+    getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig: string, nonce: string | number, first: number, skip: number): Promise<{
+        transactions: TransactionData[];
+        approvers: string[];
+    }>;
 }

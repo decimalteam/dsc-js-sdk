@@ -296,9 +296,9 @@ describe('Subgraph', () => {
         }
 
         const addressMultisig = "0x5502b6e571d3a8a175b7c0f49b0ed1704538b410"
-        const approveTransactions = await subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig, 0, 1000, 0)
-        console.log(approveTransactions)
-
+        const {transactions, approvers} = await subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig, 0, 1000, 0)
+        console.log(transactions)
+        console.log(approvers)
     });
 
 })

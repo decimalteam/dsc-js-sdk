@@ -617,7 +617,10 @@ export default class Queries {
         return result.multisigWallets
     }
 
-    public async getMultisigApproveTransactions(options: string): Promise<TransactionData[]> {
+    public async getMultisigApproveTransactions(options: string): Promise<{
+        transactions: TransactionData[],
+        approvers: string[]
+    }> {
         const result = await this.query(`{
             approves${options} {
                 transactionData {
@@ -632,12 +635,21 @@ export default class Queries {
                   to
                   value
                 }
+                approver {
+                    address
+                }
               }
         }`, getSubgraphMultiSigEndpoint(this.network))
 
-        const r = result.approves.map((approve: any) => {
+        const transactions = result.approves.map((approve: any) => {
             return approve.transactionData
         })
-        return r
+        const approvers = result.approves.map((approve: any) => {
+            return approve.approver.address
+        })
+        return {
+            transactions: transactions,
+            approvers: approvers   
+        }
     }
 }

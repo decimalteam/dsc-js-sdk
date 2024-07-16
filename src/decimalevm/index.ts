@@ -69,7 +69,7 @@ export default class DecimalEVM {
     approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
     executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
     getNonce: (safeAddress: string) => Promise<any>;
-    getCurrentApproveTransactions: (safeAddress: string) => Promise<SafeTransaction[]>;
+    getCurrentApproveTransactions: (safeAddress: string) => Promise<{transactions: SafeTransaction[]; approvers: string[];}>
     getSignatureForParticipant: (participantAddress: string) => Promise<SafeSignature>
     decodeTransaction: (safeTx: SafeTransaction) => {
       action: string;
@@ -811,18 +811,21 @@ export default class DecimalEVM {
   private async getCurrentApproveTransactions(safeAddress: string) {
     await this.checkConnect('multi-sig');
     const nonce = await this.getNonceMultiSig(safeAddress)
-    const transactionData = await this.subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(safeAddress, nonce, 1000, 0)
-    return <SafeTransaction[]>transactionData.map((trancastion: any) => {
-      return {
-        ...trancastion,
-        safeTxGas: ethers.BigNumber.from(trancastion.safeTxGas),
-        baseGas: ethers.BigNumber.from(trancastion.baseGas),
-        gasPrice: ethers.BigNumber.from(trancastion.gasPrice),
-        nonce: ethers.BigNumber.from(trancastion.nonce),
-        value: ethers.BigNumber.from(trancastion.value),
-        operation: Number(trancastion.operation),
-      }
-    })
+    const {transactions: transactionData, approvers} = await this.subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(safeAddress, nonce, 1000, 0)
+    return { 
+      transactions: <SafeTransaction[]>transactionData.map((trancastion: any) => {
+        return {
+          ...trancastion,
+          safeTxGas: ethers.BigNumber.from(trancastion.safeTxGas),
+          baseGas: ethers.BigNumber.from(trancastion.baseGas),
+          gasPrice: ethers.BigNumber.from(trancastion.gasPrice),
+          nonce: ethers.BigNumber.from(trancastion.nonce),
+          value: ethers.BigNumber.from(trancastion.value),
+          operation: Number(trancastion.operation),
+        }
+      }),
+      approvers
+    }
   }
 
   private decodeMultiSigSafeTransaction(safeTx: SafeTransaction): {

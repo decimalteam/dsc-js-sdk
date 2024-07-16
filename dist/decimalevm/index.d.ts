@@ -37,7 +37,10 @@ export default class DecimalEVM {
         approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
         executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
         getNonce: (safeAddress: string) => Promise<any>;
-        getCurrentApproveTransactions: (safeAddress: string) => Promise<SafeTransaction[]>;
+        getCurrentApproveTransactions: (safeAddress: string) => Promise<{
+            transactions: SafeTransaction[];
+            approvers: string[];
+        }>;
         getSignatureForParticipant: (participantAddress: string) => Promise<SafeSignature>;
         decodeTransaction: (safeTx: SafeTransaction) => {
             action: string;
