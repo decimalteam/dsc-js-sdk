@@ -1467,6 +1467,32 @@ const result = await subgraph.getBridgeTransfersByTo(address, first, skip)
 const result = await subgraph.getBridgeTransfersByToken(address, first, skip)
 ```
 
+### Multisig
+
+#### Get multisig`s addresses
+```js
+const result = await subgraph.getMultisigWallets(1000, 0)
+```
+
+#### Get multisig`s addresses by participant
+```js
+const participant = "0x35119df12afdf848b7ef2536af2411ab0a611c45" // participant account address
+const result = = await subgraph.getMultisigWalletsByParticipant(participant, first, skip)
+```
+
+#### Get multisig`s addresses by participant
+```js
+const participant = "0x35119df12afdf848b7ef2536af2411ab0a611c45" // participant account address
+const result = = await subgraph.getMultisigWalletsByParticipant(participant, first, skip)
+```
+
+#### Get approve transactions and approvers of multisig by nonce
+```js
+const addressMultisig = "0x5502b6e571d3a8a175b7c0f49b0ed1704538b410"
+const nonce = 0
+const {transactions, approvers} = await subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig, nonce, first, skip)
+```
+
 ## IPFS
 
 ### IPFS for tokens
