@@ -101,7 +101,7 @@ export default class DecimalEVM {
       this.wallet = wallet;
       this.network = network;
       this.provider = new ethers.providers.JsonRpcProvider(getWeb3Endpoint(network));
-      this.account = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!).connect(this.provider);
+      this.account = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.provider);
       this.apiUrl = getNewApiEndpoint(this.network);
       this.subgraph = new Subgraph(this.network)
       this.ipfs = new IPFS(this.network)
