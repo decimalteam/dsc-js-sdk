@@ -205,13 +205,13 @@ export default class DecimalEVM {
         }
         break;
       case 'multi-call':
-        if (!this.call.delegationNft) {
+        if (!this.call.multiCall) {
           const multiCall = await this.getContract(getMultiCallAddresses(this.network), multiCallAbi);
           this.call.setDecimalContractEVM(multiCall, 'multiCall')
         }
         break;
       case 'multi-sig':
-        if (!this.call.delegationNft) {
+        if (!this.call.safe) {
           const [
             safe,
             safeFactory,
