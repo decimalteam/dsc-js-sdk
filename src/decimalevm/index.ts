@@ -70,7 +70,7 @@ export default class DecimalEVM {
     approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
     executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
     getNonce: (safeAddress: string) => Promise<any>;
-    getCurrentApproveTransactions: (safeAddress: string) => Promise<SafeTransaction[]>;
+    getCurrentApproveTransactions: (safeAddress: string) => Promise<{transactions: SafeTransaction[]; approvers: string[];}>
     getSignatureForParticipant: (participantAddress: string) => Promise<SafeSignature>
     decodeTransaction: (safeTx: SafeTransaction) => {
       action: string;
@@ -102,7 +102,7 @@ export default class DecimalEVM {
       this.wallet = wallet;
       this.network = network;
       this.provider = new ethers.providers.JsonRpcProvider(getWeb3Endpoint(network));
-      this.account = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!).connect(this.provider);
+      this.account = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.provider);
       this.apiUrl = getNewApiEndpoint(this.network);
       this.subgraph = new Subgraph(this.network)
       this.ipfs = new IPFS(this.network)
@@ -219,13 +219,13 @@ export default class DecimalEVM {
         }
         break;
       case 'multi-call':
-        if (!this.call.delegationNft) {
+        if (!this.call.multiCall) {
           const multiCall = await this.getContract(getMultiCallAddresses(this.network), multiCallAbi);
           this.call.setDecimalContractEVM(multiCall, 'multiCall')
         }
         break;
       case 'multi-sig':
-        if (!this.call.delegationNft) {
+        if (!this.call.safe) {
           const [
             safe,
             safeFactory,
@@ -831,18 +831,21 @@ export default class DecimalEVM {
   private async getCurrentApproveTransactions(safeAddress: string) {
     await this.checkConnect('multi-sig');
     const nonce = await this.getNonceMultiSig(safeAddress)
-    const transactionData = await this.subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(safeAddress, nonce, 1000, 0)
-    return <SafeTransaction[]>transactionData.map((trancastion: any) => {
-      return {
-        ...trancastion,
-        safeTxGas: ethers.BigNumber.from(trancastion.safeTxGas),
-        baseGas: ethers.BigNumber.from(trancastion.baseGas),
-        gasPrice: ethers.BigNumber.from(trancastion.gasPrice),
-        nonce: ethers.BigNumber.from(trancastion.nonce),
-        value: ethers.BigNumber.from(trancastion.value),
-        operation: Number(trancastion.operation),
-      }
-    })
+    const {transactions: transactionData, approvers} = await this.subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(safeAddress, nonce, 1000, 0)
+    return { 
+      transactions: <SafeTransaction[]>transactionData.map((trancastion: any) => {
+        return {
+          ...trancastion,
+          safeTxGas: ethers.BigNumber.from(trancastion.safeTxGas),
+          baseGas: ethers.BigNumber.from(trancastion.baseGas),
+          gasPrice: ethers.BigNumber.from(trancastion.gasPrice),
+          nonce: ethers.BigNumber.from(trancastion.nonce),
+          value: ethers.BigNumber.from(trancastion.value),
+          operation: Number(trancastion.operation),
+        }
+      }),
+      approvers
+    }
   }
 
   private decodeMultiSigSafeTransaction(safeTx: SafeTransaction): {

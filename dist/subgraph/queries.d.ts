@@ -32,5 +32,8 @@ export default class Queries {
     getBridgeTransfer(options: string): Promise<BridgeTransfer>;
     subgraphBridgeCustomQuery(query: string): Promise<any>;
     getMultisigWallets(options: string): Promise<MultisigWallets[]>;
-    getMultisigApproveTransactions(options: string): Promise<TransactionData[]>;
+    getMultisigApproveTransactions(options: string): Promise<{
+        transactions: TransactionData[];
+        approvers: string[];
+    }>;
 }

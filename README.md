@@ -780,8 +780,9 @@ const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [sig
 ### Get and build and sign the transaction of previously approved transaction
 ```js
 //If one of the participants has made an approve transaction, you can get this transaction details and make an approve too or execute
-const safeTxs = await decimalEVM.multisig.getCurrentApproveTransactions(multisigAddress); //get approved transaction
+const {transactions: safeTxs, approvers} = await decimalEVM1.multisig.getCurrentApproveTransactions(multisigAddress);
 const safeTx = safeTxs[0]; // for example, take the first transaction
+const approver = approvers[0] // get approver participant address for first transaction
 const decodeSafeTx = decimalEVM.multisig.decodeTransaction(safeTx) // decode transaction
 /* examples result decode safeTx
 // if transfer DEL
@@ -818,7 +819,7 @@ const decodeSafeTx = decimalEVM.multisig.decodeTransaction(safeTx) // decode tra
       amount: 20
     }
 */
-const signTx1 = await decimalEVM.multisig.getSignatureForParticipant(decimalWallet1.evmAddress!) //get sign for a participant who has previously made an approve transaction
+const signTx1 = await decimalEVM.multisig.getSignatureForParticipant(approver) //get sign for a participant who has previously made an approve transaction
 const signTx2 = await decimalEVM.multisig.signTx(multisigAddress, safeTx) // sign transaction
 //const signTx2 = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx_) // or approve transaction
 
@@ -1464,6 +1465,32 @@ const result = await subgraph.getBridgeTransfersByTo(address, first, skip)
 #### Get bridge transfers by `token` address
 ```js
 const result = await subgraph.getBridgeTransfersByToken(address, first, skip)
+```
+
+### Multisig
+
+#### Get multisig`s addresses
+```js
+const result = await subgraph.getMultisigWallets(1000, 0)
+```
+
+#### Get multisig`s addresses by participant
+```js
+const participant = "0x35119df12afdf848b7ef2536af2411ab0a611c45" // participant account address
+const result = = await subgraph.getMultisigWalletsByParticipant(participant, first, skip)
+```
+
+#### Get multisig`s addresses by participant
+```js
+const participant = "0x35119df12afdf848b7ef2536af2411ab0a611c45" // participant account address
+const result = = await subgraph.getMultisigWalletsByParticipant(participant, first, skip)
+```
+
+#### Get approve transactions and approvers of multisig by nonce
+```js
+const addressMultisig = "0x5502b6e571d3a8a175b7c0f49b0ed1704538b410"
+const nonce = 0
+const {transactions, approvers} = await subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig, nonce, first, skip)
 ```
 
 ## IPFS

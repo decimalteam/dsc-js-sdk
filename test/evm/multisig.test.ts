@@ -176,13 +176,14 @@ describe('multisig', () => {
         await decimalEVM1.multisig.approveHash(multisigAddress, safeTx)
 
         //get approved transaction
-        const safeTxs = await decimalEVM1.multisig.getCurrentApproveTransactions(multisigAddress);
-        const decodeSafeTx = decimalEVM1.multisig.decodeTransaction(safeTxs[0]) // decode firs transaction
+        const {transactions: safeTxs, approvers} = await decimalEVM1.multisig.getCurrentApproveTransactions(multisigAddress);
+        const decodeSafeTx = decimalEVM1.multisig.decodeTransaction(safeTxs[0]) // decode first transaction
+        const approver = approvers[0] // approver participant first transaction
         console.log(decodeSafeTx)
         if (decodeSafeTx.tokenType == 'DRC20') {
             //build and sign the transaction of the first participant
             const safeTx_ = await decimalEVM1.multisig.buildTxSendToken(multisigAddress, decodeSafeTx.token, decodeSafeTx.to, decodeSafeTx.amount!.toString())
-            const signTx1 = await decimalEVM2.multisig.getSignatureForParticipant(decimalWallet1.evmAddress!)
+            const signTx1 = await decimalEVM2.multisig.getSignatureForParticipant(approver)
             const signTx2 = await decimalEVM2.multisig.signTx(multisigAddress, safeTx_)
             //const signTx2 = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx_) // or approveHash
 
