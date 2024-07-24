@@ -178,6 +178,40 @@ export default class Call {
         return {tx: tx, tokenAddress: event.args[0]};
     }
 
+    public async createTokenReserveless(
+        name: string,
+        symbol: string,
+        mintable: boolean,
+        burnable: boolean,
+        initialMint: string | number | bigint,
+        cap: string | number | bigint,
+        estimateGas?: boolean
+    ): Promise<any> {
+        if (estimateGas) {
+            return await this.tokenCenter!.contract.estimateGas.createTokenReserveless(
+                name,
+                symbol,
+                mintable,
+                burnable,
+                initialMint,
+                cap,
+                await this.txOptions()
+            )
+        }
+
+        const tx = await this.tokenCenter!.contract.createTokenReserveless(
+            name,
+            symbol,
+            mintable,
+            burnable,
+            initialMint,
+            cap,
+            await this.txOptions()
+        ).then((tx: ethers.ContractTransaction) => tx.wait());
+        const event = this.parseLog(this.tokenCenter!.contract, tx.logs, 'TokenReservelessDeployed')
+        return {tx: tx, tokenAddress: event.args[0]};
+    }
+
     public async convertToken(tokenIn:string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign === undefined) {
             if (estimateGas) return await this.tokenCenter!.contract.estimateGas["convert(address,address,uint256,uint256,address)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, await this.txOptions())
@@ -187,6 +221,13 @@ export default class Call {
             if (estimateGas) return await this.tokenCenter!.contract.estimateGas["convert(address,address,uint256,uint256,address,uint256,uint8,bytes32,bytes32)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, deadline, sign.v, sign.r, sign.s, await this.txOptions())
             return await this.tokenCenter!.contract["convert(address,address,uint256,uint256,address,uint256,uint8,bytes32,bytes32)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         }
+    }
+
+     // token reserveless
+
+     public async mintTokenReserveless(contract: ethers.Contract, amount: string | number | bigint, recipient: string, estimateGas?: boolean) {
+        if (estimateGas) return await contract.estimateGas.mint(recipient, amount, await this.txOptions())
+        return await contract.mint(recipient, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     //token

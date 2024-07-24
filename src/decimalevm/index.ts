@@ -38,9 +38,10 @@ export default class DecimalEVM {
   private contractAddesses?: DecimalContract[];
   public provider: ethers.providers.JsonRpcProvider;
   public account: HDNodeWallet;
-  private contarcts: { [address: string]: DecimalContractEVM } = {}
+  private contracts: { [address: string]: DecimalContractEVM } = {}
   private abis: { 
     token?: ethers.ContractInterface,
+    tokenReserveless?: ethers.ContractInterface,
     drc721?: ethers.ContractInterface,
     drc1155?: ethers.ContractInterface,
     drc721Reserveless?: ethers.ContractInterface,
@@ -113,10 +114,10 @@ export default class DecimalEVM {
   }
 
   private async getContract(address: string, abi?: any) {
-    if (!this.contarcts[address]) {
-      this.contarcts[address] = await DecimalContractEVM.getContract(this.network, this.apiUrl, this.account, address, abi)
+    if (!this.contracts[address]) {
+      this.contracts[address] = await DecimalContractEVM.getContract(this.network, this.apiUrl, this.account, address, abi)
     }
-    return this.contarcts[address]
+    return this.contracts[address]
   }
 
   public async connect(contractName?: string) {
@@ -148,9 +149,22 @@ export default class DecimalEVM {
       case 'token-center':
         if (!this.call.tokenCenter) {
           const tokenCenter = await this.initFromImplementation('token-center');
-          const tokenImplAddress = await tokenCenter.contract.implementation();
-          const tokenImpl = await this.getContract(tokenImplAddress);
+          const [
+            tokenImplAddress,
+            tokenReservelessImplAddress,
+          ] = await Promise.all([
+            tokenCenter.contract.implementation(),
+            tokenCenter.contract.implementationReserveless(),
+          ])
+          const [
+            tokenImpl,
+            tokenReservelessImpl,
+          ] = await Promise.all([
+            this.getContract(tokenImplAddress),
+            this.getContract(tokenReservelessImplAddress),
+          ])
           this.abis.token = tokenImpl.abi;
+          this.abis.tokenReserveless = tokenReservelessImpl.abi;
           this.call.setDecimalContractEVM(tokenCenter, 'tokenCenter')
         }
         break;
@@ -228,9 +242,9 @@ export default class DecimalEVM {
         break;
       case 'bridge':
         if (!this.call.bridgeV2) {
-          const bridgeContarcts = await this.subgraph.getBridgeContracts()
-          const abi = (await this.getContract(bridgeContarcts.implementation)).abi
-          const bridgeV2 = await this.getContract(bridgeContarcts.id, abi);
+          const bridgeContracts = await this.subgraph.getBridgeContracts()
+          const abi = (await this.getContract(bridgeContracts.implementation)).abi
+          const bridgeV2 = await this.getContract(bridgeContracts.id, abi);
           this.call.setDecimalContractEVM(bridgeV2, 'bridgeV2')
         }
         break;
@@ -393,6 +407,12 @@ export default class DecimalEVM {
     await this.checkConnect('token-center');
     const token = await this.getContract(tokenAddress, this.abis?.token)
     return await this.call!.burnToken(token.contract, amount, estimateGas)
+  }
+
+  public async mintTokenReserveless(tokenAddress: string, amount: string | number | bigint, recipient: string, estimateGas?: boolean) {
+    await this.checkConnect('token-center');
+    const token = await this.getContract(tokenAddress, this.abis?.tokenReserveless)
+    return await this.call!.mintTokenReserveless(token.contract, amount, recipient, estimateGas)
   }
 
   public async buyTokenForExactDEL(tokenAddress: string, amountDel: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, estimateGas?: boolean) {
