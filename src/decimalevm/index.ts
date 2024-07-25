@@ -882,7 +882,7 @@ export default class DecimalEVM {
       tokenType: 'DRC20',
       token: safeTx.to,
       to: resultTransferDRC20[0],
-      amount: resultTransferDRC20[1]
+      amount: resultTransferDRC20[1].toString()
     }
     const resultTransferDRC721 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)", safeTx.data)
     if (resultTransferDRC721) return {
@@ -890,7 +890,7 @@ export default class DecimalEVM {
       tokenType: 'DRC721',
       token: safeTx.to,
       to: resultTransferDRC721[1],
-      tokenId: resultTransferDRC721[2],
+      tokenId: resultTransferDRC721[2].toString(),
     }
     const resultTransferDRC1155 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes data)", safeTx.data)
     if (resultTransferDRC1155) return {
@@ -899,7 +899,7 @@ export default class DecimalEVM {
       token: safeTx.to,
       to: resultTransferDRC1155[1],
       tokenId: resultTransferDRC1155[2],
-      amount: resultTransferDRC1155[3]
+      amount: resultTransferDRC1155[3].toString()
     }
     throw Error('Dot')
   }
