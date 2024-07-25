@@ -759,9 +759,9 @@ const signTx1 = await decimalEVM.multisig.signTx(multisigAddress, safeTx)   // s
 //const signTx3 = await decimalEVM3.multisig.signTx(multisigAddress, safeTx) // sign owner 3
 
 // or sign tx and approve hash
-const signTx1 = await decimalEVM.multisig.approveHash(multisigAddress, safeTx)   // sign owner 1
-//const signTx2 = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx) // sign owner 2
-//const signTx3 = await decimalEVM3.multisig.approveHash(multisigAddress, safeTx) // sign owner 3
+const const {safeTransaction: signTx1, tx: tx1 } = await decimalEVM.multisig.approveHash(multisigAddress, safeTx)   // sign owner 1
+//const const {safeTransaction: signTx2, tx: tx2 } = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx) // sign owner 2
+//const const {safeTransaction: signTx3, tx: tx3 } = await decimalEVM3.multisig.approveHash(multisigAddress, safeTx) // sign owner 3
 
 //Executing a transaction
 const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2, signTx3]) //sign and specify user signatures
@@ -771,9 +771,12 @@ const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [sig
 ```js
 const amount = decimalEVM.parseEther('10')
 const safeTx = await decimalEVM.multisig.buildTxSendDEL(multisigAddress, "0x0000000000000000000000000000000000000099", amount)
-const signTx1 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx)   // sign owner 1
-//const signTx2 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) // sign owner 2
-//const signTx3 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) // sign owner 3
+
+// get esimage gas for approveHash
+// const result = await decimalEVM.multisig.approveHashEstimateGas(multisigAddress, safeTx)
+const const {safeTransaction: signTx1, tx: tx1 } = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx)   // sign owner 1
+//const const {safeTransaction: signTx2, tx: tx2 } = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) // sign owner 2
+//const const {safeTransaction: signTx3, tx: tx3 } = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) // sign owner 3
 const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2, signTx3]) //sign and specify user signatures
 ```
 
@@ -821,7 +824,7 @@ const decodeSafeTx = decimalEVM.multisig.decodeTransaction(safeTx) // decode tra
 */
 const signTx1 = await decimalEVM.multisig.getSignatureForParticipant(approver) //get sign for a participant who has previously made an approve transaction
 const signTx2 = await decimalEVM.multisig.signTx(multisigAddress, safeTx) // sign transaction
-//const signTx2 = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx_) // or approve transaction
+//const const {safeTransaction: signTx2, tx: tx2 } = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx_) // or approve transaction
 
 const result = await decimalEVM1.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2]) //execute transaction
 ```

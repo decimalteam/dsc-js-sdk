@@ -41,7 +41,10 @@ export declare const preimageSafeTransactionHash: (safeAddress: string, safeTx: 
 export declare const calculateSafeTransactionHash: (safeAddress: string, safeTx: SafeTransaction, chainId: BigNumberish) => string;
 export declare const preimageSafeMessageHash: (safeAddress: string, message: string, chainId: BigNumberish) => string;
 export declare const calculateSafeMessageHash: (safeAddress: string, message: string, chainId: BigNumberish) => string;
-export declare const safeApproveHash: (signer: ethers.Wallet, safe: ethers.Contract, safeTx: SafeTransaction, skipOnChainApproval?: boolean) => Promise<SafeSignature>;
+export declare const safeApproveHash: (signer: ethers.Wallet, safe: ethers.Contract, safeTx: SafeTransaction, skipOnChainApproval?: boolean, estimateGas?: boolean) => Promise<BigNumberish | {
+    safeTransaction: SafeSignature;
+    tx: any;
+}>;
 export declare const safeSignTypedData: (signer: ethers.Wallet, safeAddress: string, safeTx: SafeTransaction, chainId?: BigNumberish) => Promise<SafeSignature>;
 export declare const signHash: (signer: ethers.Wallet, hash: string) => Promise<SafeSignature>;
 export declare const safeSignMessage: (signer: ethers.Wallet, safeAddress: string, safeTx: SafeTransaction, chainId?: BigNumberish) => Promise<SafeSignature>;

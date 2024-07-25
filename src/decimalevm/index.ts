@@ -67,7 +67,8 @@ export default class DecimalEVM {
     buildTxSendToken: (safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint) => Promise<SafeTransaction>;
     buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint) => Promise<SafeTransaction>
     signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
-    approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
+    approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<{ safeTransaction: SafeSignature, tx: any }>;
+    approveHashEstimateGas: (safeAddress: string, safeTx: SafeTransaction) => Promise<BigNumberish>
     executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
     getNonce: (safeAddress: string) => Promise<any>;
     getCurrentApproveTransactions: (safeAddress: string) => Promise<{transactions: SafeTransaction[]; approvers: string[];}>
@@ -87,6 +88,7 @@ export default class DecimalEVM {
     buildTxSendNFT: this.buildMultiSigTxSendNFT.bind(this),
     signTx: this.signMultiSigTx.bind(this),
     approveHash: this.approveHashMultiSig.bind(this),
+    approveHashEstimateGas: this.approveHashMultiSigEstimateGas.bind(this),
     executeTx: this.executeMultiSigTx.bind(this),
     getNonce: this.getNonceMultiSig.bind(this),
     getCurrentApproveTransactions: this.getCurrentApproveTransactions.bind(this),
@@ -779,10 +781,21 @@ export default class DecimalEVM {
     return await this.call!.signMultiSigTx(safeAddress, safeTx);
   }
 
-  private async approveHashMultiSig(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
+  private async approveHashMultiSig(safeAddress: string, safeTx: SafeTransaction): Promise<BigNumberish | {
+    safeTransaction: SafeSignature,
+    tx: any
+  }> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    return await safeApproveHash(this.account, safe.contract, safeTx)
+    return <BigNumberish | {
+      safeTransaction: SafeSignature,
+      tx: any
+    }>await safeApproveHash(this.account, safe.contract, safeTx, false, false)
+  }
+  private async approveHashMultiSigEstimateGas(safeAddress: string, safeTx: SafeTransaction): Promise<BigNumberish> {
+    await this.checkConnect('multi-sig');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    return <BigNumberish>await safeApproveHash(this.account, safe.contract, safeTx, false, true)
   }
 
   private async getSignatureForParticipant(participantAddress: string): Promise<SafeSignature> {
@@ -841,7 +854,7 @@ export default class DecimalEVM {
           gasPrice: ethers.BigNumber.from(trancastion.gasPrice),
           nonce: ethers.BigNumber.from(trancastion.nonce),
           value: ethers.BigNumber.from(trancastion.value),
-          operation: Number(trancastion.operation),
+          operation: Number(trancastion.operation == 'Call' ? 0 : 1),
         }
       }),
       approvers
@@ -869,7 +882,7 @@ export default class DecimalEVM {
       tokenType: 'DRC20',
       token: safeTx.to,
       to: resultTransferDRC20[0],
-      amount: resultTransferDRC20[1]
+      amount: resultTransferDRC20[1].toString()
     }
     const resultTransferDRC721 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)", safeTx.data)
     if (resultTransferDRC721) return {
@@ -877,7 +890,7 @@ export default class DecimalEVM {
       tokenType: 'DRC721',
       token: safeTx.to,
       to: resultTransferDRC721[1],
-      tokenId: resultTransferDRC721[2],
+      tokenId: resultTransferDRC721[2].toString(),
     }
     const resultTransferDRC1155 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes data)", safeTx.data)
     if (resultTransferDRC1155) return {
@@ -886,7 +899,7 @@ export default class DecimalEVM {
       token: safeTx.to,
       to: resultTransferDRC1155[1],
       tokenId: resultTransferDRC1155[2],
-      amount: resultTransferDRC1155[3]
+      amount: resultTransferDRC1155[3].toString()
     }
     throw Error('Dot')
   }
