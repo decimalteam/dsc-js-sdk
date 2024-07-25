@@ -784,12 +784,12 @@ export default class DecimalEVM {
   private async approveHashMultiSig(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    return <SafeSignature>await safeApproveHash(this.account, safe.contract, safeTx, false)
+    return <SafeSignature>await safeApproveHash(this.account, safe.contract, safeTx, false, false)
   }
   private async approveHashMultiSigEstimateGas(safeAddress: string, safeTx: SafeTransaction): Promise<BigNumberish> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    return <BigNumberish>await safeApproveHash(this.account, safe.contract, safeTx, true)
+    return <BigNumberish>await safeApproveHash(this.account, safe.contract, safeTx, false, true)
   }
 
   private async getSignatureForParticipant(participantAddress: string): Promise<SafeSignature> {
