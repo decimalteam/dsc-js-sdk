@@ -67,7 +67,7 @@ export default class DecimalEVM {
     buildTxSendToken: (safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint) => Promise<SafeTransaction>;
     buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint) => Promise<SafeTransaction>
     signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
-    approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
+    approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<{ safeTransaction: SafeSignature, tx: any }>;
     approveHashEstimateGas: (safeAddress: string, safeTx: SafeTransaction) => Promise<BigNumberish>
     executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
     getNonce: (safeAddress: string) => Promise<any>;
@@ -781,10 +781,16 @@ export default class DecimalEVM {
     return await this.call!.signMultiSigTx(safeAddress, safeTx);
   }
 
-  private async approveHashMultiSig(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
+  private async approveHashMultiSig(safeAddress: string, safeTx: SafeTransaction): Promise<BigNumberish | {
+    safeTransaction: SafeSignature,
+    tx: any
+  }> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    return <SafeSignature>await safeApproveHash(this.account, safe.contract, safeTx, false, false)
+    return <BigNumberish | {
+      safeTransaction: SafeSignature,
+      tx: any
+    }>await safeApproveHash(this.account, safe.contract, safeTx, false, false)
   }
   private async approveHashMultiSigEstimateGas(safeAddress: string, safeTx: SafeTransaction): Promise<BigNumberish> {
     await this.checkConnect('multi-sig');

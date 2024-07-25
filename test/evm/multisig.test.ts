@@ -86,9 +86,9 @@ describe('multisig', () => {
 
         const amount = decimalEVM1.parseEther('10')
         const safeTx = await decimalEVM1.multisig.buildTxSendDEL(multisigAddress, "0x0000000000000000000000000000000000000099", amount)
-        const signTx1 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx)
-        const signTx2 = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx)
-        const signTx3 = await decimalEVM3.multisig.approveHash(multisigAddress, safeTx)
+        const {safeTransaction: signTx1, tx: tx1 } = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx)
+        const {safeTransaction: signTx2, tx: tx2} = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx)
+        const {safeTransaction: signTx3, tx: tx3 } = await decimalEVM3.multisig.approveHash(multisigAddress, safeTx)
         const result = await decimalEVM1.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2, signTx3])
 
         console.log(result)
@@ -185,7 +185,7 @@ describe('multisig', () => {
             const safeTx_ = await decimalEVM1.multisig.buildTxSendToken(multisigAddress, decodeSafeTx.token, decodeSafeTx.to, decodeSafeTx.amount!.toString())
             const signTx1 = await decimalEVM2.multisig.getSignatureForParticipant(approver)
             const signTx2 = await decimalEVM2.multisig.signTx(multisigAddress, safeTx_)
-            //const signTx2 = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx_) // or approveHash
+            //const {safeTransaction: signTx2 } = await decimalEVM2.multisig.approveHash(multisigAddress, safeTx_) // or approveHash
 
             //execute transaction
             const result = await decimalEVM1.multisig.executeTx(multisigAddress, safeTx_, [signTx1, signTx2])
