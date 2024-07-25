@@ -184,7 +184,7 @@ export default class Call {
         mintable: boolean,
         burnable: boolean,
         initialMint: string | number | bigint,
-        cap: string | number | bigint | undefined,
+        cap: string | number | bigint | undefined | null,
         estimateGas?: boolean
     ): Promise<any> {
         if (!mintable || !cap) {
