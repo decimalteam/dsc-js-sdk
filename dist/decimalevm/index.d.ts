@@ -35,6 +35,7 @@ export default class DecimalEVM {
         buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint) => Promise<SafeTransaction>;
         signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
         approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
+        approveHashEstimateGas: (safeAddress: string, safeTx: SafeTransaction) => Promise<BigNumberish>;
         executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
         getNonce: (safeAddress: string) => Promise<any>;
         getCurrentApproveTransactions: (safeAddress: string) => Promise<{
@@ -121,6 +122,7 @@ export default class DecimalEVM {
     private buildMultiSigTxSendNFT;
     private signMultiSigTx;
     private approveHashMultiSig;
+    private approveHashMultiSigEstimateGas;
     private getSignatureForParticipant;
     private executeMultiSigTx;
     private createMultiSig;

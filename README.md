@@ -771,6 +771,9 @@ const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [sig
 ```js
 const amount = decimalEVM.parseEther('10')
 const safeTx = await decimalEVM.multisig.buildTxSendDEL(multisigAddress, "0x0000000000000000000000000000000000000099", amount)
+
+// get esimage gas for approveHash
+// const result = await decimalEVM.multisig.approveHashEstimateGas(multisigAddress, safeTx)
 const signTx1 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx)   // sign owner 1
 //const signTx2 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) // sign owner 2
 //const signTx3 = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) // sign owner 3

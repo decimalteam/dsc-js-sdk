@@ -68,6 +68,7 @@ export default class DecimalEVM {
     buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint) => Promise<SafeTransaction>
     signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
     approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
+    approveHashEstimateGas: (safeAddress: string, safeTx: SafeTransaction) => Promise<BigNumberish>
     executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
     getNonce: (safeAddress: string) => Promise<any>;
     getCurrentApproveTransactions: (safeAddress: string) => Promise<{transactions: SafeTransaction[]; approvers: string[];}>
@@ -87,6 +88,7 @@ export default class DecimalEVM {
     buildTxSendNFT: this.buildMultiSigTxSendNFT.bind(this),
     signTx: this.signMultiSigTx.bind(this),
     approveHash: this.approveHashMultiSig.bind(this),
+    approveHashEstimateGas: this.approveHashMultiSigEstimateGas.bind(this),
     executeTx: this.executeMultiSigTx.bind(this),
     getNonce: this.getNonceMultiSig.bind(this),
     getCurrentApproveTransactions: this.getCurrentApproveTransactions.bind(this),
@@ -782,7 +784,12 @@ export default class DecimalEVM {
   private async approveHashMultiSig(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    return await safeApproveHash(this.account, safe.contract, safeTx)
+    return <SafeSignature>await safeApproveHash(this.account, safe.contract, safeTx, false)
+  }
+  private async approveHashMultiSigEstimateGas(safeAddress: string, safeTx: SafeTransaction): Promise<BigNumberish> {
+    await this.checkConnect('multi-sig');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    return <BigNumberish>await safeApproveHash(this.account, safe.contract, safeTx, true)
   }
 
   private async getSignatureForParticipant(participantAddress: string): Promise<SafeSignature> {

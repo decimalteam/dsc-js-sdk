@@ -77,13 +77,17 @@ export const safeApproveHash = async (
     safe: ethers.Contract,
     safeTx: SafeTransaction,
     skipOnChainApproval?: boolean,
-): Promise<SafeSignature> => {
+    estimateGas?: boolean
+): Promise<SafeSignature | BigNumberish> => {
     if (!skipOnChainApproval) {
         if (!signer.provider) throw Error("Provider required for on-chain approval");
         //const chainId = (await signer.provider.getNetwork()).chainId;
         //const safeAddress = safe.address;
         //const typedDataHash = calculateSafeTransactionHash(safeAddress, safeTx, chainId);
         const signerSafe = safe.connect(signer);
+        if (estimateGas) {
+            return await signerSafe.estimateGas.approveHash(safeTx);
+        }
         await signerSafe.approveHash(safeTx);
     }
     const signerAddress = await signer.getAddress();
