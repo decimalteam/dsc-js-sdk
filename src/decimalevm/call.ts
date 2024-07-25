@@ -184,9 +184,12 @@ export default class Call {
         mintable: boolean,
         burnable: boolean,
         initialMint: string | number | bigint,
-        cap: string | number | bigint,
+        cap: string | number | bigint | undefined,
         estimateGas?: boolean
     ): Promise<any> {
+        if (!mintable || !cap) {
+            cap = '0'
+        }
         if (estimateGas) {
             return await this.tokenCenter!.contract.estimateGas.createTokenReserveless(
                 name,
