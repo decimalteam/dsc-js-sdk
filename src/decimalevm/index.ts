@@ -841,7 +841,7 @@ export default class DecimalEVM {
           gasPrice: ethers.BigNumber.from(trancastion.gasPrice),
           nonce: ethers.BigNumber.from(trancastion.nonce),
           value: ethers.BigNumber.from(trancastion.value),
-          operation: Number(trancastion.operation),
+          operation: Number(trancastion.operation == 'Call' ? 0 : 1),
         }
       }),
       approvers
