@@ -5,7 +5,7 @@ import {
     getSubgraphMultiSigEndpoint
 } from "../endpoints";
 import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
-import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
+import { Token, AddressBalance, BridgeToken, BridgeTransfer, TokenReserveless } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 import { MultisigWallets, TransactionData } from "./interfaces/multisig";
@@ -67,6 +67,23 @@ export default class Queries {
         }`, getSubgraphEndpoint(this.network))
         return result.tokens
     }
+
+    public async getTokensReserveless(options:string): Promise<TokenReserveless[]> {
+        const result = await this.query(`{
+            tokenReservelesses${options} {
+                address
+                symbol
+                name
+                decimals
+                identity
+                totalSupply
+                maxTotalSupply
+                creator
+            }
+        }`, getSubgraphEndpoint(this.network))
+        return result.tokenReservelesses
+    }
+
     public async getToken(options:string): Promise<Token> {
         const result = await this.query(`{
             tokens${options} {
@@ -106,6 +123,25 @@ export default class Queries {
                     currentPrice
                     creator
                     tokenType
+                }
+            }
+        }`, getSubgraphEndpoint(this.network))
+        return result.balances
+    }
+
+    public async getAddressBalancesReserveless(options:string): Promise<AddressBalance[]> {
+        const result = await this.query(`{
+            balanceReservelesses${options} {
+                amount
+                token {
+                    address
+                    symbol
+                    name
+                    decimals
+                    identity
+                    totalSupply
+                    maxTotalSupply
+                    creator
                 }
             }
         }`, getSubgraphEndpoint(this.network))

@@ -4,7 +4,7 @@ import {
     NETWORKS
 } from "../endpoints";
 import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
-import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
+import { Token, AddressBalance, BridgeToken, BridgeTransfer, TokenReserveless } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 import { MultisigWallets, TransactionData } from "./interfaces/multisig";
@@ -52,12 +52,39 @@ export default class Subgraph {
         const options = `(where: { address: "${verifyAddress}"} )`
         return await this.query.getToken(options)
     }
+
+    public async getTokensReserveless(first: number, skip: number): Promise<TokenReserveless[]> {
+        this.checkFirstAndSkip(first, skip)
+        const options = `(first: ${first}, skip: ${skip})`
+        return await this.query.getTokensReserveless(options)
+    }
+
+    public async getTokensReservelessByCreator(address: string, first: number, skip: number): Promise<TokenReserveless[]> {
+        this.checkFirstAndSkip(first, skip)
+        const verifyAddress = ethers.utils.getAddress(address)
+        const options = `(where: { creator: "${verifyAddress}"}, first: ${first}, skip: ${skip})`
+        return await this.query.getTokensReserveless(options)
+    }
+
+    public async getTokenReservelessByAddress(address: string): Promise<TokenReserveless> {
+        const verifyAddress = ethers.utils.getAddress(address)
+        const options = `(where: { address: "${verifyAddress}"} )`
+        const [token] = await this.query.getTokensReserveless(options)
+        return token;
+    }
     
     public async getAddressBalances(address: string, first: number, skip: number): Promise<AddressBalance[]> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { user_: { address: "${verifyAddress}" } }, first: ${first}, skip: ${skip})`
         return await this.query.getAddressBalances(options)
+    }
+
+    public async getAddressBalancesReserveless(address: string, first: number, skip: number): Promise<AddressBalance[]> {
+        this.checkFirstAndSkip(first, skip)
+        const verifyAddress = ethers.utils.getAddress(address)
+        const options = `(where: { user_: { address: "${verifyAddress}" } }, first: ${first}, skip: ${skip})`
+        return await this.query.getAddressBalancesReserveless(options)
     }
 
     // stakes token

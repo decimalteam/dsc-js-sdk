@@ -10,8 +10,19 @@ export interface Token {
     identity: string;
     reserve: string;
     currentPrice: string;
-    owner: string;
+    creator: string;
     tokenType: string;
+}
+
+export interface TokenReserveless {
+    address: string;
+    symbol: string;
+    name: string;
+    decimals: number;
+    totalSupply: string;
+    maxTotalSupply: string;
+    identity: string;
+    creator: string;
 }
 
 export interface AddressBalance {
