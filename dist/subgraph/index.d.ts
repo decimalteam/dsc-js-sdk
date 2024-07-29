@@ -1,6 +1,6 @@
 import { NETWORKS } from "../endpoints";
 import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
-import { Token, AddressBalance, BridgeToken, BridgeTransfer } from "./interfaces/tokens";
+import { Token, AddressBalance, BridgeToken, BridgeTransfer, TokenReserveless } from "./interfaces/tokens";
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 import { MultisigWallets, TransactionData } from "./interfaces/multisig";
@@ -14,7 +14,11 @@ export default class Subgraph {
     getTokensByCreator(address: string, first: number, skip: number): Promise<Token[]>;
     getTokenBySymbol(symbol: string): Promise<Token>;
     getTokenByAddress(address: string): Promise<Token>;
+    getTokensReserveless(first: number, skip: number): Promise<TokenReserveless[]>;
+    getTokensReservelessByCreator(address: string, first: number, skip: number): Promise<TokenReserveless[]>;
+    getTokenReservelessByAddress(address: string): Promise<TokenReserveless>;
     getAddressBalances(address: string, first: number, skip: number): Promise<AddressBalance[]>;
+    getAddressBalancesReserveless(address: string, first: number, skip: number): Promise<AddressBalance[]>;
     getStakes(first: number, skip: number): Promise<Stake[]>;
     getStakesByAddress(address: string, first: number, skip: number): Promise<Stake[]>;
     getStakesByValidotor(address: string, first: number, skip: number): Promise<Stake[]>;
