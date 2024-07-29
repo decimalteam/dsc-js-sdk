@@ -74,6 +74,7 @@ export default class DecimalEVM {
     sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    createTokenReserveless(name: string, symbol: string, mintable: boolean, burnable: boolean, initialMint: string | number | bigint, cap: string | number | bigint | undefined | null, estimateGas?: boolean): Promise<any>;
     convertToken(tokenIn: string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     approveToken(tokenAddress: string, spender: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     transferToken(tokenAddress: string, to: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
