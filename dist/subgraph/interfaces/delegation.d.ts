@@ -59,6 +59,8 @@ export interface Validator {
     id: string;
     address: string;
     status: string;
+    meta: string;
+    paused: string;
 }
 export interface Penalty {
     id: string;
