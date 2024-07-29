@@ -382,6 +382,28 @@ export default class DecimalEVM {
     return await this.call!.createToken(payload, reserve, estimateGas)
   }
 
+  public async createTokenReserveless(
+    name: string,
+    symbol: string,
+    mintable: boolean,
+    burnable: boolean,
+    initialMint: string | number | bigint,
+    cap: string | number | bigint | undefined | null,
+    estimateGas?: boolean
+  ) {
+    await this.checkConnect('token-center');
+    
+    return await this.call!.createTokenReserveless(
+      name,
+      symbol,
+      mintable,
+      burnable,
+      initialMint,
+      cap,
+      estimateGas
+    );
+  }
+
   public async convertToken(tokenIn:string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean) {
     await this.checkConnect('token-center');
     return await this.call!.convertToken(tokenIn, tokenOut, amountIn, amountOutMin, recipient, sign, estimateGas)
