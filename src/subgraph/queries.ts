@@ -197,6 +197,8 @@ export default class Queries {
                 id
                 address
                 status
+                meta
+                paused
             }
         }`, getSubgraphEndpoint(this.network))
         return result.validators
@@ -208,6 +210,8 @@ export default class Queries {
                 id
                 address
                 status
+                meta
+                paused
             }
         }`, getSubgraphEndpoint(this.network))
         return result.validator
