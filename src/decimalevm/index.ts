@@ -389,6 +389,7 @@ export default class DecimalEVM {
     burnable: boolean,
     initialMint: string | number | bigint,
     cap: string | number | bigint | undefined | null,
+    identity: string,
     estimateGas?: boolean
   ) {
     await this.checkConnect('token-center');
@@ -400,6 +401,7 @@ export default class DecimalEVM {
       burnable,
       initialMint,
       cap,
+      identity,
       estimateGas
     );
   }

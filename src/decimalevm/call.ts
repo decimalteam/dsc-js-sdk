@@ -185,6 +185,7 @@ export default class Call {
         burnable: boolean,
         initialMint: string | number | bigint,
         cap: string | number | bigint | undefined | null,
+        identity: string,
         estimateGas?: boolean
     ): Promise<any> {
         if (!mintable || !cap) {
@@ -198,6 +199,7 @@ export default class Call {
                 burnable,
                 initialMint,
                 cap,
+                identity,
                 await this.txOptions()
             )
         }
@@ -209,6 +211,7 @@ export default class Call {
             burnable,
             initialMint,
             cap,
+            identity,
             await this.txOptions()
         ).then((tx: ethers.ContractTransaction) => tx.wait());
         const event = this.parseLog(this.tokenCenter!.contract, tx.logs, 'TokenReservelessDeployed')
