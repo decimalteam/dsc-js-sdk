@@ -491,11 +491,24 @@ const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 //delegate DRC721
 await decimalEVM.approveNFT721(nftCollectionAddress, delegationNftAddress, tokenId)
 await decimalEVM.delegateDRC721(validator, nftCollectionAddress, tokenId)
+// or delegate hold DRC721
+const days = 150
+const sec = days * 86400
+const latestBlock = await decimalEVM.getLatestBlock()
+const holdTimestamp = latestBlock!.timestamp + sec;
+await decimalEVM.delegateDRC721Hold(validator, nftCollectionAddress, tokenId, holdTimestamp)
 
 //delegate DRC1155
-//const amount = decimalEVM.parseEther(1) //1 token
-//await decimalEVM.approveForAllNFT(nftCollectionAddress, delegationNftAddress, true)
-//await decimalEVM.delegateDRC1155(validator, nftCollectionAddress, tokenId, amount)
+const amount = decimalEVM.parseEther(1) //1 token
+await decimalEVM.approveForAllNFT(nftCollectionAddress, delegationNftAddress, true)
+await decimalEVM.delegateDRC1155(validator, nftCollectionAddress, tokenId, amount)
+// or delegate hold DRC1155
+const days = 150
+const sec = days * 86400
+const latestBlock = await decimalEVM.getLatestBlock()
+const holdTimestamp = latestBlock!.timestamp + sec;
+await decimalEVM.delegateDRC1155Hold(validator, nftCollectionAddress, tokenId, amount, holdTimestamp)
+
 ```
 
 ### Delegation NFT (permit NFT)
@@ -507,11 +520,23 @@ const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 //delegate DRC721
 const sign = await decimalEVM.getSignPermitDRC721(nftCollectionAddress, delegationNftAddress, tokenId)
 await decimalEVM.delegateDRC721(validator, nftCollectionAddress, tokenId, sign)
+// or delegate hold DRC721
+const days = 150
+const sec = days * 86400
+const latestBlock = await decimalEVM.getLatestBlock()
+const holdTimestamp = latestBlock!.timestamp + sec;
+await decimalEVM.delegateDRC721Hold(validator, nftCollectionAddress, tokenId, holdTimestamp, sign)
 
 //delegate DRC1155
-//const amount = decimalEVM.parseEther(1) //1 token
-//const sign = await decimalEVM.getSignPermitDRC1155(nftCollectionAddress, delegationNftAddress)
-//await decimalEVM.delegateDRC1155(validator, nftCollectionAddress, tokenId, amount, sign)
+const amount = decimalEVM.parseEther(1) //1 token
+const sign = await decimalEVM.getSignPermitDRC1155(nftCollectionAddress, delegationNftAddress)
+await decimalEVM.delegateDRC1155(validator, nftCollectionAddress, tokenId, amount, sign)
+// or delegate hold DRC1155
+const days = 150
+const sec = days * 86400
+const latestBlock = await decimalEVM.getLatestBlock()
+const holdTimestamp = latestBlock!.timestamp + sec;
+await decimalEVM.delegateDRC1155Hold(validator, nftCollectionAddress, tokenId, amount, holdTimestamp, sign)
 ```
 
 ### Transfer stake NFT
@@ -524,11 +549,10 @@ const stake = stakes[0] // first stake (for example)
 // stake.tokenType will give the NFT type (DRC721 or DRC1155)
 // or get the NFT type from TODO
 
-// transfer stake DRC721
-await decimalEVM.transferStakeNFT(stake.validator, stake.token, stake.tokenId, newValidator)
-
-// transfer stake DRC1155
-//await decimalEVM.transferStakeNFT(stake.validator, stake.token, stake.tokenId, newValidator, stake.amount)
+// transfer stake DRC721 || DRC1155
+await decimalEVM.transferStakeNFT(stake.validator, stake.token, stake.tokenId, stake.amount, newValidator)
+// or transfer stake hold 
+await decimalEVM.transferStakeNFTHold(stake.validator, stake.token, stake.tokenId, stake.amount, stake.holdTimestamp, newValidator)
 ```
 
 ### Withdraw stake NFT
@@ -540,11 +564,10 @@ const stake = stakes[0] // first stake (for example)
 // stake.tokenType will give the NFT type (DRC721 or DRC1155)
 // or get the NFT type from TODO
 
-// withdraw stake DRC721
-await decimalEVM.withdrawStakeNFT(stake.validator, stake.token, stake.tokenId)
-
-// withdraw stake DRC1155
-//await decimalEVM.withdrawStakeNFT(stake.validator, stake.token, stake.tokenId, stake.amount)
+// withdraw stake DRC721 || DRC1155
+await decimalEVM.withdrawStakeNFT(stake.validator, stake.token, stake.tokenId, stake.amount)
+// or withdraw stake hold 
+await decimalEVM.withdrawStakeNFTHold(stake.validator, stake.token, stake.tokenId, stake.amount, stake.holdTimestamp)
 ```
 
 ### Complete stake NFT after frozen

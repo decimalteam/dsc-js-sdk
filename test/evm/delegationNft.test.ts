@@ -118,8 +118,8 @@ describe('Delegation NFT', () => {
             const stakeDRC1155 = stakeFilteredDRC1155[0]//  first stake drc1155
 
             const newValidator = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
-            await decimalEVM.transferStakeNFT(stakeDRC721.validator, stakeDRC721.token, stakeDRC721.tokenId, newValidator)
-            await decimalEVM.transferStakeNFT(stakeDRC1155.validator, stakeDRC1155.token, stakeDRC1155.tokenId, newValidator, stakeDRC1155.amount)
+            await decimalEVM.transferStakeNFT(stakeDRC721.validator, stakeDRC721.token, stakeDRC721.tokenId, stakeDRC721.amount, newValidator)
+            await decimalEVM.transferStakeNFT(stakeDRC1155.validator, stakeDRC1155.token, stakeDRC1155.tokenId, stakeDRC1155.amount, newValidator )
 
             console.log(`successfully transferStakeNFT`)
         } catch (e) {
@@ -145,8 +145,8 @@ describe('Delegation NFT', () => {
             const stakeDRC721 = stakeFilteredDRC721[0]//  first stake drc721
             const stakeDRC1155 = stakeFilteredDRC1155[0]//  first stake drc1155
 
-            await decimalEVM.withdrawStakeNFT(stakeDRC721.validator, stakeDRC721.token, stakeDRC721.tokenId)
-            await decimalEVM.withdrawStakeNFT(stakeDRC1155.validator, stakeDRC1155.token, stakeDRC721.tokenId, stakeDRC1155.amount)
+            await decimalEVM.withdrawStakeNFT(stakeDRC721.validator, stakeDRC721.token, stakeDRC721.tokenId, stakeDRC721.amount)
+            await decimalEVM.withdrawStakeNFT(stakeDRC1155.validator, stakeDRC1155.token, stakeDRC1155.tokenId, stakeDRC1155.amount)
 
             console.log(`successfully withdrawStakeNFT`)
         } catch (e) {
