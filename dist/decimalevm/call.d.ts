@@ -104,9 +104,13 @@ export default class Call {
     approveNFT721(contract: ethers.Contract, to: string, tokenId: string | number | bigint, estimateGas?: boolean): Promise<any>;
     transferBatchNFT1155(contract: ethers.Contract, from: string, to: string, tokenIds: string[] | number[], amounts: string[] | number[], estimateGas?: boolean): Promise<any>;
     delegateDRC721(validator: string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
+    delegateDRC721Hold(validator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     delegateDRC1155(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
-    transferStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
-    withdrawStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    delegateDRC1155Hold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
+    transferStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, estimateGas?: boolean): Promise<any>;
+    transferStakeNFTHold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean): Promise<any>;
+    withdrawStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    withdrawStakeNFTHold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
     addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     addValidatorWithETH(validator: string, meta: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
