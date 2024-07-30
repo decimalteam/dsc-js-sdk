@@ -79,6 +79,7 @@ export default class Call {
     updateDetailsToken(contract: ethers.Contract, newIdentity: string, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean): Promise<any>;
     permitToken(contract: ethers.Contract, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean): Promise<any>;
     delegateDEL(validator: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    delegateDELHold(validator: string, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     delegateToken(validator: string, tokenAddress: string, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     delegateTokenHold(validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, estimateGas?: boolean): Promise<any>;
