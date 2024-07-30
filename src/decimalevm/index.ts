@@ -675,6 +675,11 @@ export default class DecimalEVM {
     return await this.call!.delegateDEL(validator, amount, estimateGas)
   }
 
+  public async delegateDELHold(validator:string, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    return await this.call!.delegateDELHold(validator, amount, holdTimestamp, estimateGas)
+  }
+
   public async delegateToken(validator:string, tokenAddress: string, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
     await this.checkConnect('delegation');
     return await this.call!.delegateToken(validator, tokenAddress, amount, sign, estimateGas)

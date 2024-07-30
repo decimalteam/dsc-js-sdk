@@ -370,6 +370,12 @@ await decimalEVM.approveForAllNFT(nftCollectionAddress, to, true)
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 const amount = decimalEVM.parseEther(1) // 1 del
 await decimalEVM.delegateDEL(validator, amount)
+//or if use hold
+const days = 150
+const sec = days * 86400
+const latestBlock = await decimalEVM.getLatestBlock()
+const holdTimestamp = latestBlock!.timestamp + sec;
+await decimalEVM.delegateDELHold(validator, amount, holdTimestamp)
 ```
 
 ### Delegation Token (approve Token)

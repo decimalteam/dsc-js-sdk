@@ -293,6 +293,11 @@ export default class Call {
         if (estimateGas) return await this.delegation!.contract.estimateGas.delegateDEL(validator, await this.txOptions({value: amount}))
         return await this.delegation!.contract.delegateDEL(validator, await this.txOptions({value: amount})).then((tx: ethers.ContractTransaction) => tx.wait());
     }
+
+    public async delegateDELHold(validator:string, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateHoldDEL(validator, holdTimestamp, await this.txOptions({value: amount}))
+        return await this.delegation!.contract.delegateHoldDEL(validator, holdTimestamp, await this.txOptions({value: amount})).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
     
     public async delegateToken(validator:string, tokenAddress: string, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign === undefined) {
