@@ -380,6 +380,12 @@ const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
 await decimalEVM.approveToken(tokenAddress, delegationAddress, amount)
 await decimalEVM.delegateToken(validator, tokenAddress, amount)
+//or if use hold
+const days = 150
+const sec = days * 86400
+const latestBlock = await decimalEVM.getLatestBlock()
+const holdTimestamp = latestBlock!.timestamp + sec;
+await decimalEVM.delegateTokenHold(validator, tokenAddress, amount, holdTimestamp)
 ```
 
 ### Delegation Token (permit Token)
@@ -390,6 +396,12 @@ const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
 
 const sign = await decimalEVM.getSignPermitToken(tokenAddress, delegationAddress, amount)
 await decimalEVM.delegateToken(validator, tokenAddress, amount, sign)
+//or if use hold
+const days = 150
+const sec = days * 86400
+const latestBlock = await decimalEVM.getLatestBlock()
+const holdTimestamp = latestBlock!.timestamp + sec;
+await decimalEVM.delegateTokenHold(validator, tokenAddress, amount, holdTimestamp, sign)
 ```
 
 ### Transfer stake
@@ -400,6 +412,8 @@ const stakes = await subgraph.getStakesByAddress(owner) // Get your stakes from 
 const stake = stakes[0] // first stake (for example)
 const newValidator = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
 await decimalEVM.transferStakeToken(stake.validator, stake.token, stake.amount, newValidator)
+//or if use hold
+await decimalEVM.transferStakeTokenHold(stake.validator, stake.token, stake.amount, stake.holdTimestamp, newValidator)
 ```
 
 ### Withdraw stake
@@ -409,6 +423,8 @@ const stakes = await subgraph.getStakesByAddress(owner) // Get your stakes from 
 
 const stake = stakes[0] // first stake (for example)
 await decimalEVM.withdrawStakeToken(stake.validator, stake.token, stake.amount)
+//or if use hold
+await decimalEVM.withdrawStakeTokenHold(stake.validator, stake.token, stake.amount, stake.holdTimestamp)
 ```
 
 ### Apply penalty to stake

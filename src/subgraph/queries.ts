@@ -167,6 +167,7 @@ export default class Queries {
                 tokenId
                 amount
                 tokenType
+                holdTimestamp
             }
         }`, getSubgraphEndpoint(this.network))
         return result.stakes
@@ -196,6 +197,7 @@ export default class Queries {
                 stakeIndex
                 unfreezeTimestamp
                 tokenType
+                holdTimestamp
             }
         }`, getSubgraphEndpoint(this.network))
         return result.transferStakes
@@ -222,6 +224,7 @@ export default class Queries {
                 stakeIndex
                 unfreezeTimestamp
                 tokenType
+                holdTimestamp
             }
         }`, getSubgraphEndpoint(this.network))
         return result.withdrawStakes

@@ -680,14 +680,29 @@ export default class DecimalEVM {
     return await this.call!.delegateToken(validator, tokenAddress, amount, sign, estimateGas)
   }
 
+  public async delegateTokenHold(validator:string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, sign?: ethers.Signature, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    return await this.call!.delegateTokenHold(validator, tokenAddress, amount, holdTimestamp, sign, estimateGas)
+  }
+
   public async transferStakeToken(validator:string, tokenAddress: string, amount: string | number | bigint, newValidator: string, estimateGas?: boolean) {
     await this.checkConnect('delegation');
     return await this.call!.transferStakeToken(validator, tokenAddress, amount, newValidator, estimateGas)
   }
 
+  public async transferStakeTokenHold(validator:string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    return await this.call!.transferStakeTokenHold(validator, tokenAddress, amount, holdTimestamp, newValidator, estimateGas)
+  }
+
   public async withdrawStakeToken(validator:string, tokenAddress: string, amount: string | number | bigint, estimateGas?: boolean) {
     await this.checkConnect('delegation');
     return await this.call!.withdrawStakeToken(validator, tokenAddress, amount, estimateGas)
+  }
+
+  public async withdrawStakeTokenHold(validator:string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    return await this.call!.withdrawStakeTokenHold(validator, tokenAddress, amount, holdTimestamp, estimateGas)
   }
 
   public async applyPenaltyToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean) {

@@ -15,6 +15,7 @@ export interface Stake {
     tokenId?: string;
     amount: string;
     tokenType: string;
+    holdTimestamp: string;
 }
 
 export interface TransferStake {
@@ -39,6 +40,7 @@ export interface TransferStake {
     stakeIndex: string;
     unfreezeTimestamp: string;
     tokenType: string;
+    holdTimestamp: string;
 }
 
 export interface WithdrawStake {
@@ -56,6 +58,7 @@ export interface WithdrawStake {
     stakeIndex: string;
     unfreezeTimestamp: string;
     tokenType: string;
+    holdTimestamp: string;
 }
 
 export interface Validator {
