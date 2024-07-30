@@ -543,11 +543,8 @@ await decimalEVM.delegateDRC1155Hold(validator, nftCollectionAddress, tokenId, a
 ```js
 const newValidator = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
 
-                                                          // Get stakes from subgraph TODO
-let stakes = await decimalEVM.getNFTStakesByMember(owner) // Or get your stakes from smart contract
+const stakes = await subgraph.getNFTStakesByAddress(owner, 1000, 0) // get nft stakes 
 const stake = stakes[0] // first stake (for example)
-// stake.tokenType will give the NFT type (DRC721 or DRC1155)
-// or get the NFT type from TODO
 
 // transfer stake DRC721 || DRC1155
 await decimalEVM.transferStakeNFT(stake.validator, stake.token, stake.tokenId, stake.amount, newValidator)
@@ -557,14 +554,10 @@ await decimalEVM.transferStakeNFTHold(stake.validator, stake.token, stake.tokenI
 
 ### Withdraw stake NFT
 ```js
-                                                          // Get stakes from subgraph TODO
-let stakes = await decimalEVM.getNFTStakesByMember(owner) // Or get your stakes from smart contract
+const stakes = await subgraph.getNFTStakesByAddress(owner, 1000, 0) // get nft stakes 
 
 const stake = stakes[0] // first stake (for example)
-// stake.tokenType will give the NFT type (DRC721 or DRC1155)
-// or get the NFT type from TODO
 
-// withdraw stake DRC721 || DRC1155
 await decimalEVM.withdrawStakeNFT(stake.validator, stake.token, stake.tokenId, stake.amount)
 // or withdraw stake hold 
 await decimalEVM.withdrawStakeNFTHold(stake.validator, stake.token, stake.tokenId, stake.amount, stake.holdTimestamp)
