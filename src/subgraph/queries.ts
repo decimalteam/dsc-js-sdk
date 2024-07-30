@@ -145,7 +145,7 @@ export default class Queries {
                 }
             }
         }`, getSubgraphEndpoint(this.network))
-        return result.balances
+        return result.balanceReservelesses
     }
 
     public async getStakes(options: string): Promise<Stake[]> {
