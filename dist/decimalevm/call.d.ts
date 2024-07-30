@@ -80,8 +80,11 @@ export default class Call {
     permitToken(contract: ethers.Contract, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean): Promise<any>;
     delegateDEL(validator: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     delegateToken(validator: string, tokenAddress: string, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
+    delegateTokenHold(validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     transferStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, estimateGas?: boolean): Promise<any>;
+    transferStakeTokenHold(validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean): Promise<any>;
     withdrawStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    withdrawStakeTokenHold(validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
