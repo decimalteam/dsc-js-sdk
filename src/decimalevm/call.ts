@@ -1024,7 +1024,7 @@ export default class Call {
                 name: await contract.name(),
                 version: "1",
                 chainId: await this.provider.getNetwork().then((n) => n.chainId),
-                verifyingContract: contract.target.toString(),
+                verifyingContract: contract.address.toString(),
             },
             message: {
                 spender,
@@ -1061,7 +1061,7 @@ export default class Call {
                 name: await contract.name(),
                 version: "1",
                 chainId: await this.provider.getNetwork().then((n) => n.chainId),
-                verifyingContract: contract.target.toString(),
+                verifyingContract: contract.address.toString(),
             },
             message: {
                 spender,
