@@ -499,7 +499,7 @@ const holdTimestamp = latestBlock!.timestamp + sec;
 await decimalEVM.delegateDRC721Hold(validator, nftCollectionAddress, tokenId, holdTimestamp)
 
 //delegate DRC1155
-const amount = decimalEVM.parseEther(1) //1 token
+const amount = 1 //1 token
 await decimalEVM.approveForAllNFT(nftCollectionAddress, delegationNftAddress, true)
 await decimalEVM.delegateDRC1155(validator, nftCollectionAddress, tokenId, amount)
 // or delegate hold DRC1155
@@ -528,7 +528,7 @@ const holdTimestamp = latestBlock!.timestamp + sec;
 await decimalEVM.delegateDRC721Hold(validator, nftCollectionAddress, tokenId, holdTimestamp, sign)
 
 //delegate DRC1155
-const amount = decimalEVM.parseEther(1) //1 token
+const amount = 1 //1 token
 const sign = await decimalEVM.getSignPermitDRC1155(nftCollectionAddress, delegationNftAddress)
 await decimalEVM.delegateDRC1155(validator, nftCollectionAddress, tokenId, amount, sign)
 // or delegate hold DRC1155
