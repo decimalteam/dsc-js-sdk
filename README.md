@@ -1155,7 +1155,7 @@ const result = await decimalEVM.getSupplyNFT1155(nftCollectionAddress, tokenId)
 #### Get stakes by address
 ```js
 const account = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
-const result = await decimalEVM.getTokenStakesByMember(account)
+const result = await decimalEVM.getTokenStakesByMember(account) //TODO delete, not work
 ```
 
 #### Get page stakes by address
