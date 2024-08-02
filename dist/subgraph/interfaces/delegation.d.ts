@@ -9,9 +9,12 @@ export interface Stake {
         symbol: string;
     } | null;
     nft: {
-        address: string;
-        symbol: string;
-        name: string;
+        tokenURI: string;
+        collection: {
+            address: string;
+            symbol: string;
+            name: string;
+        };
     } | null;
     tokenId?: string;
     amount: string;
@@ -30,11 +33,14 @@ export interface TransferStake {
     token: {
         address: string;
         symbol: string;
-        name: string;
     } | null;
     nft: {
-        address: string;
-        symbol: string;
+        tokenURI: string;
+        collection: {
+            address: string;
+            symbol: string;
+            name: string;
+        };
     } | null;
     tokenId?: string;
     amount: string;
@@ -52,8 +58,15 @@ export interface WithdrawStake {
     token: {
         address: string;
         symbol: string;
-        name: string;
-    };
+    } | null;
+    nft: {
+        tokenURI: string;
+        collection: {
+            address: string;
+            symbol: string;
+            name: string;
+        };
+    } | null;
     tokenId?: string;
     amount: string;
     stakeIndex: string;

@@ -161,9 +161,12 @@ export default class Queries {
                     symbol  
                 }
                 nft {
-                    address
-                    symbol
-                    name
+                    tokenURI
+                    collection {
+                        address
+                        symbol
+                        name
+                    }
                 }
                 tokenId
                 amount
@@ -190,9 +193,12 @@ export default class Queries {
                     symbol
                 }
                 nft {
-                    address
-                    symbol
-                    name 
+                    tokenURI
+                    collection {
+                        address
+                        symbol
+                        name
+                    }
                 }
                 tokenId
                 amount
@@ -218,9 +224,12 @@ export default class Queries {
                     symbol
                 }
                 nft {
-                    address
-                    symbol
-                    name
+                    tokenURI
+                    collection {
+                        address
+                        symbol
+                        name
+                    }
                 }
                 tokenId
                 amount
