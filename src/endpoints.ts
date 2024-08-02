@@ -8,12 +8,44 @@ export function getApiEndpoint(network: NETWORKS): string {
   return apiEndpoints[network];
 }
 
+export function getNewApiEndpoint(network: NETWORKS): string {
+  return newApiEndpoints[network];
+}
+
 export function getWeb3Endpoint(network: NETWORKS): string {
   return web3Endpoints[network];
 }
 
 export function getRestNodeEndpoint(network: NETWORKS): string {
   return restNodeEndpoints[network];
+}
+
+export function getSubgraphEndpoint(network: NETWORKS): string {
+  return subgraphEndpoints[network];
+}
+
+export function getSubgraphBridgeEndpoint(network: NETWORKS): string {
+  return subgraphBridgeEndpoints[network];
+}
+
+export function getSubgraphMultiSigEndpoint(network: NETWORKS): string {
+  return subgraphMultiSigEndpoints[network];
+}
+
+export function getIpfsEndpoints(network: NETWORKS): string {
+  return ipfsEndpoints[network];
+}
+
+export function getMultiCallAddresses(network: NETWORKS): string {
+  return multicallAddresses[network];
+}
+
+export function getMultiSigAddresses(network: NETWORKS): {
+  safe: string;
+  safeFactory: string;
+  multiSend: string;
+} {
+  return multiSigAddresses[network];
 }
 
 export function getRpcEndpoint(
@@ -71,8 +103,62 @@ const apiEndpoints = {
   [NETWORKS.MAINNET]: "https://mainnet-gate.decimalchain.com/api/",
 };
 
+const newApiEndpoints = {
+  [NETWORKS.DEVNET]: "https://devnet-api.decimalchain.com/api/",
+  [NETWORKS.TESTNET]: "https://testnet-api.decimalchain.com/api/",
+  [NETWORKS.MAINNET]: "https://mainnet-api.decimalchain.com/api/",
+};
+
 const web3Endpoints = {
   [NETWORKS.DEVNET]: "https://devnet-val.decimalchain.com/web3/",
   [NETWORKS.TESTNET]: "https://testnet-val.decimalchain.com/web3/",
   [NETWORKS.MAINNET]: "https://node.decimalchain.com/web3/",
+};
+
+const subgraphEndpoints = {
+  [NETWORKS.DEVNET]: "https://devnet-thegraph.decimalchain.com/subgraphs/name/contract-center",
+  [NETWORKS.TESTNET]: "https://testnet-thegraph.decimalchain.com/subgraphs/name/contract-center",
+  [NETWORKS.MAINNET]: "https://mainnet-thegraph.decimalchain.com/subgraphs/name/contract-center",
+};
+
+const subgraphBridgeEndpoints = {
+  [NETWORKS.DEVNET]: "https://devnet-thegraph.decimalchain.com/subgraphs/name/bridge",
+  [NETWORKS.TESTNET]: "https://testnet-thegraph.decimalchain.com/subgraphs/name/bridge",
+  [NETWORKS.MAINNET]: "https://mainnet-thegraph.decimalchain.com/subgraphs/name/bridge",
+};
+
+const subgraphMultiSigEndpoints = {
+  [NETWORKS.DEVNET]: "https://devnet-thegraph.decimalchain.com/subgraphs/name/multisig-wallet",
+  [NETWORKS.TESTNET]: "https://testnet-thegraph.decimalchain.com/subgraphs/name/multisig-wallet",
+  [NETWORKS.MAINNET]: "https://mainnet-thegraph.decimalchain.com/subgraphs/name/multisig-wallet",
+};
+
+const ipfsEndpoints = { //TODO?
+  [NETWORKS.DEVNET]: "https://testnet-nft-ipfs.decimalchain.com/", 
+  [NETWORKS.TESTNET]: "https://testnet-nft-ipfs.decimalchain.com/",
+  [NETWORKS.MAINNET]: "https://testnet-nft-ipfs.decimalchain.com/",
+};
+
+const multicallAddresses = {
+  [NETWORKS.DEVNET]: "0xDFD261f1E962C5E70e509d332e68C82ed7a36b90", 
+  [NETWORKS.TESTNET]: "0x81FD5FAe106dFD0343B0435a1bc0ef89BB14C317",
+  [NETWORKS.MAINNET]: "0x949d1A0757803C51F2EfFFEb5472C861A898B8E8", //TODO
+};
+
+const multiSigAddresses = {
+  [NETWORKS.DEVNET]: {
+    safe: "0x6dF9E200252B732d17e197E58d809A6828A7506D",
+    safeFactory: "0x3879d24BeB5A191e844c0d1701F78078Cf547BDf",
+    multiSend: "0xfc8A41BA98898e9392549Dccc742277A8Ce7F441"
+  }, 
+  [NETWORKS.TESTNET]: {
+    safe: "0xE0f30FcCAe2f9f9C7efee9af044C436841D466ee",
+    safeFactory: "0x4cC406B1713d3dF67e739D6f5918B6C98F614a38",
+    multiSend: "0xC0611a00CE349B9bCff3866351A2a5Aa9659c464"
+  }, 
+  [NETWORKS.MAINNET]: {
+    safe: "", //TODO
+    safeFactory: "", //TODO
+    multiSend: "" //TODO
+  }, 
 };

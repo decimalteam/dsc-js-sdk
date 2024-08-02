@@ -1,0 +1,41 @@
+import { NETWORKS } from "../endpoints";
+import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
+import { Token, AddressBalance, BridgeToken, BridgeTransfer, TokenReserveless } from "./interfaces/tokens";
+import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
+import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
+import { MultisigWallets, TransactionData } from "./interfaces/multisig";
+export default class Queries {
+    private readonly network;
+    constructor(network: NETWORKS);
+    private query;
+    getDecimalContracts(): Promise<DecimalContract[]>;
+    getTokens(options: string): Promise<Token[]>;
+    getTokensReserveless(options: string): Promise<TokenReserveless[]>;
+    getToken(options: string): Promise<Token>;
+    getAddressBalances(options: string): Promise<AddressBalance[]>;
+    getAddressBalancesReserveless(options: string): Promise<AddressBalance[]>;
+    getStakes(options: string): Promise<Stake[]>;
+    getTransferStakes(options: string): Promise<TransferStake[]>;
+    getWithdrawStakes(options: string): Promise<WithdrawStake[]>;
+    getValidators(): Promise<Validator[]>;
+    getValidator(address: string): Promise<Validator>;
+    getPenalties(options: string): Promise<Penalty[]>;
+    getSumAmountToPenalty(): Promise<SumAmountToPenalty>;
+    subgraphCustomQuery(query: string): Promise<any>;
+    getNftCollections(options: string): Promise<NFTCollection[]>;
+    getNftCollection(options: string): Promise<NFTCollection>;
+    getNfts(options: string): Promise<NFTToken[]>;
+    getNftTransfers(options: string): Promise<NFTTransfer[]>;
+    getNftCollectionType(options: string): Promise<string | null>;
+    getBridgeContracts(): Promise<DecimalBridgeContract>;
+    getBridgeTokens(options: string): Promise<BridgeToken[]>;
+    getBridgeToken(options: string): Promise<BridgeToken>;
+    getBridgeTransfers(options: string): Promise<BridgeTransfer[]>;
+    getBridgeTransfer(options: string): Promise<BridgeTransfer>;
+    subgraphBridgeCustomQuery(query: string): Promise<any>;
+    getMultisigWallets(options: string): Promise<MultisigWallets[]>;
+    getMultisigApproveTransactions(options: string): Promise<{
+        transactions: TransactionData[];
+        approvers: string[];
+    }>;
+}
