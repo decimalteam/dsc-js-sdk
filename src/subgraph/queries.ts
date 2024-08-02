@@ -162,7 +162,8 @@ export default class Queries {
                 }
                 nft {
                     address
-                    symbol  
+                    symbol
+                    name
                 }
                 tokenId
                 amount
@@ -190,7 +191,8 @@ export default class Queries {
                 }
                 nft {
                     address
-                    symbol  
+                    symbol
+                    name 
                 }
                 tokenId
                 amount
@@ -217,7 +219,8 @@ export default class Queries {
                 }
                 nft {
                     address
-                    symbol  
+                    symbol
+                    name
                 }
                 tokenId
                 amount

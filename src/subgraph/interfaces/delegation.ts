@@ -11,6 +11,8 @@ export interface Stake {
     nft: {
         address: string;
         symbol: string;
+        name: string;
+        //tokenURI: string; //TODO
     } | null
     tokenId?: string;
     amount: string;
@@ -30,6 +32,8 @@ export interface TransferStake {
     token: {
         address: string;
         symbol: string;
+        name: string;
+        //tokenURI: string; //TODO
     } | null
     nft: {
         address: string;
@@ -52,6 +56,8 @@ export interface WithdrawStake {
     token: {
         address: string;
         symbol: string;
+        name: string;
+        //tokenURI: string; //TODO
     }
     tokenId?: string;
     amount: string;
