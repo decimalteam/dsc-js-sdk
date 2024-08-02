@@ -662,8 +662,8 @@ export default class Call {
     //master-validator
     public async addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign == undefined) {
-            if (estimateGas) return await this.masterValidator!.contract.estimateGas.addValidator(validator, meta, stake, await this.txOptions())
-            return await this.masterValidator!.contract.addValidator(validator, meta, stake, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            if (estimateGas) return await this.masterValidator!.contract.estimateGas.addCandidate(validator, meta, stake, await this.txOptions())
+            return await this.masterValidator!.contract.addCandidate(validator, meta, stake, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         } else {
             //TODO
             throw Error('TODO')
@@ -675,8 +675,9 @@ export default class Call {
             token: ethers.constants.AddressZero,
             amount: '0'
         }
-        if (estimateGas) return await this.masterValidator!.contract.estimateGas.addValidator(validator, meta, stake, await this.txOptions({value: amount}))
-        return await this.masterValidator!.contract.addValidator(validator, meta, stake, await this.txOptions({value: amount})).then((tx: ethers.ContractTransaction) => tx.wait());
+        if (estimateGas) return await this.masterValidator!.contract.estimateGas.addCandidateDEL(validator, meta, await this.txOptions({value: amount}))
+            await this.masterValidator!.contract.callStatic.addCandidateDEL(validator, meta, await this.txOptions({value: amount}))
+        return await this.masterValidator!.contract.addCandidateDEL(validator, meta, await this.txOptions({value: amount})).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     public async removeValidator(validator: string, estimateGas?: boolean) {
@@ -686,11 +687,13 @@ export default class Call {
 
     public async pauseValidator(validator: string, estimateGas?: boolean) {
         if (estimateGas) return await this.masterValidator!.contract.estimateGas.pauseValidator(validator, await this.txOptions())
+            await this.masterValidator!.contract.callStatic.pauseValidator(validator, await this.txOptions())
         return await this.masterValidator!.contract.pauseValidator(validator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     public async unpauseValidator(validator: string, estimateGas?: boolean) {
         if (estimateGas) return await this.masterValidator!.contract.estimateGas.unpauseValidator(validator, await this.txOptions())
+            await this.masterValidator!.contract.callStatic.unpauseValidator(validator, await this.txOptions())
         return await this.masterValidator!.contract.unpauseValidator(validator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 

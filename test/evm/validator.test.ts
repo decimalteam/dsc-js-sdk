@@ -7,6 +7,70 @@ const mnemonic2 = 'concert kid human author paddle rather outdoor wood slab wrap
 
 describe('Validators', () => {
 
+  
+  test('validator', async() => {
+    try {
+      // Sdk.
+      const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+      const decimalWallet = new Wallet(mnemonic);
+      
+      const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+      await decimalEVM.connect('master-validator');
+      
+      const status = await decimalEVM.getValidatorStatus(decimalWallet.evmAddress!)
+      console.log("status", status)
+      const IsMember = await decimalEVM.validatorIsMember(decimalWallet.evmAddress!)
+      console.log("IsMember", IsMember)
+      
+      const IsActive = await decimalEVM.validatorIsActive(decimalWallet.evmAddress!)
+      console.log("IsActive ", IsActive)
+      
+      const tx = await decimalEVM.pauseValidator(decimalWallet.evmAddress!)
+      console.log(tx) 
+
+      //const tx = await decimalEVM.pauseValidator(decimalWallet.evmAddress!)
+      //console.log(tx) 
+
+      const IsActive_after = await decimalEVM.validatorIsActive(decimalWallet.evmAddress!)
+      console.log("IsActive_after ", IsActive_after)
+    
+    } catch (e) {
+      console.log(e)
+    }
+  });
+
+/*
+  test('validator', async() => {
+    try {
+      // Sdk.
+      const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+      const decimalWallet = new Wallet(mnemonic);
+      
+      const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+      await decimalEVM.connect('master-validator');
+      
+      const newValidator: any = {
+        operator_address: decimalWallet.evmAddress,
+        reward_address: decimalWallet.evmAddress,
+        consensus_pubkey: Buffer.from(decimalWallet.getPublicKey().key.buffer).toString('base64'),
+        description: {
+            moniker: 'test-node-sgp1-01',
+            identity: '',
+            website: 'decimalchain.com',
+            security_contact: '',
+            details: 'Declaring validator on test-node-sgp1-01'
+        },
+        commission: '0.100000000000000000',
+    }
+    const tx = await decimalEVM.addValidatorWithETH(newValidator, decimalEVM.parseEther(2))
+    console.log(tx) 
+    
+    } catch (e) {
+      console.log(e)
+    }
+  });
+  */
+  /*
     test('validator', async() => {
       try {
         // Sdk.
@@ -59,4 +123,5 @@ describe('Validators', () => {
         console.log(e)
       }
     });
+    */
 });

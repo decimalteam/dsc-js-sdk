@@ -14,6 +14,6 @@ export interface ValidatorMeta {
 
 export enum ValidatorStatus {
     Deleted,
-    Paused,
-    Active
+    Candidate,
+    Approved
 }
