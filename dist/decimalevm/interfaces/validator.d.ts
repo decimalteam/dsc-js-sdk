@@ -13,6 +13,6 @@ export interface ValidatorMeta {
 }
 export declare enum ValidatorStatus {
     Deleted = 0,
-    Paused = 1,
-    Active = 2
+    Candidate = 1,
+    Approved = 2
 }
