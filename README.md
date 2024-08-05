@@ -424,13 +424,28 @@ await decimalEVM.transferStakeTokenHold(stake.validator, stake.token, stake.amou
 
 ### Withdraw stake
 ```js
-const stakes = await subgraph.getStakesByAddress(owner) // Get your stakes from subgraph
+const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
 //const stakes = await decimalEVM.getTokenStakesByMember(owner) // Or get your stakes from smart contract
 
 const stake = stakes[0] // first stake (for example)
 await decimalEVM.withdrawStakeToken(stake.validator, stake.token, stake.amount)
-//or if use hold
-await decimalEVM.withdrawStakeTokenHold(stake.validator, stake.token, stake.amount, stake.holdTimestamp)
+
+```
+
+### Stake to Hold
+```js
+const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
+//const stakes = await decimalEVM.getTokenStakesByMember(owner) // Or get your stakes from smart contract
+const stake = stakes[0] // first stake (for example)
+
+const oldHoldTimestamp = 0 // if current stake is not a hold
+//const oldHoldTimestamp = stake.holdTimestamp //or increase current hold time
+
+//const days = 150
+//const sec = days * 86400
+//const latestBlock = await decimalEVM.getLatestBlock()
+//const newHoldTimestamp = latestBlock!.timestamp + sec;
+await decimalEVM.stakeTokenToHold(stake.validator, stake.token, stake.amount, oldHoldTimestamp, newHoldTimestamp)
 ```
 
 ### Apply penalty to stake
@@ -561,6 +576,21 @@ const stake = stakes[0] // first stake (for example)
 await decimalEVM.withdrawStakeNFT(stake.validator, stake.token, stake.tokenId, stake.amount)
 // or withdraw stake hold 
 await decimalEVM.withdrawStakeNFTHold(stake.validator, stake.token, stake.tokenId, stake.amount, stake.holdTimestamp)
+```
+
+### Stake to Hold
+```js
+const stakes = await subgraph.getNFTStakesByAddress(owner, 1000, 0) // get nft stakes 
+const stake = stakes[0] // first stake (for example)
+
+const oldHoldTimestamp = 0 // if current stake is not a hold
+//const oldHoldTimestamp = stake.holdTimestamp //or increase current hold time
+
+//const days = 150
+//const sec = days * 86400
+//const latestBlock = await decimalEVM.getLatestBlock()
+//const newHoldTimestamp = latestBlock!.timestamp + sec;
+await decimalEVM.stakeNFTToHold(stake.validator, stake.token, stake.tokenId, stake.amount, oldHoldTimestamp, newHoldTimestamp)
 ```
 
 ### Complete stake NFT after frozen

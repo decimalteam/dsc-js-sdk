@@ -341,6 +341,11 @@ export default class Call {
         return await this.delegation!.contract.withdrawHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
+    public async stakeTokenToHold(validator:string, tokenAddress: string, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.hold(validator, tokenAddress, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions())
+        return await this.delegation!.contract.hold(validator, tokenAddress, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
     public async applyPenaltyToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean):Promise<any> {
         try {
             await this.delegation!.contract.callStatic.applyPenaltyToStake(validator, delegator, tokenAddress, await this.txOptions())
@@ -641,6 +646,11 @@ export default class Call {
     public async withdrawStakeNFTHold(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
         if (estimateGas) return await this.delegationNft!.contract.estimateGas.withdrawHold(validator, nftAddress, tokenId, amount, holdTimestamp, await this.txOptions())
         return await this.delegationNft!.contract.withdrawHold(validator, nftAddress, tokenId, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async stakeNFTToHold(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegationNft!.contract.estimateGas.hold(validator, nftAddress, tokenId, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions())
+        return await this.delegationNft!.contract.hold(validator, nftAddress, tokenId, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     public async completeStakeNFT(indexes:string[] | number[], estimateGas?: boolean): Promise<any> {
