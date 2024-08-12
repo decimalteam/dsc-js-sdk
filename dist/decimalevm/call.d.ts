@@ -55,6 +55,7 @@ export default class Call {
     checks?: DecimalContractEVM;
     bridgeV2?: DecimalContractEVM;
     private bridgeV2Nonce;
+    private debug;
     constructor(network: NETWORKS, provider: ethers.providers.JsonRpcProvider, account: HDNodeWallet);
     setDecimalContractEVM(decimalContractEVM: DecimalContractEVM, name: string): void;
     private txOptions;
