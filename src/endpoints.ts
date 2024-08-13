@@ -147,9 +147,9 @@ const multicallAddresses = {
 
 const multiSigAddresses = {
   [NETWORKS.DEVNET]: {
-    safe: "0x6dF9E200252B732d17e197E58d809A6828A7506D",
-    safeFactory: "0x3879d24BeB5A191e844c0d1701F78078Cf547BDf",
-    multiSend: "0xfc8A41BA98898e9392549Dccc742277A8Ce7F441"
+    safe: "0x4b63E062C4393B64db435d5fCF96C4CC739caCC6",
+    safeFactory: "0x34f1692170DC4c7cb587CcAc3aadeb241A8d89B1",
+    multiSend: "0xc4A36a24C14AdA5c7523eb27ABD660d067bc93BE"
   }, 
   [NETWORKS.TESTNET]: {
     safe: "0xE0f30FcCAe2f9f9C7efee9af044C436841D466ee",
@@ -157,8 +157,8 @@ const multiSigAddresses = {
     multiSend: "0xC0611a00CE349B9bCff3866351A2a5Aa9659c464"
   }, 
   [NETWORKS.MAINNET]: {
-    safe: "", //TODO
-    safeFactory: "", //TODO
-    multiSend: "" //TODO
+    safe: "0x15949c33775154549D073168C1094C5f3b28b5CB",
+    safeFactory: "0x92466f09D5c82e8DdB8AaA7c5AdC63d43111F6c1",
+    multiSend: "0x72b80471AAFabd1469ed1C51453DC9ca66068bC0"
   }, 
 };
