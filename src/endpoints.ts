@@ -147,9 +147,9 @@ const multicallAddresses = {
 
 const multiSigAddresses = {
   [NETWORKS.DEVNET]: {
-    safe: "0x4b63E062C4393B64db435d5fCF96C4CC739caCC6",
-    safeFactory: "0x34f1692170DC4c7cb587CcAc3aadeb241A8d89B1",
-    multiSend: "0xc4A36a24C14AdA5c7523eb27ABD660d067bc93BE"
+    safe: "0xAaA4813B459B4af71C7C172880D504C6663c11F7",
+    safeFactory: "0xAa6Fe7d309741897f5E2De994c90155b0252d104",
+    multiSend: "0xf28404962e594aFAf7FE0a9eE2e760f925B3aCDc"
   }, 
   [NETWORKS.TESTNET]: {
     safe: "0xE0f30FcCAe2f9f9C7efee9af044C436841D466ee",
