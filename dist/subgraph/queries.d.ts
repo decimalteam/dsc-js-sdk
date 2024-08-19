@@ -4,6 +4,7 @@ import { Token, AddressBalance, BridgeToken, BridgeTransfer, TokenReserveless } 
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 import { MultisigWallets, TransactionData } from "./interfaces/multisig";
+import { SubgraphResponse } from "./interfaces/subgraph";
 export default class Queries {
     private readonly network;
     constructor(network: NETWORKS);
@@ -14,7 +15,7 @@ export default class Queries {
     getToken(options: string): Promise<Token>;
     getAddressBalances(options: string): Promise<AddressBalance[]>;
     getAddressBalancesReserveless(options: string): Promise<AddressBalance[]>;
-    getStakes(options: string): Promise<Stake[]>;
+    getStakes(options: string): Promise<SubgraphResponse<Stake[]>>;
     getTransferStakes(options: string): Promise<TransferStake[]>;
     getWithdrawStakes(options: string): Promise<WithdrawStake[]>;
     getValidators(): Promise<Validator[]>;

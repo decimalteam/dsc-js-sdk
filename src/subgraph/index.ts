@@ -8,6 +8,7 @@ import { Token, AddressBalance, BridgeToken, BridgeTransfer, TokenReserveless } 
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 import { MultisigWallets, TransactionData } from "./interfaces/multisig";
+import { SubgraphResponse } from "./interfaces/subgraph";
 
 export default class Subgraph {
 
@@ -88,20 +89,20 @@ export default class Subgraph {
     }
 
     // stakes token
-    public async getStakes(first: number, skip: number): Promise<Stake[]> {
+    public async getStakes(first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
         const options = `(where: {tokenType_in: [DRC20, DEL]}, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
     
-    public async getStakesByAddress(address: string, first: number, skip: number): Promise<Stake[]> {
+    public async getStakesByAddress(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { tokenType_in: [DRC20, DEL], delegator: "${verifyAddress}" }, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
 
-    public async getStakesByValidotor(address: string, first: number, skip: number): Promise<Stake[]> {
+    public async getStakesByValidotor(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { tokenType_in: [DRC20, DEL], validator: "${verifyAddress.toLowerCase()}" }, first: ${first}, skip: ${skip})`
@@ -135,20 +136,20 @@ export default class Subgraph {
     }
 
     // stakes nft
-    public async getNFTStakes(first: number, skip: number): Promise<Stake[]>  {
+    public async getNFTStakes(first: number, skip: number): Promise<SubgraphResponse<Stake[]>>  {
         this.checkFirstAndSkip(first, skip)
         const options = `(where: { tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
     
-    public async getNFTStakesByAddress(address: string, first: number, skip: number): Promise<Stake[]> {
+    public async getNFTStakesByAddress(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
 
-    public async getNFTStakesByValidotor(address: string, first: number, skip: number): Promise<Stake[]> {
+    public async getNFTStakesByValidotor(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
         const options = `(where: { validator: "${verifyAddress.toLowerCase()}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`

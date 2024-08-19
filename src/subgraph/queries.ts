@@ -10,6 +10,7 @@ import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPen
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 import { MultisigWallets, TransactionData } from "./interfaces/multisig";
 import fetch from "node-fetch";
+import { SubgraphResponse } from "./interfaces/subgraph";
 
 export default class Queries {
     private readonly network: NETWORKS;
@@ -148,8 +149,13 @@ export default class Queries {
         return result.balanceReservelesses
     }
 
-    public async getStakes(options: string): Promise<Stake[]> {
+    public async getStakes(options: string): Promise<SubgraphResponse<Stake[]>> {
         const result = await this.query(`{
+            _meta {
+                block {
+                    number
+                }
+            }
             stakes${options} {
                 id
                 validator {
@@ -174,7 +180,10 @@ export default class Queries {
                 holdTimestamp
             }
         }`, getSubgraphEndpoint(this.network))
-        return result.stakes
+        return {
+            meta: result._meta,
+            data: result.stakes
+        }
     }
 
     public async getTransferStakes(options: string): Promise<TransferStake[]> {

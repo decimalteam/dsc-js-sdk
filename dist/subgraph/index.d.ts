@@ -4,6 +4,7 @@ import { Token, AddressBalance, BridgeToken, BridgeTransfer, TokenReserveless } 
 import { Stake, TransferStake, WithdrawStake, Validator, Penalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 import { MultisigWallets, TransactionData } from "./interfaces/multisig";
+import { SubgraphResponse } from "./interfaces/subgraph";
 export default class Subgraph {
     private readonly network;
     private readonly query;
@@ -19,16 +20,16 @@ export default class Subgraph {
     getTokenReservelessByAddress(address: string): Promise<TokenReserveless>;
     getAddressBalances(address: string, first: number, skip: number): Promise<AddressBalance[]>;
     getAddressBalancesReserveless(address: string, first: number, skip: number): Promise<AddressBalance[]>;
-    getStakes(first: number, skip: number): Promise<Stake[]>;
-    getStakesByAddress(address: string, first: number, skip: number): Promise<Stake[]>;
-    getStakesByValidotor(address: string, first: number, skip: number): Promise<Stake[]>;
+    getStakes(first: number, skip: number): Promise<SubgraphResponse<Stake[]>>;
+    getStakesByAddress(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>>;
+    getStakesByValidotor(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>>;
     getTransferStakes(first: number, skip: number): Promise<TransferStake[]>;
     getTransferStakesByAddress(address: string, first: number, skip: number): Promise<TransferStake[]>;
     getWithdrawStakes(first: number, skip: number): Promise<WithdrawStake[]>;
     getWithdrawStakesByAddress(address: string, first: number, skip: number): Promise<WithdrawStake[]>;
-    getNFTStakes(first: number, skip: number): Promise<Stake[]>;
-    getNFTStakesByAddress(address: string, first: number, skip: number): Promise<Stake[]>;
-    getNFTStakesByValidotor(address: string, first: number, skip: number): Promise<Stake[]>;
+    getNFTStakes(first: number, skip: number): Promise<SubgraphResponse<Stake[]>>;
+    getNFTStakesByAddress(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>>;
+    getNFTStakesByValidotor(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>>;
     getTransferNFTStakes(first: number, skip: number): Promise<TransferStake[]>;
     getTransferNFTStakesByAddress(address: string, first: number, skip: number): Promise<TransferStake[]>;
     getWithdrawNFTStakes(first: number, skip: number): Promise<WithdrawStake[]>;
