@@ -83,6 +83,29 @@ const reserve = decimalEVM.parseEther(1000+comission) // minimum reserve 1000 DE
 const {tokenAddress} = await decimalEVM.createToken(newToken, reserve)
 ```
 
+### Create reserveless token 
+```js
+//if mintable is false
+const name = "TokenName"
+const symbol = "TKNE"
+const mintable = false
+const burnable = true
+const initialMint = decimalEVM.parseEther(1000)
+const cap = undefined
+const identity = '' //icon
+const {tx, tokenAddress} = await decimalEVM.createTokenReserveless(name, symbol, mintable, burnable, initialMint, cap, identity)
+
+//if mintable is true
+const name = "TokenName"
+const symbol = "TKNE"
+const mintable = true
+const burnable = true
+const initialMint = decimalEVM.parseEther(1000)
+const cap = decimalEVM.parseEther(10000) //max total supply
+const identity = '' //icon
+const {tx, tokenAddress} = await decimalEVM.createTokenReserveless(name, symbol, mintable, burnable, initialMint, cap, identity)
+```
+
 ### Approve Token
 ```js
 const spender = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"; // address of who will be allowed to spend amount
