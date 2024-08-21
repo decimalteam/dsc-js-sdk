@@ -88,6 +88,8 @@ export default class Call {
     withdrawStakeToken(validator: string, tokenAddress: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     withdrawStakeTokenHold(validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     stakeTokenToHold(validator: string, tokenAddress: string, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean): Promise<any>;
+    stakeTokenResetHold(validator: string, delegator: string, tokenAddress: string, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
+    stakeTokenResetHoldDEL(validator: string, delegator: string, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
@@ -114,6 +116,7 @@ export default class Call {
     withdrawStakeNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     withdrawStakeNFTHold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     stakeNFTToHold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean): Promise<any>;
+    stakeNFTResetHold(validator: string, delegator: string, tokenAddress: string, tokenId: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
     addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     addValidatorWithETH(validator: string, meta: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
