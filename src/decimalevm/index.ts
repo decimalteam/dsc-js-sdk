@@ -715,6 +715,16 @@ export default class DecimalEVM {
     return await this.call!.stakeTokenToHold(validator, tokenAddress, amount, oldHoldTimestamp, newHoldTimestamp, estimateGas)
   }
 
+  public async stakeTokenResetHold(validator:string, delegator: string, tokenAddress: string, holdTimestamp: number, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    return await this.call!.stakeTokenResetHold(validator, delegator, tokenAddress, holdTimestamp, estimateGas)
+  }
+
+  public async stakeTokenResetHoldDEL(validator:string, delegator: string, holdTimestamp: number, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    return await this.call!.stakeTokenResetHoldDEL(validator, delegator, holdTimestamp, estimateGas)
+  }
+
   public async applyPenaltyToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean) {
     await this.checkConnect('delegation');
     return await this.call!.applyPenaltyToStakeToken(validator, delegator, tokenAddress, estimateGas)
@@ -790,6 +800,13 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftAddress)
     if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
     return await this.call!.stakeNFTToHold(validator, nftAddress, tokenId, amount, oldHoldTimestamp, newHoldTimestamp, estimateGas)
+  }
+
+  public async stakeNFTResetHold(validator:string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
+    await this.checkConnect('delegation-nft');
+    const typeNFT = await this.getNftType(nftAddress)
+    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
+    return await this.call!.stakeNFTResetHold(validator, delegator, nftAddress, tokenId, holdTimestamp, estimateGas)
   }
 
   public async completeStakeNFT(indexes:string[] | number[], estimateGas?: boolean) {

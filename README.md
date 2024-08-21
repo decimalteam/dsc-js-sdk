@@ -471,6 +471,22 @@ const oldHoldTimestamp = 0 // if current stake is not a hold
 await decimalEVM.stakeTokenToHold(stake.validator, stake.token, stake.amount, oldHoldTimestamp, newHoldTimestamp)
 ```
 
+### Reset Hold
+```js
+const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
+const stake = stakes[0] // first stake (for example)
+
+await decimalEVM.stakeTokenToHold(stake.validator, stake.delegator, stake.token, stake.holdTimestamp)
+```
+
+### Reset Hold DEL
+```js
+const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
+const stake = stakes[0] // first stake (for example)
+
+await decimalEVM.stakeTokenResetHoldDEL(stake.validator, stake.delegator, stake.holdTimestamp)
+```
+
 ### Apply penalty to stake
 ```js
 const stakes = await subgraph.getStakesByAddress(owner) // Get your stakes from subgraph
@@ -614,6 +630,14 @@ const oldHoldTimestamp = 0 // if current stake is not a hold
 //const latestBlock = await decimalEVM.getLatestBlock()
 //const newHoldTimestamp = latestBlock!.timestamp + sec;
 await decimalEVM.stakeNFTToHold(stake.validator, stake.token, stake.tokenId, stake.amount, oldHoldTimestamp, newHoldTimestamp)
+```
+
+### Stake to Hold
+```js
+const stakes = await subgraph.getNFTStakesByAddress(owner, 1000, 0) // get nft stakes 
+const stake = stakes[0] // first stake (for example)
+
+await decimalEVM.stakeNFTResetHold(stake.validator, stake.delegator, stake.token, stake.tokenId, stake.holdTimestamp)
 ```
 
 ### Complete stake NFT after frozen
