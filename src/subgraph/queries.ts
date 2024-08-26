@@ -2,7 +2,9 @@ import {
     NETWORKS,
     getSubgraphEndpoint,
     getSubgraphBridgeEndpoint,
-    getSubgraphMultiSigEndpoint
+    getSubgraphMultiSigEndpoint,
+    getSubgraphBridgeETHEndpoint,
+    getSubgraphBridgeBSCEndpoint
 } from "../endpoints";
 import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
 import { Token, AddressBalance, BridgeToken, BridgeTransfer, TokenReserveless } from "./interfaces/tokens";
@@ -558,6 +560,26 @@ export default class Queries {
                 implementation
             }
         }`, getSubgraphBridgeEndpoint(this.network))
+        return result.bridges[0]
+    }
+
+    public async getBridgeETHContracts(): Promise<DecimalBridgeContract> {
+        const result = await this.query(`{
+            bridges {
+                id
+                implementation
+            }
+        }`, getSubgraphBridgeETHEndpoint(this.network))
+        return result.bridges[0]
+    }
+
+    public async getBridgeBSCContracts(): Promise<DecimalBridgeContract> {
+        const result = await this.query(`{
+            bridges {
+                id
+                implementation
+            }
+        }`, getSubgraphBridgeBSCEndpoint(this.network))
         return result.bridges[0]
     }
 

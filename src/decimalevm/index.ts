@@ -5,7 +5,9 @@ import {
     getNewApiEndpoint,
     NETWORKS,
     getMultiCallAddresses,
-    getMultiSigAddresses
+    getMultiSigAddresses,
+    getWeb3NodeETH,
+    getWeb3NodeBSC
 } from "../endpoints";
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
@@ -38,6 +40,10 @@ export default class DecimalEVM {
   private contractAddesses?: DecimalContract[];
   public provider: ethers.providers.JsonRpcProvider;
   public account: HDNodeWallet;
+  public providerETH?: ethers.providers.JsonRpcProvider;
+  public accountETH?: HDNodeWallet;
+  public providerBSC?: ethers.providers.JsonRpcProvider;
+  public accountBSC?: HDNodeWallet;
   private contracts: { [address: string]: DecimalContractEVM } = {}
   private abis: { 
     token?: ethers.ContractInterface,
@@ -248,6 +254,11 @@ export default class DecimalEVM {
           const abi = (await this.getContract(bridgeContracts.implementation)).abi
           const bridgeV2 = await this.getContract(bridgeContracts.id, abi);
           this.call.setDecimalContractEVM(bridgeV2, 'bridgeV2')
+
+          this.providerETH = new ethers.providers.JsonRpcProvider(getWeb3NodeETH(this.network));
+          this.accountETH = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.providerETH);
+          this.providerBSC = new ethers.providers.JsonRpcProvider(getWeb3NodeBSC(this.network));
+          this.accountBSC = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.providerBSC);
         }
         break;
       case 'checks':
@@ -1016,15 +1027,54 @@ export default class DecimalEVM {
     }
   }
 
-  public async bridgeTransferDEL(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
+  public async bridgeTransferNative(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, fromChainId: number, toChainId: number, estimateGas?: boolean) {
     await this.checkConnect('bridge');
-    return await this.call!.wrapAndTransferETH(to, amount, serviceFee, toChainId, estimateGas);
+
+    const {bridgeAddress, account} = await this.getAccountAndBridge(fromChainId)
+    if (!bridgeAddress || !account) throw new Error('invalid toChainId')
+
+    const abi = this.call!.bridgeV2!.abi
+    const contract = new ethers.Contract(bridgeAddress, abi, account);
+
+    return await this.call!.wrapAndTransferETH(contract, to, amount, serviceFee, toChainId, estimateGas);
   }
 
-  public async bridgeTransferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
+  public async bridgeTransferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, fromChainId: number, toChainId: number, estimateGas?: boolean) {
     await this.checkConnect('bridge');
-    //TODO check chainId
-    return await this.call!.transferTokens(tokenAddress, to, amount, serviceFee, toChainId, estimateGas);
+
+    const {bridgeAddress, account} = await this.getAccountAndBridge(fromChainId)
+    if (!bridgeAddress || !account) throw new Error('invalid toChainId')
+
+    const abi = this.call!.bridgeV2!.abi
+    const contract = new ethers.Contract(bridgeAddress, abi, account);
+    
+    return await this.call!.transferTokens(contract, tokenAddress, to, amount, serviceFee, toChainId, estimateGas);
+  }
+
+  public async bridgeCompleteTransfer(toChainId: number, encodedVM: string, unwrapWETH: boolean, estimateGas?: boolean) { // chain id (1 is ETH, 56 is BSC, 75 is DSC)
+    await this.checkConnect('bridge');
+    const {bridgeAddress, account} = await this.getAccountAndBridge(toChainId)
+    if (!bridgeAddress || !account) throw new Error('invalid toChainId')
+
+    const abi = this.call!.bridgeV2!.abi
+    const contract = new ethers.Contract(bridgeAddress, abi, account);
+    return await this.call!.completeTransfer(contract, encodedVM, unwrapWETH, estimateGas);
+  }
+
+  private async getAccountAndBridge(chain: number) {
+    if (!this.call) throw new Error('DecimalEVM is not connected');
+    switch(chain) {
+      case 1:
+        const bridgeETH = await this.subgraph.getBridgeETHContracts()
+        return {bridgeAddress: bridgeETH.id, account: this.accountETH};
+      case 56:
+        const bridgeBSC = await this.subgraph.getBridgeBSCContracts()
+        return {bridgeAddress: bridgeBSC.id, account: this.accountBSC};
+      case 75:
+        return {bridgeAddress: this.call!.bridgeV2!.contract.address, account: this.account};
+    default:
+      throw new Error(`Unknown chainId '${chain}'`);
+    }
   }
 
   public async createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean) {
@@ -1051,6 +1101,16 @@ export default class DecimalEVM {
 
   public async getBalance(address: string) {
     return await this.provider.getBalance(address)
+  }
+
+  public async getBalanceETH(address: string) {
+    await this.checkConnect('bridge');
+    return await this.providerETH!.getBalance(address)
+  }
+
+  public async getBalanceBNB(address: string) {
+    await this.checkConnect('bridge');
+    return await this.providerBSC!.getBalance(address)
   }
 
   public async getNftType(address: string): Promise<TypeNFT> {

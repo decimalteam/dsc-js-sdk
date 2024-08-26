@@ -344,6 +344,12 @@ export default class Subgraph {
     public async getBridgeContracts(): Promise<DecimalBridgeContract> {
         return await this.query.getBridgeContracts()
     }
+    public async getBridgeETHContracts(): Promise<DecimalBridgeContract> {
+        return await this.query.getBridgeETHContracts()
+    }
+    public async getBridgeBSCContracts(): Promise<DecimalBridgeContract> {
+        return await this.query.getBridgeBSCContracts()
+    }
 
     public async getBridgeTokens(first: number, skip: number): Promise<BridgeToken[]> {
         this.checkFirstAndSkip(first, skip)

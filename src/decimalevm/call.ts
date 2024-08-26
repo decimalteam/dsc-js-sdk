@@ -882,30 +882,39 @@ export default class Call {
     }
 
     //bridgeV2
-    public async wrapAndTransferETH(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
+    public async wrapAndTransferETH(contract: ethers.Contract, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
         const addressToBytes32 = "0x" + to.slice(2).padStart(64, "0")
         const value = ethers.BigNumber.from(amount).add(ethers.BigNumber.from(serviceFee))
         if (estimateGas) {
-            return await this.bridgeV2!.contract.estimateGas.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
+            return await contract.estimateGas.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
         }
         if (this.debug)
-            await this.bridgeV2!.contract.callStatic.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
-        const tx = await this.bridgeV2!.contract.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value})).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.callStatic.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
+        const tx = await contract.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value})).then((tx: ethers.ContractTransaction) => tx.wait());
         this.bridgeV2Nonce += 1;
         return tx;
     }
 
-    public async transferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
+    public async transferTokens(contract: ethers.Contract, tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
         const addressToBytes32 = "0x" + to.slice(2).padStart(64, "0")
         if (estimateGas) {
-            return await this.bridgeV2!.contract.estimateGas.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
+            return await contract.estimateGas.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
         }
         if (this.debug)
-            await this.bridgeV2!.contract.callStatic.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
-        const tx = await this.bridgeV2!.contract.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee})).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.callStatic.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
+        const tx = await contract.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee})).then((tx: ethers.ContractTransaction) => tx.wait());
         this.bridgeV2Nonce += 1;
         return tx;
     }
+
+    public async completeTransfer(contract: ethers.Contract, encodedVM: string, unwrapWETH: boolean, estimateGas?: boolean) {
+        if (estimateGas) {
+            return await contract.estimateGas.completeTransfer(encodedVM, unwrapWETH, await this.txOptions())
+        }
+        if (this.debug)
+            await contract.callStatic.completeTransfer(encodedVM, unwrapWETH, await this.txOptions())
+        return await contract.completeTransfer(encodedVM, unwrapWETH, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }   
 
     //checks
     public async createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean): Promise<any> {

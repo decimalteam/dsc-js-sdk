@@ -25,9 +25,10 @@ describe('bridge', () => {
 
         const to = "0x0000000000000000000000000000000000000099"
         const amount = decimalEVM.parseEther(13);
+        const fromChainId = DSC_DEV
         const toChainId = DSC_TEST
         const serviceFee = await decimalEVM.getBridgeServiceFees(toChainId);
-        const tx = await decimalEVM.bridgeTransferDEL(to, amount, serviceFee, toChainId)
+        const tx = await decimalEVM.bridgeTransferNative(to, amount, serviceFee,fromChainId, toChainId)
         console.log(tx)
     })
 
@@ -45,9 +46,10 @@ describe('bridge', () => {
         await decimalEVM.approveToken(tokenAddress, bridgeAddress, amount)
 
         const to = "0x0000000000000000000000000000000000000099"
+        const fromChainId = DSC_DEV
         const toChainId = DSC_TEST
         const serviceFee = await decimalEVM.getBridgeServiceFees(toChainId);
-        const tx = await decimalEVM.bridgeTransferTokens(tokenAddress, to, amount, serviceFee, toChainId)
+        const tx = await decimalEVM.bridgeTransferTokens(tokenAddress, to, amount, serviceFee, fromChainId, toChainId)
         console.log(tx)
     })
 

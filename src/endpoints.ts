@@ -16,6 +16,14 @@ export function getWeb3Endpoint(network: NETWORKS): string {
   return web3Endpoints[network];
 }
 
+export function getWeb3NodeETH(network: NETWORKS): string {
+  return web3NodeETH[network];
+}
+
+export function getWeb3NodeBSC(network: NETWORKS): string {
+  return web3NodeBSC[network];
+}
+
 export function getRestNodeEndpoint(network: NETWORKS): string {
   return restNodeEndpoints[network];
 }
@@ -26,6 +34,14 @@ export function getSubgraphEndpoint(network: NETWORKS): string {
 
 export function getSubgraphBridgeEndpoint(network: NETWORKS): string {
   return subgraphBridgeEndpoints[network];
+}
+
+export function getSubgraphBridgeETHEndpoint(network: NETWORKS): string {
+  return subgraphBridgeETHEndpoints[network];
+}
+
+export function getSubgraphBridgeBSCEndpoint(network: NETWORKS): string {
+  return subgraphBridgeBSCEndpoints[network];
 }
 
 export function getSubgraphMultiSigEndpoint(network: NETWORKS): string {
@@ -161,4 +177,28 @@ const multiSigAddresses = {
     safeFactory: "0x92466f09D5c82e8DdB8AaA7c5AdC63d43111F6c1",
     multiSend: "0x72b80471AAFabd1469ed1C51453DC9ca66068bC0"
   }, 
+};
+
+const web3NodeETH = {
+  [NETWORKS.DEVNET]: "https://rpc.sepolia.org/", 
+  [NETWORKS.TESTNET]: "https://rpc.sepolia.org/",
+  [NETWORKS.MAINNET]: "https://ethereum-rpc.publicnode.com",
+};
+
+const web3NodeBSC = {
+  [NETWORKS.DEVNET]: "https://bsc-testnet-dataseed.bnbchain.org", 
+  [NETWORKS.TESTNET]: "https://bsc-testnet-dataseed.bnbchain.org",
+  [NETWORKS.MAINNET]: "https://bsc-dataseed.bnbchain.org",
+};
+
+const subgraphBridgeETHEndpoints = { //TODO?
+  [NETWORKS.DEVNET]: "https://devnet-thegraph.decimalchain.com/subgraphs/name/bridgeETH",
+  [NETWORKS.TESTNET]: "https://testnet-thegraph.decimalchain.com/subgraphs/name/bridgeETH",
+  [NETWORKS.MAINNET]: "https://mainnet-thegraph.decimalchain.com/subgraphs/name/bridgeETH",
+};
+
+const subgraphBridgeBSCEndpoints = { //TODO?
+  [NETWORKS.DEVNET]: "https://devnet-thegraph.decimalchain.com/subgraphs/name/bridgeBSC",
+  [NETWORKS.TESTNET]: "https://testnet-thegraph.decimalchain.com/subgraphs/name/bridgeBSC",
+  [NETWORKS.MAINNET]: "https://mainnet-thegraph.decimalchain.com/subgraphs/name/bridgeBSC",
 };

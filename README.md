@@ -946,13 +946,18 @@ const result = await decimalEVM1.multisig.executeTx(multisigAddress, safeTx, [si
 
 ## Bridge
 
-### Transfer DEL
+### Transfer DEL, ETH, BNB
 ```js
 const to = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
 const amount = decimalEVM.parseEther(10); // 10 DEL
+const fromChainId = 75 // chain id (1 is ETH, 56 is BSC, 75 is DSC)
 const toChainId = 1 // chain id (1 is ETH, 56 is BSC, 75 is DSC)
 const serviceFee = await decimalEVM.getBridgeServiceFees(toChainId)
-const result = await decimalEVM.bridgeTransferDEL(to, amount, serviceFee, toChainId);
+const result = await decimalEVM.bridgeTransferNative(to, amount, serviceFee, fromChainId, toChainId);
+
+const encodedVM = '0x.....' // encodedVM received after bridgeTransferTokens
+const unwrapWETH = false; // if you send WDEL from Ethreum to Decimal, you can set unwrapWETH = true, for receive DEL instead WDEL. Automatic unwrapping is available for DEL, ETH, BNB
+const resultComplete = await decimalEVM.bridgeCompleteTransfer(toChainId, encodedVM, unwrapWETH)
 ```
 
 ### Transfer Tokens
@@ -960,14 +965,27 @@ const result = await decimalEVM.bridgeTransferDEL(to, amount, serviceFee, toChai
 const tokenAddress = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
 const to = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
 const amount = decimalEVM.parseEther(10); // 10 DEL
+const fromChainId = 75 // chain id (1 is ETH, 56 is BSC, 75 is DSC)
 const toChainId = 1 // chain id (1 is ETH, 56 is BSC, 75 is DSC)
 const serviceFee = await decimalEVM.getBridgeServiceFees(toChainId) // Get bridge service fees
 
 const bridgeAddress = await decimalEVM.getDecimalContractAddress('bridge')
 await decimalEVM.approveToken(tokenAddress, bridgeAddress, amount)
 
-const result = await decimalEVM.bridgeTransferTokens(tokenAddress, to, amount, serviceFee, toChainId)
+const result = await decimalEVM.bridgeTransferTokens(tokenAddress, to, amount, serviceFee, fromChainId, toChainId)
+
+const encodedVM = '0x.....' // encodedVM received after bridgeTransferTokens
+const unwrapWETH = false; // if you send WDEL from Ethreum to Decimal, you can set unwrapWETH = true, for receive DEL instead WDEL. Automatic unwrapping is available for DEL, ETH, BNB
+const resultComplete = await decimalEVM.bridgeCompleteTransfer(toChainId, encodedVM, unwrapWETH)
 ```
+
+### Get balance DEL, ETH, BNB
+```js
+const result = await decimalEVM.getBalance(address)
+const result = await decimalEVM.getBalanceETH(address)
+const result = await decimalEVM.getBalanceBNB(address)
+```
+
 
 ## Checks
 
