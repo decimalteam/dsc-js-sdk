@@ -54,6 +54,8 @@ export default class Subgraph {
     getNftTransfersByNftAndUser(collection: string, tokenId: string | number, user: string, first: number, skip: number): Promise<NFTTransfer[]>;
     subgraphCustomQuery(query: string): Promise<any>;
     getBridgeContracts(): Promise<DecimalBridgeContract>;
+    getBridgeETHContracts(): Promise<DecimalBridgeContract>;
+    getBridgeBSCContracts(): Promise<DecimalBridgeContract>;
     getBridgeTokens(first: number, skip: number): Promise<BridgeToken[]>;
     getBridgeTokenByAddress(address: string): Promise<BridgeToken>;
     getBridgeTokenBySymbol(symbol: string): Promise<BridgeToken>;

@@ -29,6 +29,8 @@ export default class Queries {
     getNftTransfers(options: string): Promise<NFTTransfer[]>;
     getNftCollectionType(options: string): Promise<string | null>;
     getBridgeContracts(): Promise<DecimalBridgeContract>;
+    getBridgeETHContracts(): Promise<DecimalBridgeContract>;
+    getBridgeBSCContracts(): Promise<DecimalBridgeContract>;
     getBridgeTokens(options: string): Promise<BridgeToken[]>;
     getBridgeToken(options: string): Promise<BridgeToken>;
     getBridgeTransfers(options: string): Promise<BridgeTransfer[]>;

@@ -124,8 +124,9 @@ export default class Call {
     pauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
     unpauseValidator(validator: string, estimateGas?: boolean): Promise<any>;
     updateValidatorMeta(validator: string, meta: string, estimateGas?: boolean): Promise<any>;
-    wrapAndTransferETH(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
-    transferTokens(tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
+    wrapAndTransferETH(contract: ethers.Contract, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
+    transferTokens(contract: ethers.Contract, tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean): Promise<any>;
+    completeTransfer(contract: ethers.Contract, encodedVM: string, unwrapWETH: boolean, estimateGas?: boolean): Promise<any>;
     createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean): Promise<any>;
     createChecksToken(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, tokenAddress: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     redeemChecks(passwords: string[], checks: string[], callStatic?: boolean, estimateGas?: boolean): Promise<any>;
