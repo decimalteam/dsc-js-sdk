@@ -487,6 +487,64 @@ const stake = stakes[0] // first stake (for example)
 await decimalEVM.stakeTokenResetHoldDEL(stake.validator, stake.delegator, stake.holdTimestamp)
 ```
 
+### withdraw Token With Reset
+```js
+const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
+const stake1 = stakes[0] // first stake (for example)
+const stake2 = stakes[1] // second stake (for example)
+
+// Example of iterating through an array of stakes to find expired and where validator, amount, token match
+const holdsExpierd = result.data.filter((stake) => Number(stake.holdTimestamp) <= Number(result.meta.block.number))
+const stakesMap: {[a:string]: number[]} = {}
+holdsExpierd.map((stake) => {
+  const tokenAddress = stake.token ? stake.token.address : "del"
+  if (!stakesMap[`${stake.validator.address}-${tokenAddress}-${stake.amount}`]) stakesMap[`${stake.validator.address}-${tokenAddress}-${stake.amount}`] = [];
+  stakesMap[`${stake.validator.address}-${tokenAddress}-${stake.amount}`].push(Number(stake.holdTimestamp))
+})
+const keys = Object.keys(stakesMap).filter((stake) => stakesMap[stake].length > 1)
+const key = keys[0] //for example
+const stakeData  = key.split('-')
+const stake = {
+  validator: stakeData[0],
+  token: stakeData[1],
+  amount: stakeData[2],
+  holdTimestamps: stakesMap[key]
+}
+//
+
+const holdTimestampsToReset = [stake1.holdTimestamp, stake2.holdTimestamp] //array expired holdTimestamps. Where validator, amount, token match
+await decimalEVM.withdrawTokenWithReset(stake.validator, stake.token, stake.amount, holdTimestampsToReset)
+```
+
+### transfer Token With Reset
+```js
+const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
+const stake1 = stakes[0] // first stake (for example)
+const stake2 = stakes[1] // second stake (for example)
+
+const holdTimestampsToReset = [stake1.holdTimestamp, stake2.holdTimestamp] //array expired holdTimestamps. Where validator, amount, token match
+
+const oldValidator = stake.validator
+const newValidator = '0x...' //new validator
+await decimalEVM.transferTokenWithReset(oldValidator, stake.token, stake.amount, newValidator, holdTimestampsToReset)
+```
+
+### hold Token With Reset
+```js
+const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
+const stake1 = stakes[0] // first stake (for example)
+const stake2 = stakes[1] // second stake (for example)
+
+const holdTimestampsToReset = [stake1.holdTimestamp, stake2.holdTimestamp] //array expired holdTimestamps. Where validator, amount, token match
+
+const days = 150
+const sec = days * 86400
+const latestBlock = await decimalEVM.getLatestBlock()
+const newHoldTimestamp = latestBlock!.timestamp + sec;
+
+await decimalEVM.holdTokenWithReset(stake.validator, stake.token, stake.amount, newHoldTimestamp, holdTimestampsToReset)
+```
+
 ### Apply penalty to stake
 ```js
 const stakes = await subgraph.getStakesByAddress(owner) // Get your stakes from subgraph
@@ -638,6 +696,47 @@ const stakes = await subgraph.getNFTStakesByAddress(owner, 1000, 0) // get nft s
 const stake = stakes[0] // first stake (for example)
 
 await decimalEVM.stakeNFTResetHold(stake.validator, stake.delegator, stake.token, stake.tokenId, stake.holdTimestamp)
+```
+
+### withdraw NFT With Reset
+```js
+const stakes = await subgraph.getNFTStakesByAddress(owner, first, skip) // get nft stakes 
+const stake1 = stakes[0] // first stake (for example)
+const stake2 = stakes[1] // second stake (for example)
+
+const holdTimestampsToReset = [stake1.holdTimestamp, stake2.holdTimestamp] //array expired holdTimestamps. Where validator, amount, token and tokenId match
+
+await decimalEVM.withdrawNFTWithReset(stake.validator, stake.token, stake.tokenId, stake.amount, holdTimestampsToReset)
+```
+
+### transfer NFT With Reset
+```js
+const stakes = await subgraph.getNFTStakesByAddress(owner, first, skip) // get nft stakes 
+const stake1 = stakes[0] // first stake (for example)
+const stake2 = stakes[1] // second stake (for example)
+
+const holdTimestampsToReset = [stake1.holdTimestamp, stake2.holdTimestamp] //array expired holdTimestamps. Where validator, amount, token and tokenId match
+
+const oldValidator = stake.validator
+const newValidator = '0x...' //new validator
+
+await decimalEVM.transferNFTWithReset(oldValidator, stake.token, stake.tokenId, stake.amount, newValidator, holdTimestampsToReset)
+```
+
+### hold NFT With Reset
+```js
+const stakes = await subgraph.getNFTStakesByAddress(owner, first, skip) // get nft stakes 
+const stake1 = stakes[0] // first stake (for example)
+const stake2 = stakes[1] // second stake (for example)
+
+const holdTimestampsToReset = [stake1.holdTimestamp, stake2.holdTimestamp] //array expired holdTimestamps. Where validator, amount, token and tokenId match
+
+const days = 150
+const sec = days * 86400
+const latestBlock = await decimalEVM.getLatestBlock()
+const newHoldTimestamp = latestBlock!.timestamp + sec;
+
+await decimalEVM.holdNFTWithReset(stake.validator, stake.token, stake.tokenId, stake.amount, newHoldTimestamp, holdTimestampsToReset)
 ```
 
 ### Complete stake NFT after frozen
