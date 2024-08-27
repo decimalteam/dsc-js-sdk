@@ -118,6 +118,9 @@ export default class DecimalEVM {
     stakeTokenToHold(validator: string, tokenAddress: string, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean): Promise<any>;
     stakeTokenResetHold(validator: string, delegator: string, tokenAddress: string, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     stakeTokenResetHoldDEL(validator: string, delegator: string, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
+    withdrawTokenWithReset(validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
+    transferTokenWithReset(oldValidator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
+    holdTokenWithReset(validator: string, tokenAddress: string, amount: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
     applyPenaltyToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     applyPenaltiesToStakeToken(validator: string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any>;
     completeStakeToken(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
@@ -131,6 +134,9 @@ export default class DecimalEVM {
     withdrawStakeNFTHold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     stakeNFTToHold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean): Promise<any>;
     stakeNFTResetHold(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
+    withdrawNFTWithReset(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
+    transferNFTWithReset(oldValidator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
+    holdNFTWithReset(validator: string, nftAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
     completeStakeNFT(indexes: string[] | number[], estimateGas?: boolean): Promise<any>;
     addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     addValidatorWithETH(meta: ValidatorMeta, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
