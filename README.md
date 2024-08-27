@@ -494,6 +494,7 @@ const stake1 = stakes[0] // first stake (for example)
 const stake2 = stakes[1] // second stake (for example)
 
 // Example of iterating through an array of stakes to find expired and where validator, amount, token match
+const result = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
 const holdsExpierd = result.data.filter((stake) => Number(stake.holdTimestamp) <= Number(result.meta.block.number))
 const stakesMap: {[a:string]: number[]} = {}
 holdsExpierd.map((stake) => {
