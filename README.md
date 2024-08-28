@@ -476,7 +476,7 @@ await decimalEVM.stakeTokenToHold(stake.validator, stake.token, stake.amount, ol
 const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
 const stake = stakes[0] // first stake (for example)
 
-await decimalEVM.stakeTokenToHold(stake.validator, stake.delegator, stake.token, stake.holdTimestamp)
+await decimalEVM.stakeTokenResetHold(stake.validator, stake.delegator, stake.token, stake.holdTimestamp)
 ```
 
 ### Reset Hold DEL
