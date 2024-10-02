@@ -281,13 +281,33 @@ export default class DecimalEVM {
     return await this.getContract(contract.address, abi)
   }
 
+  public async parseMemo(txHash: string): Promise<string | undefined> {
+    await this.checkConnect('multi-call') 
+    const tx = await this.provider.getTransaction(txHash);
+    if (tx.data && tx.data !== '0x') {
+      try {
+        const decodedInput = this.call!.multiCall?.contract.interface.decodeFunctionData("aggregate", tx.data);
+        if (decodedInput) {
+          const calls = decodedInput[0];
+
+          const call = calls.find((call: any) => call.target == ethers.constants.AddressZero && call.value == "0" && call.callData != "0x")
+          if (call) return ethers.utils.toUtf8String(call.callData);
+        }
+        return
+      } catch (error) {
+        return
+      }
+    }
+    return
+  }
+
   // write function
   public async multiCall(callData: {
     target: string;
     value: string | number | bigint | BigNumberish;
     iface: string;
     params: any;
-  }[], estimateGas?: boolean) {
+  }[], memo?: string, estimateGas?: boolean) {
     await this.checkConnect('multi-call')
     let calls: {
       target: string;
@@ -313,6 +333,14 @@ export default class DecimalEVM {
       })
       valueSum = valueSum.add(ethers.BigNumber.from(callData[i].value))
     }
+    if (memo) {
+      const memoHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(memo));
+      calls.push({
+        target: ethers.constants.AddressZero,
+        value: "0",
+        callData: memoHex
+      })
+    }
     return await this.call!.multicall(valueSum.toString(), calls, estimateGas)
   }
 
@@ -320,7 +348,7 @@ export default class DecimalEVM {
     token: string;
     to: string;
     amount: any;
-  }[], estimateGas?: boolean) {
+  }[], memo?: string, estimateGas?: boolean) {
     const owner = this.account.address
     const spender = await this.getDecimalContractAddress('multi-call')
     let amountSum: {[token:string]: ethers.BigNumber} = {}
@@ -368,7 +396,7 @@ export default class DecimalEVM {
         })
       }
     }
-    return await this.multiCall(callDatas, estimateGas)
+    return await this.multiCall(callDatas, memo, estimateGas)
   }
 
   public async sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean) {

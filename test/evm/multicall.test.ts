@@ -7,8 +7,44 @@ jest.setTimeout(2000000)
 const mnemonic = 'dutch clap mystery cost crush yellow unfair race like casual pole genre local zero liberty vibrant assist banana pact network churn pause finger dirt';
 
 describe('multicall', () => {
-
     
+    test('send tokens (special function)', async() => {
+        const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+        const decimalWallet = new Wallet(mnemonic);
+        
+        const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.testnet);
+
+        await decimalEVM.connect('multi-call')
+        await decimalEVM.connect('token-center')
+
+        const tokenAddress1 = "0xe1E885a848DC0c0867E119E7e80289f98e27256C"
+        let data: any = []
+        data.push({
+            token: tokenAddress1,
+            to: "0x0000000000000000000000000000000000000001",
+            amount: decimalEVM.parseEther(1)
+        })
+        data.push({
+            token: "del",
+            to: "0x0000000000000000000000000000000000000007",
+            amount: decimalEVM.parseEther(1)
+        })
+        data.push({
+            token: "del",
+            to: "0x0000000000000000000000000000000000000008",
+            amount: decimalEVM.parseEther(1)
+        })
+
+        const memo = "This is a memo"
+        const tx = await decimalEVM.multiSendToken(data, "This is a memo")
+
+        await decimalEVM.connect('multi-call')
+        const parsedMemo = await decimalEVM.parseMemo(tx.transactionHash)
+        console.log('parsedMemo', parsedMemo)
+        if (parsedMemo != memo) throw new Error('Not a parsed memo')
+    })
+    
+   
     test('send tokens (special function)', async() => {
         const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
         const decimalWallet = new Wallet(mnemonic);
@@ -55,8 +91,7 @@ describe('multicall', () => {
         const tx = await decimalEVM.multiSendToken(data)
         console.log(tx)
     })
-  
- /*
+ 
     test('send tokens (custom)', async() => {
         const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
         const decimalWallet = new Wallet(mnemonic);
@@ -146,7 +181,7 @@ describe('multicall', () => {
         const tx = await decimalEVM.multiCall(callDatas)
         console.log(tx)
     })
-    */
+    
 })
 
 

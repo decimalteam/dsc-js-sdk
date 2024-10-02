@@ -921,6 +921,51 @@ const tx = await decimalEVM.multiCall(callDatas)
 console.log(tx)
 ```
 
+## Memo
+```js
+//If you want your transactions to have a message specified (memo), you can use multiSendToken with memo
+
+//Form an array of multi send token
+//token - the address of the token contract; or "del" for send del
+//to - recipient address
+//amount - amount of transfer
+const tokenAddress1 = "0xe1E885a848DC0c0867E119E7e80289f98e27256C"
+const tokenAddress2 = "0x1f68CaD1e55049793F6c9229EAD50f1c651fEb10"
+let data: any = []
+data.push({
+    token: tokenAddress1,
+    to: "0x0000000000000000000000000000000000000001",
+    amount: decimalEVM.parseEther(1)
+})
+data.push({
+    token: tokenAddress1,
+    to: "0x0000000000000000000000000000000000000002",
+    amount: decimalEVM.parseEther(1)
+})
+data.push({
+    token: tokenAddress2,
+    to: "0x0000000000000000000000000000000000000003",
+    amount: decimalEVM.parseEther(1)
+})
+data.push({
+    token: "del",
+    to: "0x0000000000000000000000000000000000000004",
+    amount: decimalEVM.parseEther(1)
+})
+data.push({
+    token: "del",
+    to: "0x0000000000000000000000000000000000000005",
+    amount: decimalEVM.parseEther(1)
+})
+
+const memo = "This is a memo"
+const tx = await decimalEVM.multiSendToken(data, memo)
+// And you can read the memo message by the transactionHash
+const parsedMemo = await decimalEVM.parseMemo(tx.transactionHash) //will be returned memo or undefined
+console.log('parsedMemo', parsedMemo)
+
+```
+
 ## MultiSig
 
 ### Create multisig wallet
