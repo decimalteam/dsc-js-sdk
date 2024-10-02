@@ -896,7 +896,9 @@ data.push({
     to: "0x0000000000000000000000000000000000000005",
     amount: decimalEVM.parseEther(1)
 })
-
+//get estimate gas
+const gas = await decimalEVM.multiSendToken(data, undefined, true)
+//send transaction
 const tx = await decimalEVM.multiSendToken(data)
 ```
 
@@ -959,6 +961,9 @@ data.push({
 })
 
 const memo = "This is a memo"
+//get estimate gas
+const gas = await decimalEVM.multiSendToken(data, memo, true)
+//send transaction
 const tx = await decimalEVM.multiSendToken(data, memo)
 // And you can read the memo message by the transactionHash
 const parsedMemo = await decimalEVM.parseMemo(tx.transactionHash) //will be returned memo or undefined
