@@ -64,17 +64,18 @@ export default class DecimalEVM {
     connect(contractName?: string): Promise<void>;
     private checkConnect;
     private initFromImplementation;
+    parseMemo(txHash: string): Promise<string | undefined>;
     multiCall(callData: {
         target: string;
         value: string | number | bigint | BigNumberish;
         iface: string;
         params: any;
-    }[], estimateGas?: boolean): Promise<any>;
+    }[], memo?: string, estimateGas?: boolean): Promise<any>;
     multiSendToken(multiData: {
         token: string;
         to: string;
         amount: any;
-    }[], estimateGas?: boolean): Promise<any>;
+    }[], memo?: string, estimateGas?: boolean): Promise<any>;
     sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
     createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<any>;
