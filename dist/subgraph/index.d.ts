@@ -70,4 +70,8 @@ export default class Subgraph {
         transactions: TransactionData[];
         approvers: string[];
     }>;
+    getMultisigApproveTransactionsByMultisigAddressAndNonceNot(addressMultisig: string, nonce: string | number, first: number, skip: number): Promise<{
+        transactions: TransactionData[];
+        approvers: string[];
+    }>;
 }

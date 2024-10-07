@@ -49,6 +49,10 @@ export default class DecimalEVM {
             transactions: SafeTransaction[];
             approvers: string[];
         }>;
+        getExpiredApproveTransactions: (safeAddress: string) => Promise<{
+            transactions: SafeTransaction[];
+            approvers: string[];
+        }>;
         getSignatureForParticipant: (participantAddress: string) => Promise<SafeSignature>;
         decodeTransaction: (safeTx: SafeTransaction) => {
             action: string;
@@ -156,6 +160,8 @@ export default class DecimalEVM {
     private createMultiSig;
     private getNonceMultiSig;
     private getCurrentApproveTransactions;
+    private getExpiredApproveTransactions;
+    private getApproveTransactions;
     private decodeMultiSigSafeTransaction;
     private decodeData;
     bridgeTransferNative(to: string, amount: string | number | bigint, serviceFee: string | number | bigint, fromChainId: number, toChainId: number, estimateGas?: boolean): Promise<any>;
