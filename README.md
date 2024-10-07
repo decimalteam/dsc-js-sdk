@@ -1094,6 +1094,63 @@ const signTx2 = await decimalEVM.multisig.signTx(multisigAddress, safeTx) // sig
 const result = await decimalEVM1.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2]) //execute transaction
 ```
 
+### Get previously approved transactions with expired nones
+```js
+const {transactions: safeTxs, approvers} = await decimalEVM1.multisig.getExpiredApproveTransactions(multisigAddress);
+const safeTxExpired = safeTxs[0]; // for example, take the first transaction
+const decodeSafeTx = decimalEVM.multisig.decodeTransaction(safeTx) // decode transaction
+/* examples result decode safeTxExpired
+// if transfer DEL
+{
+      action: 'transfer',
+      tokenType: 'Native',
+      token: 'DEL',
+      to: "0x0000000000000000000000000000000000000099",
+      amount: 10000000000000000000
+}
+// if transfer DRC20 token
+{
+  action: 'transfer',
+  tokenType: 'DRC20',
+  token: '0x5c089e1b93fef3d7f7672e8d515eba846f42b924',
+  to: "0x0000000000000000000000000000000000000099",
+  amount: 10000000000000000000
+}
+// if transfer nft DRC721
+{
+      action: 'transfer',
+      tokenType: 'DRC721',
+      token: '0x5c089e1b93fef3d7f7672e8d515eba846f42b924',
+      to: "0x0000000000000000000000000000000000000099",
+      tokenId: 1,
+}
+// if transfer nft DRC1155
+{
+      action: 'transfer',
+      tokenType: 'DRC1155',
+      token: '0x5c089e1b93fef3d7f7672e8d515eba846f42b924',
+      to: "0x0000000000000000000000000000000000000099",
+      tokenId: 1,
+      amount: 20
+    }
+*/
+
+// build new transaction with current none from your decode result safeTxExpired
+const safeTx = await decimalEVM.multisig.buildTxSendDEL(multisigAddress, to, amount) //send DEL
+//const safeTx = await decimalEVM1.multisig.buildTxSendToken(multisigAddress, tokenAddress, to, amount) //send tokens
+//const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, to, tokenId, ) // send drc721
+//const safeTx = await decimalEVM1.multisig.buildTxSendNFT(multisigAddress, tokenAddress, to, tokenId, amount) // send drc1155
+
+// get esimage gas for approveHash
+// const result = await decimalEVM.multisig.approveHashEstimateGas(multisigAddress, safeTx)
+const const {safeTransaction: signTx1, tx: tx1 } = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx)   // sign owner 1
+//const const {safeTransaction: signTx2, tx: tx2 } = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) // sign owner 2
+//const const {safeTransaction: signTx3, tx: tx3 } = await decimalEVM1.multisig.approveHash(multisigAddress, safeTx) // sign owner 3
+const result = await decimalEVM.multisig.executeTx(multisigAddress, safeTx, [signTx1, signTx2, signTx3]) //sign and specify user signatures
+
+```
+
+
 ## Bridge
 
 ### Transfer DEL, ETH, BNB

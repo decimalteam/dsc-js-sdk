@@ -78,6 +78,7 @@ export default class DecimalEVM {
     executeTx: (safeAddress: string, safeTx: SafeTransaction, signatures: SafeSignature[], estimateGas?: boolean) => Promise<any>;
     getNonce: (safeAddress: string) => Promise<any>;
     getCurrentApproveTransactions: (safeAddress: string) => Promise<{transactions: SafeTransaction[]; approvers: string[];}>
+    getExpiredApproveTransactions: (safeAddress: string) => Promise<{transactions: SafeTransaction[]; approvers: string[];}>
     getSignatureForParticipant: (participantAddress: string) => Promise<SafeSignature>
     decodeTransaction: (safeTx: SafeTransaction) => {
       action: string;
@@ -98,6 +99,7 @@ export default class DecimalEVM {
     executeTx: this.executeMultiSigTx.bind(this),
     getNonce: this.getNonceMultiSig.bind(this),
     getCurrentApproveTransactions: this.getCurrentApproveTransactions.bind(this),
+    getExpiredApproveTransactions: this.getExpiredApproveTransactions.bind(this),
     getSignatureForParticipant: this.getSignatureForParticipant.bind(this),
     decodeTransaction: this.decodeMultiSigSafeTransaction.bind(this),
   };
@@ -1020,9 +1022,19 @@ export default class DecimalEVM {
   }
 
   private async getCurrentApproveTransactions(safeAddress: string) {
+    return await this.getApproveTransactions(safeAddress, true)
+  }
+
+  private async getExpiredApproveTransactions(safeAddress: string) {
+    return await this.getApproveTransactions(safeAddress, false)
+  }
+
+  private async getApproveTransactions(safeAddress: string, current: boolean) {
     await this.checkConnect('multi-sig');
     const nonce = await this.getNonceMultiSig(safeAddress)
-    const {transactions: transactionData, approvers} = await this.subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(safeAddress, nonce, 1000, 0)
+    const {transactions: transactionData, approvers} = current
+      ? await this.subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(safeAddress, nonce, 1000, 0)
+      : await this.subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonceNot(safeAddress, nonce, 1000, 0)
     return { 
       transactions: <SafeTransaction[]>transactionData.map((trancastion: any) => {
         return {
