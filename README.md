@@ -1836,6 +1836,13 @@ const nonce = 0
 const {transactions, approvers} = await subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonce(addressMultisig, nonce, first, skip)
 ```
 
+#### Get expired approve transactions and approvers of multisig by nonce
+```js
+const addressMultisig = "0x5502b6e571d3a8a175b7c0f49b0ed1704538b410"
+const nonce = 2 //specify the current nonce, to return approvers txs with expired nonce
+const {transactions, approvers} = await subgraph.getMultisigApproveTransactionsByMultisigAddressAndNonceNot(addressMultisig, nonce, first, skip)
+```
+
 ## IPFS
 
 ### IPFS for tokens
