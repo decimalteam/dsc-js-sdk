@@ -20,14 +20,14 @@ const decimalWallet = new Wallet(mnemonic);
 //DecimalNetworks.devnet - is devnet
 //DecimalNetworks.testnet - is testnet
 //DecimalNetworks.mainnet - is mainnet
-const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.mainnet);
 
 //To work with Decimal contracts, they need to be initialized
 //You can initialize all contracts at once, or individually
 //If you forgot to initialize the contact before using the function, it will be initialized automatically during the execution of the function
 //To speed up the sdk, we recommend doing this in advance
 await decimalEVM.connect(); // initializes all contacts
-
+//or
 await decimalEVM.connect('contract-center') // initializes only contract-center contact
 await decimalEVM.connect('token-center') // initializes only token-center contact
 await decimalEVM.connect('nft-center') // initializes only nft-center contact
