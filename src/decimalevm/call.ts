@@ -316,11 +316,18 @@ export default class Call {
         return await contract.sellExactTokensForDEL(amountIn, amountOutMin, recipient).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
-    public async updateDetailsToken(contract: ethers.Contract, newIdentity: string, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.updateDetails(newIdentity, newMaxTotalSupply)
+    public async updateIdentity(contract: ethers.Contract, newIdentity: string, estimateGas?: boolean) {
+        if (estimateGas) return await contract.estimateGas.updateIdentity(newIdentity)
         if (this.debug)
-            await contract.callStatic.updateDetails(newIdentity, newMaxTotalSupply)
-        return await contract.updateDetails(newIdentity, newMaxTotalSupply).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.callStatic.updateIdentity(newIdentity)
+        return await contract.updateIdentity(newIdentity).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+    
+    public async updateMaxTotalSupply(contract: ethers.Contract, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean) {
+        if (estimateGas) return await contract.estimateGas.updateMaxTotalSupply(newMaxTotalSupply)
+        if (this.debug)
+            await contract.callStatic.updateMaxTotalSupply(newMaxTotalSupply)
+        return await contract.updateMaxTotalSupply(newMaxTotalSupply).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     public async permitToken(contract: ethers.Contract, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean) {

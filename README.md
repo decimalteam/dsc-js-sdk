@@ -207,11 +207,16 @@ const sign = await decimalEVM.getSignPermitToken(tokenAddress, spender, amount)
 const tx = await decimalEVM.permitToken(tokenAddress, owner, spender, amount, sign)
 ```
 
-### Update details Token
+### Update Identity Token
 ```js
 const newIdentity = 'qwertyasd123';
+const tx = await decimalEVM.updateIdentity(tokenAddress, newIdentity)
+```
+
+### Update Max Supply Token
+```js
 const newMaxTotalSupply = decimalEVM.parseEther(5000000);
-const tx = await decimalEVM.updateDetailsToken(tokenAddress, newIdentity, newMaxTotalSupply)
+const tx = await decimalEVM.updateMaxTotalSupply(tokenAddress, newMaxTotalSupply)
 ```
 
 

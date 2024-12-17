@@ -69,10 +69,17 @@ describe('Tokens', () => {
         const recipient = decimalWallet.evmAddress!
         const tokenCenterAddress = await decimalEVM.getDecimalContractAddress('token-center')
 
+
+
+
+
         const amountOut = decimalEVM.parseEther(100); // tokens 
         const amountDel = await decimalEVM.calculateBuyInput(resultToken1.tokenAddress, amountOut) // the amount of DEL to buy 100 tokens
         await decimalEVM.buyExactTokenForDEL(resultToken1.tokenAddress, amountDel, amountOut, recipient)
 
+
+
+        
         const amountIn = amountOut
         const futureDEL = await decimalEVM.calculateSellOutput(resultToken1.tokenAddress, amountIn)
         const amountOutMin = await decimalEVM.calculateBuyOutput(resultToken2.tokenAddress, futureDEL)
@@ -80,6 +87,15 @@ describe('Tokens', () => {
         await decimalEVM.approveToken(resultToken1.tokenAddress, tokenCenterAddress, amountIn)
         await decimalEVM.convertToken(resultToken1.tokenAddress, resultToken2.tokenAddress, amountIn, amountOutMin, recipient)
         
+
+
+
+
+
+
+
+
+
         const amountOut_2 = decimalEVM.parseEther(100); // tokens 
         const amountDel_2 = await decimalEVM.calculateBuyInput(resultToken1.tokenAddress, amountOut_2) // the amount of DEL to buy 100 tokens
         await decimalEVM.buyExactTokenForDEL(resultToken1.tokenAddress, amountDel_2, amountOut_2, recipient)
@@ -87,6 +103,13 @@ describe('Tokens', () => {
         const amountIn_2 = amountOut_2
         const futureDEL_2 = await decimalEVM.calculateSellOutput(resultToken1.tokenAddress, amountIn_2)
         const amountOutMin_2 = await decimalEVM.calculateBuyOutput(resultToken2.tokenAddress, futureDEL_2)
+
+
+
+
+
+
+
         //convert with permit
         const sign = await decimalEVM.getSignPermitToken(resultToken1.tokenAddress, tokenCenterAddress, amountIn_2)
         await decimalEVM.convertToken(resultToken1.tokenAddress, resultToken2.tokenAddress, amountIn_2, amountOutMin_2, recipient, sign)
@@ -279,23 +302,45 @@ describe('Tokens', () => {
       }
     });
 
-    test('update details token', async() => {
+    test('update token identity', async () => {
       try {
-        // Sdk.
+        // Sdk setup
         const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
         const decimalWallet = new Wallet(mnemonic);
         
         const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
         await decimalEVM.connect();
 
-        const tokenAddress = await decimalEVM.getAddressTokenBySymbol('COStest')
+        const tokenAddress = await decimalEVM.getAddressTokenBySymbol('COStest');
 
-        const newIdentity = 'qwertyasd123';
-        const newMaxTotalSupply = decimalEVM.parseEther(5000000);
-        const tx = await decimalEVM.updateDetailsToken(tokenAddress, newIdentity, newMaxTotalSupply)
-        console.log(`successfully updateDetailsToken`)
+        const newIdentity = 'newIdentity123';
+        const tx = await decimalEVM.updateTokenIdentity(tokenAddress, newIdentity);
+        console.log(`successfully updated token identity`);
+
       } catch (e) {
-        console.log(e)
+        console.log(e);
+        throw e;
+      }
+    });
+
+    test('update token max total supply', async () => {
+      try {
+        // Sdk setup
+        const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+        const decimalWallet = new Wallet(mnemonic);
+        
+        const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+        await decimalEVM.connect();
+
+        const tokenAddress = await decimalEVM.getAddressTokenBySymbol('COStest');
+
+        const newMaxTotalSupply = decimalEVM.parseEther('10000000'); // 10 million tokens
+        const tx = await decimalEVM.updateTokenMaxTotalSupply(tokenAddress, newMaxTotalSupply);
+        console.log(`successfully updated token max total supply`);
+
+      } catch (e) {
+        console.log(e);
+        throw e;
       }
     });
 
