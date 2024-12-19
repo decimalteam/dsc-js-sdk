@@ -94,8 +94,8 @@ export default class DecimalEVM {
     buyExactTokenForDEL(tokenAddress: string, amountDel: string | number | bigint, amountOut: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
     sellTokensForExactDEL(tokenAddress: string, amountOut: string | number | bigint, amountInMax: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
     sellExactTokensForDEL(tokenAddress: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
-    updateIdentity(tokenAddress: string, newIdentity: string, estimateGas?: boolean): Promise<any>;
-    updateMaxTotalSupply(tokenAddress: string, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    updateTokenIdentity(tokenAddress: string, newIdentity: string, estimateGas?: boolean): Promise<any>;
+    updateTokenMaxTotalSupply(tokenAddress: string, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean): Promise<any>;
     permitToken(tokenAddress: string, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean): Promise<any>;
     createCollectionDRC721(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
     createCollectionDRC1155(payload: NFTCollection, estimateGas?: boolean): Promise<any>;
