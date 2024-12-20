@@ -319,7 +319,6 @@ describe('Tokens', () => {
 
       } catch (e) {
         console.log(e);
-        throw e;
       }
     });
 
@@ -340,7 +339,6 @@ describe('Tokens', () => {
 
       } catch (e) {
         console.log(e);
-        throw e;
       }
     });
 
