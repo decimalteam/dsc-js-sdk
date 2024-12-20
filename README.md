@@ -1232,7 +1232,6 @@ const tokenAddress = "0xe1E885a848DC0c0867E119E7e80289f98e27256C"
 const checksAddress = await decimalEVM.getDecimalContractAddress('checks') // get address checks contract
 
 await decimalEVM.approveToken(tokenAddress, checksAddress, totalAmount) // approve total amount
-//const gas = await decimalEVM.createChecksToken(passwords, amountWei, dueBlock, tokenAddress, undefined, true)  //get gas
 const {tx, checks} = await decimalEVM.createChecksToken(passwords, amountWei, dueBlock, tokenAddress);
 ```
 
