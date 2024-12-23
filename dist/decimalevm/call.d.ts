@@ -77,8 +77,8 @@ export default class Call {
     buyExactTokenForDEL(contract: ethers.Contract, amountDel: string | number | bigint, amountOut: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
     sellTokensForExactDEL(contract: ethers.Contract, amountOut: string | number | bigint, amountInMax: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
     sellExactTokensForDEL(contract: ethers.Contract, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
-    updateIdentity(contract: ethers.Contract, newIdentity: string, estimateGas?: boolean): Promise<any>;
-    updateMaxTotalSupply(contract: ethers.Contract, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean): Promise<any>;
+    updateTokenIdentity(contract: ethers.Contract, newIdentity: string, estimateGas?: boolean): Promise<any>;
+    updateTokenMaxTotalSupply(contract: ethers.Contract, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean): Promise<any>;
     permitToken(contract: ethers.Contract, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean): Promise<any>;
     delegateDEL(validator: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     delegateDELHold(validator: string, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;

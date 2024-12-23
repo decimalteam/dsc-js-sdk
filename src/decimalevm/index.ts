@@ -509,13 +509,13 @@ export default class DecimalEVM {
   public async updateTokenIdentity(tokenAddress: string, newIdentity: string, estimateGas?: boolean) {
     await this.checkConnect('token-center');
     const token = await this.getContract(tokenAddress, this.abis?.token);
-    return await this.call!.updateIdentity(token.contract, newIdentity, estimateGas)
+    return await this.call!.updateTokenIdentity(token.contract, newIdentity, estimateGas)
   }
 
   public async updateTokenMaxTotalSupply(tokenAddress: string, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean) {
     await this.checkConnect('token-center');
     const token = await this.getContract(tokenAddress, this.abis?.token);
-    return await this.call!.updateMaxTotalSupply(token.contract, newMaxTotalSupply, estimateGas)
+    return await this.call!.updateTokenMaxTotalSupply(token.contract, newMaxTotalSupply, estimateGas)
   }
 
   public async permitToken(tokenAddress: string, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean) {
