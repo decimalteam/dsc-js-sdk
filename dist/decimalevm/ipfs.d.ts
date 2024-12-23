@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { Blob } from 'buffer';
 import { NETWORKS } from "../endpoints";
 export default class IPFS {

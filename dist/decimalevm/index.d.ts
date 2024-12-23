@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { BigNumberish, ethers, Wallet as HDNodeWallet } from "ethers";
 import { NETWORKS } from "../endpoints";
 import Wallet from "../wallet";
@@ -80,8 +81,8 @@ export default class DecimalEVM {
         to: string;
         amount: any;
     }[], memo?: string, estimateGas?: boolean): Promise<any>;
-    sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
-    burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<import("@ethersproject/bignumber").BigNumber | ethers.ContractReceipt>;
+    sendDEL(address: string, amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<ethers.BigNumber | ethers.ContractReceipt>;
+    burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean): Promise<ethers.BigNumber | ethers.ContractReceipt>;
     createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<any>;
     createTokenReserveless(name: string, symbol: string, mintable: boolean, burnable: boolean, initialMint: string | number | bigint, cap: string | number | bigint | undefined | null, identity: string, estimateGas?: boolean): Promise<any>;
     convertToken(tokenIn: string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
@@ -173,9 +174,9 @@ export default class DecimalEVM {
     createChecksToken(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, tokenAddress: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     redeemChecks(passwords: string[], checks: string[], estimateGas?: boolean): Promise<any>;
     redeemChecksTest(passwords: string[], checks: string[]): Promise<any>;
-    getBalance(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
-    getBalanceETH(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
-    getBalanceBNB(address: string): Promise<import("@ethersproject/bignumber").BigNumber>;
+    getBalance(address: string): Promise<ethers.BigNumber>;
+    getBalanceETH(address: string): Promise<ethers.BigNumber>;
+    getBalanceBNB(address: string): Promise<ethers.BigNumber>;
     getNftType(address: string): Promise<TypeNFT>;
     getNftTypeFromContract(address: string): Promise<TypeNFT>;
     getAddressTokenBySymbol(symbol: string): Promise<any>;
