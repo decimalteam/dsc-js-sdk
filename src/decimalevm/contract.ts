@@ -101,7 +101,8 @@ export default class DecimalContractEVM {
   }
 
   public async estimateGas(action: string, ...params: any[]) {
-    return await this.contract.estimateGas[action](...params);
+    const estimate = await this.contract.estimateGas[action](...params);
+    return estimate.mul(150).div(100);
   }
 
   public parseLog(logs:any) {
