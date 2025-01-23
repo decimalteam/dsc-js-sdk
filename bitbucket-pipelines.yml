@@ -19,7 +19,7 @@ definitions:
 
 pipelines:
   branches:
-    - master:
+    master:
       - step: *build-publish
-    - dev:
+    dev:
       - step: *build-publish
