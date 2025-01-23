@@ -1,18 +1,25 @@
+---
 image: node:16
+
+definitions: 
+  steps:
+    - step: &build-publish
+      name: Build & Publish
+      caches:
+        - node
+      script:
+        # Generates a .npmrc file configured for installing private modules:
+        - printf "//`node -p \"require('url').parse('https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
+        # install modules
+        - npm install
+        # build dist
+        - npm run build 
+        # public to NPM
+        - npm publish
 
 pipelines:
   branches:
-    master:
-      - step:
-          name: Build & Publish
-          caches:
-            - node
-          script:
-            # Generates a .npmrc file configured for installing private modules:
-            - printf "//`node -p \"require('url').parse('https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
-            # install modules
-            - npm install
-            # build dist
-            - npm run build 
-            # public to NPM
-            - npm publish
+    - master:
+      - step: *build-publish
+    - dev:
+      - step: *build-publish
