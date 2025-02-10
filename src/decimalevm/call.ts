@@ -324,10 +324,10 @@ export default class Call {
     }
     
     public async updateTokenMaxTotalSupply(contract: ethers.Contract, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.updateTokenMaxTotalSupply(newMaxTotalSupply)
+        if (estimateGas) return await contract.estimateGas.updateMaxTotalSupply(newMaxTotalSupply)
         if (this.debug)
-            await contract.callStatic.updateTokenMaxTotalSupply(newMaxTotalSupply)
-        return await contract.updateTokenMaxTotalSupply(newMaxTotalSupply).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.callStatic.updateMaxTotalSupply(newMaxTotalSupply)
+        return await contract.updateMaxTotalSupply(newMaxTotalSupply).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     public async permitToken(contract: ethers.Contract, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean) {
