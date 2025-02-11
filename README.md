@@ -219,6 +219,12 @@ const newMaxTotalSupply = decimalEVM.parseEther(5000000);
 const tx = await decimalEVM.updateTokenMaxTotalSupply(tokenAddress, newMaxTotalSupply)
 ```
 
+### Update Min Supply Token
+```js
+const newMinTotalSupply = decimalEVM.parseEther(5000000);
+const tx = await decimalEVM.updateTokenMinTotalSupply(tokenAddress, newMinTotalSupply)
+```
+
 
 
 ## NFT

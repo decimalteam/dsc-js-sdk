@@ -342,6 +342,26 @@ describe('Tokens', () => {
       }
     });
 
+    test('update token min total supply', async () => {
+      try {
+        // Sdk setup
+        const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+        const decimalWallet = new Wallet(mnemonic);
+        
+        const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+        await decimalEVM.connect();
+
+        const tokenAddress = await decimalEVM.getAddressTokenBySymbol('COStest');
+
+        const newMinTotalSupply = decimalEVM.parseEther('10000000'); // 10 million tokens
+        const tx = await decimalEVM.updateTokenMinTotalSupply(tokenAddress, newMinTotalSupply);
+        console.log(`successfully updated token min total supply`);
+
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
     test('get signature for permit token', async() => {
       try {
         // Sdk.
