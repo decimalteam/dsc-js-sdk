@@ -91,6 +91,7 @@ export default class DecimalEVM {
     transferFromToken(tokenAddress: string, from: string, to: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     burnToken(tokenAddress: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     mintTokenReserveless(tokenAddress: string, amount: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
+    convertToDEL(owner: string, token: string, amount: string | number | bigint, estimateGas: string | number | bigint, sign: ethers.Signature, estimateGasUsage?: boolean): Promise<any>;
     buyTokenForExactDEL(tokenAddress: string, amountDel: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
     buyExactTokenForDEL(tokenAddress: string, amountDel: string | number | bigint, amountOut: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
     sellTokensForExactDEL(tokenAddress: string, amountOut: string | number | bigint, amountInMax: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;

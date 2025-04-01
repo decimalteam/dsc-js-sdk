@@ -7,7 +7,8 @@ import {
     getMultiCallAddresses,
     getMultiSigAddresses,
     getWeb3NodeETH,
-    getWeb3NodeBSC
+    getWeb3NodeBSC,
+    getGasCenterAddresses
 } from "../endpoints";
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
@@ -142,6 +143,7 @@ export default class DecimalEVM {
       await this.checkConnect('master-validator')
       await this.checkConnect('multi-call')
       await this.checkConnect('multi-sig')
+      await this.checkConnect('gas-center')
       //TODO bridge
       //TODO checks
     }
@@ -261,6 +263,12 @@ export default class DecimalEVM {
           this.accountETH = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.providerETH);
           this.providerBSC = new ethers.providers.JsonRpcProvider(getWeb3NodeBSC(this.network));
           this.accountBSC = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.providerBSC);
+        }
+        break;
+      case 'gas-center':
+        if (!this.call.gasCenter) {
+          const gasCenter = await this.getContract(getGasCenterAddresses(this.network));
+          this.call.setDecimalContractEVM(gasCenter, 'gasCenter')
         }
         break;
       case 'checks':
@@ -481,6 +489,12 @@ export default class DecimalEVM {
     const token = await this.getContract(tokenAddress, this.abis?.tokenReserveless)
     return await this.call!.mintTokenReserveless(token.contract, amount, recipient, estimateGas)
   }
+
+  public async convertToDEL(owner: string, token: string, amount: string | number | bigint, estimateGas: string | number | bigint, sign: ethers.Signature, estimateGasUsage?: boolean) {
+    await this.checkConnect('gas-center');
+    const deadline = ethers.constants.MaxUint256;
+    return await this.call!.convertToDEL(owner, token, amount, estimateGas, sign, estimateGasUsage);
+}
 
   public async buyTokenForExactDEL(tokenAddress: string, amountDel: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, estimateGas?: boolean) {
     await this.checkConnect('token-center');

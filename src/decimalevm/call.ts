@@ -79,6 +79,7 @@ export default class Call {
     public multiSend?: DecimalContractEVM;
     public checks?: DecimalContractEVM;
     public bridgeV2?: DecimalContractEVM;
+    public gasCenter?: DecimalContractEVM;
     private bridgeV2Nonce: number = 0;
     private debug: boolean;
 
@@ -100,6 +101,9 @@ export default class Call {
                 break;
             case 'tokenCenter':
                 this.tokenCenter = decimalContractEVM
+                break;
+            case 'gasCenter':
+                this.gasCenter = decimalContractEVM
                 break;
             case 'delegation':
                 this.delegation = decimalContractEVM
@@ -260,6 +264,14 @@ export default class Call {
     }
 
     //token
+    public async convertToDEL(owner: string, token: string, amount: string | number | bigint, estimateGas: string | number | bigint, sign: ethers.Signature, estimateGasUsage?: boolean) {
+        const deadline = ethers.constants.MaxUint256;
+        if (estimateGasUsage) return await this.gasCenter!.contract.estimateGas.convertToDEL(owner, token, amount, estimateGas, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+        if (this.debug)
+            await this.gasCenter!.contract.callStatic.convertToDEL(owner, token, amount, estimateGas, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+        return await this.gasCenter!.contract.convertToDEL(owner, token, amount, estimateGas, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
     public async approveToken(contract: ethers.Contract, spender: string, amount: string | number | bigint, estimateGas?: boolean) {
         if (estimateGas) return await contract.estimateGas.approve(spender, amount, await this.txOptions())
         if (this.debug)

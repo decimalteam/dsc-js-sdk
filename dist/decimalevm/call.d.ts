@@ -54,6 +54,7 @@ export default class Call {
     multiSend?: DecimalContractEVM;
     checks?: DecimalContractEVM;
     bridgeV2?: DecimalContractEVM;
+    gasCenter?: DecimalContractEVM;
     private bridgeV2Nonce;
     private debug;
     constructor(network: NETWORKS, provider: ethers.providers.JsonRpcProvider, account: HDNodeWallet);
@@ -69,6 +70,7 @@ export default class Call {
     createTokenReserveless(name: string, symbol: string, mintable: boolean, burnable: boolean, initialMint: string | number | bigint, cap: string | number | bigint | undefined | null, identity: string, estimateGas?: boolean): Promise<any>;
     convertToken(tokenIn: string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any>;
     mintTokenReserveless(contract: ethers.Contract, amount: string | number | bigint, recipient: string, estimateGas?: boolean): Promise<any>;
+    convertToDEL(owner: string, token: string, amount: string | number | bigint, estimateGas: string | number | bigint, sign: ethers.Signature, estimateGasUsage?: boolean): Promise<any>;
     approveToken(contract: ethers.Contract, spender: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     transferToken(contract: ethers.Contract, to: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;
     transferFromToken(contract: ethers.Contract, from: string, to: string, amount: string | number | bigint, estimateGas?: boolean): Promise<any>;

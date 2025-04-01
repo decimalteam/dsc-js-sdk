@@ -106,6 +106,15 @@ const identity = '' //icon
 const {tx, tokenAddress} = await decimalEVM.createTokenReserveless(name, symbol, mintable, burnable, initialMint, cap, identity)
 ```
 
+### Convert Token to DEL
+```js
+const owner = decimalWallet.evmAddress;
+const amount = decimalEVM.parseEther('10'); // 10 tokens
+const estimateGas = decimalEVM.parseEther('1'); // 1 DEL for gas
+const sign = await decimalEVM.getSignPermitToken(tokenAddress, gasCenterAddress, amount); // get signature to approve transfer token for gasCenterAddress
+await decimalEVM.convertToDEL(owner, tokenAddress, amount, estimateGas, sign);
+```
+
 ### Approve Token
 ```js
 const spender = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"; // address of who will be allowed to spend amount

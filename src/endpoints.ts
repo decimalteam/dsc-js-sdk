@@ -56,6 +56,10 @@ export function getMultiCallAddresses(network: NETWORKS): string {
   return multicallAddresses[network];
 }
 
+export function getGasCenterAddresses(network: NETWORKS): string {
+  return gasCenterAddresses[network];
+}
+
 export function getMultiSigAddresses(network: NETWORKS): {
   safe: string;
   safeFactory: string;
@@ -159,6 +163,12 @@ const multicallAddresses = {
   [NETWORKS.DEVNET]: "0xd633Ac8b1fcb48A2b3d7a676D1B527E923f66213", 
   [NETWORKS.TESTNET]: "0x81FD5FAe106dFD0343B0435a1bc0ef89BB14C317",
   [NETWORKS.MAINNET]: "0x7b23EB47587cA6482FC16cB3D9D426EC64D4B5FC",
+};
+
+const gasCenterAddresses = { //TODO
+  [NETWORKS.DEVNET]: "0xeF21c8573715F9c6b644d209B1E860Dbd2f7A947", 
+  [NETWORKS.TESTNET]: "0xeF21c8573715F9c6b644d209B1E860Dbd2f7A947",
+  [NETWORKS.MAINNET]: "0xeF21c8573715F9c6b644d209B1E860Dbd2f7A947",
 };
 
 const multiSigAddresses = {
