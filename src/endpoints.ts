@@ -56,6 +56,10 @@ export function getMultiCallAddresses(network: NETWORKS): string {
   return multicallAddresses[network];
 }
 
+export function getChecksAddresses(network: NETWORKS): string {
+    return checksAddresses[network];
+}
+
 export function getGasCenterAddresses(network: NETWORKS): string {
   return gasCenterAddresses[network];
 }
@@ -163,6 +167,12 @@ const multicallAddresses = {
   [NETWORKS.DEVNET]: "0xd633Ac8b1fcb48A2b3d7a676D1B527E923f66213", 
   [NETWORKS.TESTNET]: "0x81FD5FAe106dFD0343B0435a1bc0ef89BB14C317",
   [NETWORKS.MAINNET]: "0x7b23EB47587cA6482FC16cB3D9D426EC64D4B5FC",
+};
+
+const checksAddresses = {
+    [NETWORKS.DEVNET]: "0x",
+    [NETWORKS.TESTNET]: "0xb6161CAA8Bd7167C2fa67b93b041FF9a94d6a735",
+    [NETWORKS.MAINNET]: "0x9B1783f92Cb32718E32eA43675964412F3De772a",
 };
 
 const gasCenterAddresses = { //TODO

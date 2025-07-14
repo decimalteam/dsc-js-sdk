@@ -8,7 +8,8 @@ import {
     getMultiSigAddresses,
     getWeb3NodeETH,
     getWeb3NodeBSC,
-    getGasCenterAddresses
+    getGasCenterAddresses,
+    getChecksAddresses
 } from "../endpoints";
 import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
@@ -22,6 +23,9 @@ import IPFS from "./ipfs";
 import {
 	abi as multiCallAbi
 } from "./abi/Multicall.json";
+import {
+    abi as checksAbi
+} from "./abi/Checks.json";
 import {
   buildSafeTransaction,
   safeApproveHash,
@@ -273,8 +277,8 @@ export default class DecimalEVM {
         break;
       case 'checks':
         if (!this.call.checks) {
-          //TODO
-          //this.call.setDecimalContractEVM(checks, 'checks')
+          const checks = await this.getContract(getChecksAddresses(this.network), checksAbi);
+          this.call.setDecimalContractEVM(checks, 'checks')
         }
         break;
       default:
