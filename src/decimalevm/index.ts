@@ -148,8 +148,8 @@ export default class DecimalEVM {
       await this.checkConnect('multi-call')
       await this.checkConnect('multi-sig')
       await this.checkConnect('gas-center')
+      await this.checkConnect('checks')
       //TODO bridge
-      //TODO checks
     }
   }
   
