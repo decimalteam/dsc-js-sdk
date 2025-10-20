@@ -424,7 +424,7 @@ export default class Call {
     }
 
     public async withdrawStakeTokenHold(validator:string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawHold(validator, tokenAddress, amount, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions())
         if (this.debug)
             await this.delegation!.contract.callStatic.withdrawHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions())
         return await this.delegation!.contract.withdrawHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
