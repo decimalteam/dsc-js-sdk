@@ -16,6 +16,7 @@ export declare function getSubgraphBridgeBSCEndpoint(network: NETWORKS): string;
 export declare function getSubgraphMultiSigEndpoint(network: NETWORKS): string;
 export declare function getIpfsEndpoints(network: NETWORKS): string;
 export declare function getMultiCallAddresses(network: NETWORKS): string;
+export declare function getChecksAddresses(network: NETWORKS): string;
 export declare function getGasCenterAddresses(network: NETWORKS): string;
 export declare function getMultiSigAddresses(network: NETWORKS): {
     safe: string;
