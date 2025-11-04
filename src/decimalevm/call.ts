@@ -985,49 +985,43 @@ export default class Call {
     }   
 
     //checks
-    public async createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean): Promise<any> {
+    public async createChecksDEL(signers: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean): Promise<any> {
         const nonce = await this.checks!.contract.nonces();
-        const passwordHashes = passwords.map((password) => {
-            return ethers.utils.solidityKeccak256(['string'], [password])
-        })
 
-        const value = ethers.BigNumber.from(passwordHashes.length).mul(ethers.BigNumber.from(amount))
+        const value = ethers.BigNumber.from(signers.length).mul(ethers.BigNumber.from(amount))
         if (estimateGas) {
-            return await this.checks!.contract.estimateGas.createChecksDEL(passwordHashes, amount, dueBlock, nonce, await this.txOptions({value: value}))
+            return await this.checks!.contract.estimateGas.createChecksDEL(signers, amount, dueBlock, nonce, await this.txOptions({ value: value }))
         }
-        const checks = await this.checks!.contract.callStatic.createChecksDEL(passwordHashes, amount, dueBlock, nonce, await this.txOptions({value: value}))
-        const tx = await this.checks!.contract.createChecksDEL(passwordHashes, amount, dueBlock, nonce, await this.txOptions({value: value})).then((tx: ethers.ContractTransaction) => tx.wait());
-        return {tx: tx, checks: checks};
-
+        const checks = await this.checks!.contract.callStatic.createChecksDEL(signers, amount, dueBlock, nonce, await this.txOptions({ value: value }))
+        const tx = await this.checks!.contract.createChecksDEL(signers, amount, dueBlock, nonce, await this.txOptions({ value: value })).then((tx: ethers.ContractTransaction) => tx.wait());
+        return { tx: tx, checks: checks };
     }
 
-    public async createChecksToken(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, tokenAddress: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any> {
+    public async createChecksToken(signers: string[], amount: string | number | bigint, dueBlock: string | number | bigint, tokenAddress: string, sign?: ethers.Signature, estimateGas?: boolean): Promise<any> {
         const nonce = await this.checks!.contract.nonces();
-        const passwordHashes = passwords.map((password) => {
-            return ethers.utils.solidityKeccak256(['string'], [password])
-        })
+
         if (sign == undefined) {
             if (estimateGas) {
-                return await this.checks!.contract.estimateGas.createChecksToken(passwordHashes, amount, dueBlock, nonce, tokenAddress, await this.txOptions())
+                return await this.checks!.contract.estimateGas.createChecksToken(signers, amount, dueBlock, nonce, tokenAddress, await this.txOptions())
             }
-            const checks = await this.checks!.contract.callStatic.createChecksToken(passwordHashes, amount, dueBlock, nonce, tokenAddress, await this.txOptions())
-            const tx = await this.checks!.contract.createChecksToken(passwordHashes, amount, dueBlock, nonce, tokenAddress, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            const checks = await this.checks!.contract.callStatic.createChecksToken(signers, amount, dueBlock, nonce, tokenAddress, await this.txOptions())
+            const tx = await this.checks!.contract.createChecksToken(signers, amount, dueBlock, nonce, tokenAddress, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
             return {tx: tx, checks: checks};
         } else {
             const deadline = ethers.constants.MaxUint256
             if (estimateGas) {
-                return await this.checks!.contract.estimateGas.createChecksTokenByPermit(passwordHashes, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+                return await this.checks!.contract.estimateGas.createChecksTokenByPermit(signers, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions())
             }
-            const checks = await this.checks!.contract.callStatic.createChecksTokenByPermit(passwordHashes, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            const tx = await this.checks!.contract.createChecksTokenByPermit(passwordHashes, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            const checks = await this.checks!.contract.callStatic.createChecksTokenByPermit(signers, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            const tx = await this.checks!.contract.createChecksTokenByPermit(signers, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
             return {tx: tx, checks: checks};
         }
     }
 
-    public async redeemChecks(passwords: string[], checks: string[], callStatic?: boolean, estimateGas?: boolean) {
+    public async redeemChecks(signatures: string[], checks: string[], callStatic?: boolean, estimateGas?: boolean) {
         if (callStatic) {
             try {
-                await this.checks!.contract.callStatic.redeemChecks(passwords, checks);
+                await this.checks!.contract.callStatic.redeemChecks(signatures, checks);
                 return null;
             } catch (err: any) {
                 if (err?.revert?.name != null) {
@@ -1037,9 +1031,9 @@ export default class Call {
             }
         }
         if (estimateGas) {
-            return await this.checks!.contract.estimateGas.redeemChecks(passwords, checks);
+            return await this.checks!.contract.estimateGas.redeemChecks(signatures, checks);
         }
-        return await this.checks!.contract.redeemChecks(passwords, checks).then((tx: ethers.ContractTransaction) => tx.wait());
+        return await this.checks!.contract.redeemChecks(signatures, checks).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     // -----------view functions----------

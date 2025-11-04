@@ -1184,19 +1184,39 @@ export default class DecimalEVM {
     }
   }
 
+  private passwordToPrivateKey(password: string): string {
+    if (!password || typeof password !== 'string') {
+      throw new Error('Password must be a non-empty string');
+    }
+    return ethers.utils.id(password);
+  }
+
   public async createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean) {
     await this.checkConnect('checks');
-    return await this.call!.createChecksDEL(passwords, amount, dueBlock, estimateGas);
+    const privateKeys = passwords.map(pwd => this.passwordToPrivateKey(pwd));
+    const signers = privateKeys.map(pk => new ethers.Wallet(pk).address);
+    return await this.call!.createChecksDEL(signers, amount, dueBlock, estimateGas);
   }
 
   public async createChecksToken(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, tokenAddress: string, sign?: ethers.Signature, estimateGas?: boolean) {
     await this.checkConnect('checks');
-    return await this.call!.createChecksToken(passwords, amount, dueBlock, tokenAddress, sign, estimateGas);
+    const privateKeys = passwords.map(pwd => this.passwordToPrivateKey(pwd));
+    const signers = privateKeys.map(pk => new ethers.Wallet(pk).address);
+    return await this.call!.createChecksToken(signers, amount, dueBlock, tokenAddress, sign, estimateGas);
   }
 
   public async redeemChecks(passwords: string[], checks: string[], estimateGas?: boolean) {
     await this.checkConnect('checks');
-    return await this.call!.redeemChecks(passwords, checks, false, estimateGas);
+    const privateKeys = passwords.map(pwd => this.passwordToPrivateKey(pwd));
+
+    let signatures = await Promise.all(
+      privateKeys.map((privateKey, index) => {
+        const signer = new ethers.Wallet(privateKey);
+        return signer.signMessage(ethers.utils.arrayify(checks[index]));
+      })
+    );
+
+    return await this.call!.redeemChecks(signatures, checks, false, estimateGas);
   }
 
   public async redeemChecksTest(passwords: string[], checks: string[]) {
