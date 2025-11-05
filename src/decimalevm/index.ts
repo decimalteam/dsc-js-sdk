@@ -1208,11 +1208,17 @@ export default class DecimalEVM {
   public async redeemChecks(passwords: string[], checks: string[], estimateGas?: boolean) {
     await this.checkConnect('checks');
     const privateKeys = passwords.map(pwd => this.passwordToPrivateKey(pwd));
+    const redeemerAddress = this.account.address;
 
     let signatures = await Promise.all(
       privateKeys.map((privateKey, index) => {
         const signer = new ethers.Wallet(privateKey);
-        return signer.signMessage(ethers.utils.arrayify(checks[index]));
+        // Hash checkHash with redeemer address before signing to match Solidity contract verification
+        const messageToSign = ethers.utils.solidityKeccak256(
+          ['bytes32', 'address'],
+          [checks[index], redeemerAddress]
+        );
+        return signer.signMessage(ethers.utils.arrayify(messageToSign));
       })
     );
 
