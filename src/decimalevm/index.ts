@@ -74,9 +74,9 @@ export default class DecimalEVM {
         multisigAddress: any;
         estimateGas: any;
     }>;
-    buildTxSendDEL: (safeAddress: string, to: string, amount: string | number | bigint) => Promise<SafeTransaction>;
-    buildTxSendToken: (safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint) => Promise<SafeTransaction>;
-    buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint) => Promise<SafeTransaction>
+    buildTxSendDEL: (safeAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxSendToken: (safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>
     signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
     approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<{ safeTransaction: SafeSignature, tx: any }>;
     approveHashEstimateGas: (safeAddress: string, safeTx: SafeTransaction) => Promise<BigNumberish>
@@ -958,21 +958,23 @@ export default class DecimalEVM {
     return await this.call!.updateValidatorMeta(validator, JSON.stringify(meta), estimateGas)
   }
   
-  private async buildMultiSigTxSendDEL(safeAddress: string, to: string, amount: string | number | bigint): Promise<SafeTransaction> {
+  private async buildMultiSigTxSendDEL(safeAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    return buildSafeTransaction({ to: to, value: amount, nonce: await safe.contract.nonce() });
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ to: to, value: amount, nonce: actualNonce });
   }
 
-  private async buildMultiSigTxSendToken(safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint): Promise<SafeTransaction> {
+  private async buildMultiSigTxSendToken(safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const iFace = new ethers.utils.Interface(["function transfer(address to, uint256 value)"]);
     const data = iFace.encodeFunctionData('transfer', [to, amount])
-    return buildSafeTransaction({ data, to: tokenAddress, nonce: await safe.contract.nonce() });
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: tokenAddress, nonce: actualNonce });
   }
 
-  private async buildMultiSigTxSendNFT(safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint): Promise<SafeTransaction> {
+  private async buildMultiSigTxSendNFT(safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     let data: string;
@@ -983,7 +985,8 @@ export default class DecimalEVM {
       const iFace = new ethers.utils.Interface(["function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes data)"]);
       data = iFace.encodeFunctionData('safeTransferFrom', [safeAddress, to, tokenId, amount, "0x"])
     }
-    return buildSafeTransaction({ data, to: tokenAddress, nonce: await safe.contract.nonce() });
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: tokenAddress, nonce: actualNonce });
   }
 
   private async signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {

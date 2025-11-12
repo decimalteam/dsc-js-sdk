@@ -422,7 +422,7 @@ export default class Subgraph {
     }> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(addressMultisig)
-        const options = `(where: {transactionData_: {nonce: "${nonce.toString()}"}, wallet_: {address: "${verifyAddress.toLowerCase()}"}}, first: ${first}, skip: ${skip})`
+        const options = `(where: {transactionData_: {nonce_gte: "${nonce.toString()}"}, wallet_: {address: "${verifyAddress.toLowerCase()}"}}, first: ${first}, skip: ${skip})`
         return await this.query.getMultisigApproveTransactions(options)
     }
     public async getMultisigApproveTransactionsByMultisigAddressAndNonceNot(addressMultisig: string, nonce: string | number, first: number, skip: number): Promise<{
