@@ -1,6 +1,6 @@
 import {ethers, Wallet as HDNodeWallet} from "ethers";
 import DecimalContractEVM from "./contract";
-import { Stake } from "./interfaces/delegation";
+import { Stake, NFTStake } from "./interfaces/delegation";
 import { ValidatorStatus } from "./interfaces/validator";
 import {
     NETWORKS,
@@ -515,13 +515,107 @@ export default class Call {
             if (this.debug)
                 await this.delegation!.contract.callStatic.complete(indexes, await this.txOptions())
             const tx = await this.delegation!.contract.complete(indexes, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-            return {tx: tx, error: null} 
+            return {tx: tx, error: null}
         } catch (err: any) {
             if (err?.revert?.name != null) {
-                return {tx: null, error: err.revert.name} 
+                return {tx: null, error: err.revert.name}
             }
             throw new Error(err)
         }
+    }
+
+    // NFT delegation via main delegation contract (DRC721)
+    public async delegateNFT(validator: string, nftContract: string, tokenId: bigint, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateNFT(validator, nftContract, tokenId, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.delegateNFT(validator, nftContract, tokenId, await this.txOptions())
+        return await this.delegation!.contract.delegateNFT(validator, nftContract, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async delegateNFTHold(validator: string, nftContract: string, tokenId: bigint, holdTimestamp: number, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.delegateNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        return await this.delegation!.contract.delegateNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async delegateNFTByPermit(validator: string, nftContract: string, tokenId: bigint, sign: ethers.Signature, estimateGas?: boolean) {
+        const deadline = ethers.constants.MaxUint256
+        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateNFTByPermit(validator, nftContract, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.delegateNFTByPermit(validator, nftContract, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+        return await this.delegation!.contract.delegateNFTByPermit(validator, nftContract, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async withdrawNFT(validator: string, nftContract: string, tokenId: bigint, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawNFT(validator, nftContract, tokenId, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.withdrawNFT(validator, nftContract, tokenId, await this.txOptions())
+        return await this.delegation!.contract.withdrawNFT(validator, nftContract, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async withdrawNFTHold(validator: string, nftContract: string, tokenId: bigint, holdTimestamp: number, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.withdrawNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        return await this.delegation!.contract.withdrawNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async transferNFTStake(oldValidator: string, nftContract: string, tokenId: bigint, newValidator: string, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.transferNFT(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.transferNFT(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
+        return await this.delegation!.contract.transferNFT(oldValidator, nftContract, tokenId, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async transferNFTStakeHold(oldValidator: string, nftContract: string, tokenId: bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.transferNFTHold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.transferNFTHold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
+        return await this.delegation!.contract.transferNFTHold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    // NFT delegation via main delegation contract (DRC1155)
+    public async delegateNFT1155(validator: string, nftContract: string, tokenId: bigint, amount: bigint, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateNFT1155(validator, nftContract, tokenId, amount, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.delegateNFT1155(validator, nftContract, tokenId, amount, await this.txOptions())
+        return await this.delegation!.contract.delegateNFT1155(validator, nftContract, tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async delegateNFT1155Hold(validator: string, nftContract: string, tokenId: bigint, amount: bigint, holdTimestamp: number, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateNFT1155Hold(validator, nftContract, tokenId, amount, holdTimestamp, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.delegateNFT1155Hold(validator, nftContract, tokenId, amount, holdTimestamp, await this.txOptions())
+        return await this.delegation!.contract.delegateNFT1155Hold(validator, nftContract, tokenId, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async withdrawNFT1155(validator: string, nftContract: string, tokenId: bigint, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawNFT1155(validator, nftContract, tokenId, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.withdrawNFT1155(validator, nftContract, tokenId, await this.txOptions())
+        return await this.delegation!.contract.withdrawNFT1155(validator, nftContract, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async withdrawNFT1155Hold(validator: string, nftContract: string, tokenId: bigint, holdTimestamp: number, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawNFT1155Hold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.withdrawNFT1155Hold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        return await this.delegation!.contract.withdrawNFT1155Hold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async transferNFT1155Stake(oldValidator: string, nftContract: string, tokenId: bigint, newValidator: string, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.transferNFT1155(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.transferNFT1155(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
+        return await this.delegation!.contract.transferNFT1155(oldValidator, nftContract, tokenId, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
+    public async transferNFT1155StakeHold(oldValidator: string, nftContract: string, tokenId: bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean) {
+        if (estimateGas) return await this.delegation!.contract.estimateGas.transferNFT1155Hold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
+        if (this.debug)
+            await this.delegation!.contract.callStatic.transferNFT1155Hold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
+        return await this.delegation!.contract.transferNFT1155Hold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     //nft-center
@@ -1188,6 +1282,45 @@ export default class Call {
 
     public async getStakeIdToken(validator: string, delegator: string, tokenAddress: string) {
         return await this.delegation!.contract.getStakeId(validator, delegator, tokenAddress);
+    }
+
+    // NFT stake view methods (main delegation contract)
+    public async getNFTStakeFromDelegation(
+        nftContract: string,
+        tokenId: bigint,
+        delegator: string,
+        validator: string,
+        holdTimestamp: number
+    ): Promise<NFTStake> {
+        return await this.delegation!.contract.getNFTStake(nftContract, tokenId, delegator, validator, holdTimestamp);
+    }
+
+    public async getNFTStakeIdFromDelegation(
+        nftContract: string,
+        tokenId: bigint,
+        delegator: string,
+        validator: string,
+        holdTimestamp: number
+    ): Promise<string> {
+        return await this.delegation!.contract.getNFTStakeId(nftContract, tokenId, delegator, validator, holdTimestamp);
+    }
+
+    public async getAvailableCoinAmount(
+        validator: string,
+        delegator: string,
+        token: string,
+        holdTimestamp: number
+    ): Promise<bigint> {
+        return await this.delegation!.contract.getAvailableCoinAmount(validator, delegator, token, holdTimestamp);
+    }
+
+    public async getNFTBackedAmount(
+        validator: string,
+        delegator: string,
+        token: string,
+        holdTimestamp: number
+    ): Promise<bigint> {
+        return await this.delegation!.contract.getNFTBackedAmount(validator, delegator, token, holdTimestamp);
     }
 
     //delegation-nft

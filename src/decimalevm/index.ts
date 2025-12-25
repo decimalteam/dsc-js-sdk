@@ -15,7 +15,7 @@ import Wallet from "../wallet";
 import DecimalContractEVM from "./contract";
 import Call, { NFTCollectionReserveless } from "./call";
 import {TypeNFT, Token, NFTCollection, ValidotorStake} from "./call";
-import { TokenType } from "./interfaces/delegation";
+import { TokenType, NFTStake } from "./interfaces/delegation";
 import { ValidatorMeta, ValidatorStatus } from "./interfaces/validator";
 import Subgraph from "../subgraph";
 import { DecimalContract } from "../subgraph/interfaces/contracts";
@@ -826,6 +826,113 @@ export default class DecimalEVM {
     return await this.call!.completeStakeToken(indexes, estimateGas)
   }
 
+  // NFT delegation via main delegation contract (DRC721)
+  public async delegateNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
+    return await this.call!.delegateNFT(validator, nftAddress, BigInt(tokenId), estimateGas);
+  }
+
+  public async delegateNFTHold(validator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
+    return await this.call!.delegateNFTHold(validator, nftAddress, BigInt(tokenId), holdTimestamp, estimateGas);
+  }
+
+  public async delegateNFTByPermit(validator: string, nftAddress: string, tokenId: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
+    return await this.call!.delegateNFTByPermit(validator, nftAddress, BigInt(tokenId), sign, estimateGas);
+  }
+
+  public async withdrawNFT(validator: string, nftAddress: string, tokenId: string | number | bigint, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
+    return await this.call!.withdrawNFT(validator, nftAddress, BigInt(tokenId), estimateGas);
+  }
+
+  public async withdrawNFTHold(validator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
+    return await this.call!.withdrawNFTHold(validator, nftAddress, BigInt(tokenId), holdTimestamp, estimateGas);
+  }
+
+  public async transferNFTStake(oldValidator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
+    return await this.call!.transferNFTStake(oldValidator, nftAddress, BigInt(tokenId), newValidator, estimateGas);
+  }
+
+  public async transferNFTStakeHold(oldValidator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
+    return await this.call!.transferNFTStakeHold(oldValidator, nftAddress, BigInt(tokenId), holdTimestamp, newValidator, estimateGas);
+  }
+
+  // NFT delegation via main delegation contract (DRC1155)
+  public async delegateNFT1155(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
+    return await this.call!.delegateNFT1155(validator, nftAddress, BigInt(tokenId), BigInt(amount), estimateGas);
+  }
+
+  public async delegateNFT1155Hold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
+    return await this.call!.delegateNFT1155Hold(validator, nftAddress, BigInt(tokenId), BigInt(amount), holdTimestamp, estimateGas);
+  }
+
+  public async withdrawNFT1155(validator: string, nftAddress: string, tokenId: string | number | bigint, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
+    return await this.call!.withdrawNFT1155(validator, nftAddress, BigInt(tokenId), estimateGas);
+  }
+
+  public async withdrawNFT1155Hold(validator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
+    return await this.call!.withdrawNFT1155Hold(validator, nftAddress, BigInt(tokenId), holdTimestamp, estimateGas);
+  }
+
+  public async transferNFT1155Stake(oldValidator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
+    return await this.call!.transferNFT1155Stake(oldValidator, nftAddress, BigInt(tokenId), newValidator, estimateGas);
+  }
+
+  public async transferNFT1155StakeHold(oldValidator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean) {
+    await this.checkConnect('delegation');
+    await this.checkConnect('nft-center');
+    const typeNFT = await this.getNftType(nftAddress);
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
+    return await this.call!.transferNFT1155StakeHold(oldValidator, nftAddress, BigInt(tokenId), holdTimestamp, newValidator, estimateGas);
+  }
+
+  // Old delegation-nft methods (deprecated - use delegateNFT/delegateNFT1155 instead)
   public async delegateDRC721(validator:string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
     await this.checkConnect('delegation-nft');
     const typeNFT = await this.getNftType(nftAddress)
@@ -1453,6 +1560,50 @@ export default class DecimalEVM {
     return await this.call!.getStakeIdToken(validator, delegator, tokenAddress)
   }
 
+  // NFT stake view methods (main delegation contract)
+  public async getNFTStake(
+    nftAddress: string,
+    tokenId: string | number | bigint,
+    delegator: string,
+    validator: string,
+    holdTimestamp: number
+  ): Promise<NFTStake> {
+    await this.checkConnect('delegation');
+    return await this.call!.getNFTStakeFromDelegation(nftAddress, BigInt(tokenId), delegator, validator, holdTimestamp);
+  }
+
+  public async getNFTStakeId(
+    nftAddress: string,
+    tokenId: string | number | bigint,
+    delegator: string,
+    validator: string,
+    holdTimestamp: number
+  ): Promise<string> {
+    await this.checkConnect('delegation');
+    return await this.call!.getNFTStakeIdFromDelegation(nftAddress, BigInt(tokenId), delegator, validator, holdTimestamp);
+  }
+
+  public async getAvailableCoinAmount(
+    validator: string,
+    delegator: string,
+    token: string,
+    holdTimestamp: number
+  ): Promise<bigint> {
+    await this.checkConnect('delegation');
+    return await this.call!.getAvailableCoinAmount(validator, delegator, token, holdTimestamp);
+  }
+
+  public async getNFTBackedAmount(
+    validator: string,
+    delegator: string,
+    token: string,
+    holdTimestamp: number
+  ): Promise<bigint> {
+    await this.checkConnect('delegation');
+    return await this.call!.getNFTBackedAmount(validator, delegator, token, holdTimestamp);
+  }
+
+  // Old delegation-nft view methods (deprecated)
   public async getNFTStakesByMember(account:string) {
     await this.checkConnect('delegation-nft');
     return this.call!.getNFTStakesByMember(account)
