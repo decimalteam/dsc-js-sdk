@@ -30,8 +30,10 @@ import {
   buildSafeTransaction,
   safeApproveHash,
   SafeSignature,
-  SafeTransaction
+  SafeTransaction,
+  MetaTransaction
 } from "./multisig/execution";
+import { buildMultiSendSafeTx } from "./multisig/multisend";
 import { Blob } from "buffer";
 
 export default class DecimalEVM {
@@ -77,6 +79,14 @@ export default class DecimalEVM {
     buildTxSendDEL: (safeAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxSendToken: (safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>
+    buildTxDelegateDEL: (safeAddress: string, validator: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxDelegateToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxDelegateDRC721: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxDelegateDRC1155: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxTransferStakeToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxTransferStakeNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxWithdrawStakeToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxWithdrawStakeNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
     approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<{ safeTransaction: SafeSignature, tx: any }>;
     approveHashEstimateGas: (safeAddress: string, safeTx: SafeTransaction) => Promise<BigNumberish>
@@ -92,12 +102,21 @@ export default class DecimalEVM {
       to: string;
       tokenId?: string;
       amount?: string;
+      newValidator?: string;
     }
   }>{
     create: this.createMultiSig.bind(this),
     buildTxSendDEL: this.buildMultiSigTxSendDEL.bind(this),
     buildTxSendToken: this.buildMultiSigTxSendToken.bind(this),
     buildTxSendNFT: this.buildMultiSigTxSendNFT.bind(this),
+    buildTxDelegateDEL: this.buildMultiSigTxDelegateDEL.bind(this),
+    buildTxDelegateToken: this.buildMultiSigTxDelegateToken.bind(this),
+    buildTxDelegateDRC721: this.buildMultiSigTxDelegateDRC721.bind(this),
+    buildTxDelegateDRC1155: this.buildMultiSigTxDelegateDRC1155.bind(this),
+    buildTxTransferStakeToken: this.buildMultiSigTxTransferStakeToken.bind(this),
+    buildTxTransferStakeNFT: this.buildMultiSigTxTransferStakeNFT.bind(this),
+    buildTxWithdrawStakeToken: this.buildMultiSigTxWithdrawStakeToken.bind(this),
+    buildTxWithdrawStakeNFT: this.buildMultiSigTxWithdrawStakeNFT.bind(this),
     signTx: this.signMultiSigTx.bind(this),
     approveHash: this.approveHashMultiSig.bind(this),
     approveHashEstimateGas: this.approveHashMultiSigEstimateGas.bind(this),
@@ -1096,6 +1115,118 @@ export default class DecimalEVM {
     return buildSafeTransaction({ data, to: tokenAddress, nonce: actualNonce });
   }
 
+  // Delegation
+  private async buildMultiSigTxDelegateDEL(safeAddress: string, validator: string, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
+    const iFace = new ethers.utils.Interface(["function delegateDEL(address validator)"]);
+    const data = iFace.encodeFunctionData('delegateDEL', [validator]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationAddress, value: amount, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxDelegateToken(safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
+
+    const approveIFace = new ethers.utils.Interface(["function approve(address spender, uint256 amount)"]);
+    const delegateIFace = new ethers.utils.Interface(["function delegate(address validator, address token, uint256 amount)"]);
+
+    const txs: MetaTransaction[] = [
+      { to: tokenAddress, value: 0, data: approveIFace.encodeFunctionData('approve', [delegationAddress, amount]), operation: 0 },
+      { to: delegationAddress, value: 0, data: delegateIFace.encodeFunctionData('delegate', [validator, tokenAddress, amount]), operation: 0 }
+    ];
+
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return await buildMultiSendSafeTx(this.call!.multiSend!.contract, txs, actualNonce);
+  }
+
+  private async buildMultiSigTxDelegateDRC721(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+
+    const approveIFace = new ethers.utils.Interface(["function approve(address to, uint256 tokenId)"]);
+    const delegateIFace = new ethers.utils.Interface(["function delegateDRC721(address validator, address nftAddress, uint256 tokenId)"]);
+
+    const txs: MetaTransaction[] = [
+      { to: nftAddress, value: 0, data: approveIFace.encodeFunctionData('approve', [delegationNftAddress, tokenId]), operation: 0 },
+      { to: delegationNftAddress, value: 0, data: delegateIFace.encodeFunctionData('delegateDRC721', [validator, nftAddress, tokenId]), operation: 0 }
+    ];
+
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return await buildMultiSendSafeTx(this.call!.multiSend!.contract, txs, actualNonce);
+  }
+
+  private async buildMultiSigTxDelegateDRC1155(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+
+    const approveIFace = new ethers.utils.Interface(["function setApprovalForAll(address operator, bool approved)"]);
+    const delegateIFace = new ethers.utils.Interface(["function delegateDRC1155(address validator, address nftAddress, uint256 tokenId, uint256 amount)"]);
+
+    const txs: MetaTransaction[] = [
+      { to: nftAddress, value: 0, data: approveIFace.encodeFunctionData('setApprovalForAll', [delegationNftAddress, true]), operation: 0 },
+      { to: delegationNftAddress, value: 0, data: delegateIFace.encodeFunctionData('delegateDRC1155', [validator, nftAddress, tokenId, amount]), operation: 0 }
+    ];
+
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return await buildMultiSendSafeTx(this.call!.multiSend!.contract, txs, actualNonce);
+  }
+
+  // Redelegate (transfer stake)
+  private async buildMultiSigTxTransferStakeToken(safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
+    const iFace = new ethers.utils.Interface(["function transfer(address validator, address token, uint256 amount, address newValidator)"]);
+    const data = iFace.encodeFunctionData('transfer', [validator, tokenAddress, amount, newValidator]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationAddress, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxTransferStakeNFT(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function transfer(address validator, address nftAddress, uint256 tokenId, uint256 amount, address newValidator)"]);
+    const data = iFace.encodeFunctionData('transfer', [validator, nftAddress, tokenId, amount, newValidator]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
+  // Withdraw (unbond)
+  private async buildMultiSigTxWithdrawStakeToken(safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
+    const iFace = new ethers.utils.Interface(["function withdraw(address validator, address token, uint256 amount)"]);
+    const data = iFace.encodeFunctionData('withdraw', [validator, tokenAddress, amount]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationAddress, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxWithdrawStakeNFT(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function withdraw(address validator, address nftAddress, uint256 tokenId, uint256 amount)"]);
+    const data = iFace.encodeFunctionData('withdraw', [validator, nftAddress, tokenId, amount]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
   private async signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature> {
     await this.checkConnect('multi-sig');
     return await this.call!.signMultiSigTx(safeAddress, safeTx);
@@ -1198,7 +1329,17 @@ export default class DecimalEVM {
     to: string;
     tokenId?: string;
     amount?: string;
+    newValidator?: string;
   } {
+    // MultiSend transactions (operation == 1, delegateCall)
+    if (safeTx.operation === 1) {
+      const innerTxs = this.decodeMultiSend(safeTx.data);
+      if (innerTxs.length >= 2) {
+        const mainTx = innerTxs[innerTxs.length - 1];
+        return this.decodeInnerTransaction(mainTx);
+      }
+    }
+
     if (safeTx.data == "0x") return {
       action: 'transfer',
       tokenType: 'Native',
@@ -1206,6 +1347,62 @@ export default class DecimalEVM {
       to: safeTx.to,
       amount: safeTx.value.toString()
     }
+
+    // Delegate DEL
+    const resultDelegateDEL = this.decodeData("function delegateDEL(address validator)", safeTx.data)
+    if (resultDelegateDEL) return {
+      action: 'delegate',
+      tokenType: 'Native',
+      token: 'DEL',
+      to: resultDelegateDEL[0],
+      amount: safeTx.value.toString()
+    }
+
+    // Transfer (redelegate) token: 4 params
+    const resultTransferStakeToken = this.decodeData("function transfer(address validator, address token, uint256 amount, address newValidator)", safeTx.data)
+    if (resultTransferStakeToken) return {
+      action: 'redelegate',
+      tokenType: 'DRC20',
+      token: resultTransferStakeToken[1],
+      to: resultTransferStakeToken[0],
+      amount: resultTransferStakeToken[2].toString(),
+      newValidator: resultTransferStakeToken[3]
+    }
+
+    // Transfer (redelegate) NFT: 5 params
+    const resultTransferStakeNFT = this.decodeData("function transfer(address validator, address nftAddress, uint256 tokenId, uint256 amount, address newValidator)", safeTx.data)
+    if (resultTransferStakeNFT) return {
+      action: 'redelegate',
+      tokenType: 'DRC1155',
+      token: resultTransferStakeNFT[1],
+      to: resultTransferStakeNFT[0],
+      tokenId: resultTransferStakeNFT[2].toString(),
+      amount: resultTransferStakeNFT[3].toString(),
+      newValidator: resultTransferStakeNFT[4]
+    }
+
+    // Withdraw (unbond) token: 3 params
+    const resultWithdrawToken = this.decodeData("function withdraw(address validator, address token, uint256 amount)", safeTx.data)
+    if (resultWithdrawToken) return {
+      action: 'unbond',
+      tokenType: 'DRC20',
+      token: resultWithdrawToken[1],
+      to: resultWithdrawToken[0],
+      amount: resultWithdrawToken[2].toString()
+    }
+
+    // Withdraw (unbond) NFT: 4 params
+    const resultWithdrawNFT = this.decodeData("function withdraw(address validator, address nftAddress, uint256 tokenId, uint256 amount)", safeTx.data)
+    if (resultWithdrawNFT) return {
+      action: 'unbond',
+      tokenType: 'DRC1155',
+      token: resultWithdrawNFT[1],
+      to: resultWithdrawNFT[0],
+      tokenId: resultWithdrawNFT[2].toString(),
+      amount: resultWithdrawNFT[3].toString()
+    }
+
+    // Send token (DRC20 transfer)
     const resultTransferDRC20 = this.decodeData("function transfer(address to, uint256 value)", safeTx.data)
     if (resultTransferDRC20) return {
       action: 'transfer',
@@ -1232,6 +1429,72 @@ export default class DecimalEVM {
       amount: resultTransferDRC1155[3].toString()
     }
     throw Error('Dot')
+  }
+
+  private decodeInnerTransaction(tx: MetaTransaction): {
+    action: string;
+    tokenType: string;
+    token: string;
+    to: string;
+    tokenId?: string;
+    amount?: string;
+    newValidator?: string;
+  } {
+    // Delegate token
+    const resultDelegateToken = this.decodeData("function delegate(address validator, address token, uint256 amount)", tx.data)
+    if (resultDelegateToken) return {
+      action: 'delegate',
+      tokenType: 'DRC20',
+      token: resultDelegateToken[1],
+      to: resultDelegateToken[0],
+      amount: resultDelegateToken[2].toString()
+    }
+    // Delegate DRC721
+    const resultDelegateDRC721 = this.decodeData("function delegateDRC721(address validator, address nftAddress, uint256 tokenId)", tx.data)
+    if (resultDelegateDRC721) return {
+      action: 'delegate',
+      tokenType: 'DRC721',
+      token: resultDelegateDRC721[1],
+      to: resultDelegateDRC721[0],
+      tokenId: resultDelegateDRC721[2].toString()
+    }
+    // Delegate DRC1155
+    const resultDelegateDRC1155 = this.decodeData("function delegateDRC1155(address validator, address nftAddress, uint256 tokenId, uint256 amount)", tx.data)
+    if (resultDelegateDRC1155) return {
+      action: 'delegate',
+      tokenType: 'DRC1155',
+      token: resultDelegateDRC1155[1],
+      to: resultDelegateDRC1155[0],
+      tokenId: resultDelegateDRC1155[2].toString(),
+      amount: resultDelegateDRC1155[3].toString()
+    }
+    throw Error('Unknown MultiSend inner transaction')
+  }
+
+  private decodeMultiSend(data: string): MetaTransaction[] {
+    try {
+      const multiSendIFace = new ethers.utils.Interface(["function multiSend(bytes transactions)"]);
+      const decoded = multiSendIFace.decodeFunctionData('multiSend', data);
+      const txsBytes = ethers.utils.arrayify(decoded[0]);
+      const txs: MetaTransaction[] = [];
+      let offset = 0;
+      while (offset < txsBytes.length) {
+        const operation = txsBytes[offset];
+        offset += 1;
+        const to = ethers.utils.getAddress(ethers.utils.hexlify(txsBytes.slice(offset, offset + 20)));
+        offset += 20;
+        const value = ethers.BigNumber.from(txsBytes.slice(offset, offset + 32));
+        offset += 32;
+        const dataLength = ethers.BigNumber.from(txsBytes.slice(offset, offset + 32)).toNumber();
+        offset += 32;
+        const txData = ethers.utils.hexlify(txsBytes.slice(offset, offset + dataLength));
+        offset += dataLength;
+        txs.push({ operation, to, value, data: txData });
+      }
+      return txs;
+    } catch {
+      return [];
+    }
   }
 
   private decodeData(interFace: string, data: string) {
