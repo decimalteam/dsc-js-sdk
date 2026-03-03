@@ -1483,13 +1483,13 @@ export default class Call {
     public async createMultiSig(ownersData: {
         owner: string;
         weight: number;
-    }[], weightThreshold: number, estimateGas?: boolean): Promise<any> {
+    }[], weightThreshold: number, estimateGas?: boolean, fallbackHandler?: string): Promise<any> {
         const encodedInitializer = this.safe!.contract.interface.encodeFunctionData("setup", [
             ownersData,
             weightThreshold,
             ethers.constants.AddressZero,
             "0x",
-            ethers.constants.AddressZero,
+            fallbackHandler || ethers.constants.AddressZero,
             ethers.constants.AddressZero,
             0,
             ethers.constants.AddressZero

@@ -212,7 +212,7 @@ export default class Call {
     createMultiSig(ownersData: {
         owner: string;
         weight: number;
-    }[], weightThreshold: number, estimateGas?: boolean): Promise<any>;
+    }[], weightThreshold: number, estimateGas?: boolean, fallbackHandler?: string): Promise<any>;
     buildMultiSigTx(txs: MetaTransaction[], safe: ethers.Contract): Promise<SafeTransaction>;
     signMultiSigTx(safeAddress: string, safeTx: SafeTransaction): Promise<SafeSignature>;
     executeMultiSigTx(safeTx: SafeTransaction, signatures: SafeSignature[], safe: ethers.Contract, estimateGas?: boolean): Promise<any>;

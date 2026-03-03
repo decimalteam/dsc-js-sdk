@@ -68,6 +68,7 @@ export function getMultiSigAddresses(network: NETWORKS): {
   safe: string;
   safeFactory: string;
   multiSend: string;
+  tokenCallbackHandler: string;
 } {
   return multiSigAddresses[network];
 }
@@ -185,18 +186,21 @@ const multiSigAddresses = {
   [NETWORKS.DEVNET]: {
     safe: "0xAaA4813B459B4af71C7C172880D504C6663c11F7",
     safeFactory: "0xAa6Fe7d309741897f5E2De994c90155b0252d104",
-    multiSend: "0xf28404962e594aFAf7FE0a9eE2e760f925B3aCDc"
-  }, 
+    multiSend: "0xf28404962e594aFAf7FE0a9eE2e760f925B3aCDc",
+    tokenCallbackHandler: "" // TODO: deploy TokenCallbackHandler and set address
+  },
   [NETWORKS.TESTNET]: {
     safe: "0xE0f30FcCAe2f9f9C7efee9af044C436841D466ee",
     safeFactory: "0x4cC406B1713d3dF67e739D6f5918B6C98F614a38",
-    multiSend: "0xC0611a00CE349B9bCff3866351A2a5Aa9659c464"
-  }, 
+    multiSend: "0xC0611a00CE349B9bCff3866351A2a5Aa9659c464",
+    tokenCallbackHandler: "" // TODO: deploy TokenCallbackHandler and set address
+  },
   [NETWORKS.MAINNET]: {
     safe: "0x15949c33775154549D073168C1094C5f3b28b5CB",
     safeFactory: "0x92466f09D5c82e8DdB8AaA7c5AdC63d43111F6c1",
-    multiSend: "0x72b80471AAFabd1469ed1C51453DC9ca66068bC0"
-  }, 
+    multiSend: "0x72b80471AAFabd1469ed1C51453DC9ca66068bC0",
+    tokenCallbackHandler: "" // TODO: deploy TokenCallbackHandler and set address
+  },
 };
 
 const web3NodeETH = {

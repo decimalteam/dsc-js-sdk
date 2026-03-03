@@ -87,6 +87,7 @@ export default class DecimalEVM {
     buildTxTransferStakeNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxWithdrawStakeToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxWithdrawStakeNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxSetFallbackHandler: (safeAddress: string, handlerAddress?: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
     signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
     approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<{ safeTransaction: SafeSignature, tx: any }>;
     approveHashEstimateGas: (safeAddress: string, safeTx: SafeTransaction) => Promise<BigNumberish>
@@ -117,6 +118,7 @@ export default class DecimalEVM {
     buildTxTransferStakeNFT: this.buildMultiSigTxTransferStakeNFT.bind(this),
     buildTxWithdrawStakeToken: this.buildMultiSigTxWithdrawStakeToken.bind(this),
     buildTxWithdrawStakeNFT: this.buildMultiSigTxWithdrawStakeNFT.bind(this),
+    buildTxSetFallbackHandler: this.buildMultiSigTxSetFallbackHandler.bind(this),
     signTx: this.signMultiSigTx.bind(this),
     approveHash: this.approveHashMultiSig.bind(this),
     approveHashEstimateGas: this.approveHashMultiSigEstimateGas.bind(this),
@@ -1283,7 +1285,19 @@ export default class DecimalEVM {
     } else {
       weightThreshold = ownersData.reduce((sum, num) => sum + num.weight, 0);
     }
-    return await this.call!.createMultiSig(ownersData, weightThreshold, estimateGas) 
+    const fallbackHandler = getMultiSigAddresses(this.network).tokenCallbackHandler || undefined;
+    return await this.call!.createMultiSig(ownersData, weightThreshold, estimateGas, fallbackHandler)
+  }
+
+  private async buildMultiSigTxSetFallbackHandler(safeAddress: string, handlerAddress?: string, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const handler = handlerAddress || getMultiSigAddresses(this.network).tokenCallbackHandler;
+    if (!handler) throw new Error("TokenCallbackHandler address is not configured for this network");
+    const iFace = new ethers.utils.Interface(["function setFallbackHandler(address handler)"]);
+    const data = iFace.encodeFunctionData('setFallbackHandler', [handler]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: safeAddress, nonce: actualNonce });
   }
 
   private async getNonceMultiSig(safeAddress: string) {

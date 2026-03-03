@@ -46,6 +46,7 @@ export default class DecimalEVM {
         buildTxTransferStakeNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxWithdrawStakeToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxWithdrawStakeNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxSetFallbackHandler: (safeAddress: string, handlerAddress?: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
         signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
         approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<{
             safeTransaction: SafeSignature;
@@ -192,6 +193,7 @@ export default class DecimalEVM {
     private getSignatureForParticipant;
     private executeMultiSigTx;
     private createMultiSig;
+    private buildMultiSigTxSetFallbackHandler;
     private getNonceMultiSig;
     private getCurrentApproveTransactions;
     private getExpiredApproveTransactions;

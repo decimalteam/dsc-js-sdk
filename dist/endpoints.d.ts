@@ -22,6 +22,7 @@ export declare function getMultiSigAddresses(network: NETWORKS): {
     safe: string;
     safeFactory: string;
     multiSend: string;
+    tokenCallbackHandler: string;
 };
 export declare function getRpcEndpoint(network: NETWORKS, isNodeDirectMode: boolean): string;
 export declare const gateEstimationEndpoint = "tx/estimate";
