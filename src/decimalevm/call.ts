@@ -999,8 +999,11 @@ export default class Call {
                 await this.masterValidator!.contract.callStatic.addCandidate(validator, meta, stake, await this.txOptions())
             return await this.masterValidator!.contract.addCandidate(validator, meta, stake, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         } else {
-            //TODO
-            throw Error('TODO')
+            const deadline = ethers.constants.MaxUint256
+            if (estimateGas) return await this.masterValidator!.contract.estimateGas.addCandidateByPermit(validator, meta, stake, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            if (this.debug)
+                await this.masterValidator!.contract.callStatic.addCandidateByPermit(validator, meta, stake, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            return await this.masterValidator!.contract.addCandidateByPermit(validator, meta, stake, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
         }
     }
 
