@@ -173,7 +173,7 @@ const multicallAddresses = {
 const checksAddresses = {
     [NETWORKS.DEVNET]: "0x",
     [NETWORKS.TESTNET]: "0xb6161CAA8Bd7167C2fa67b93b041FF9a94d6a735",
-    [NETWORKS.MAINNET]: "0x9B1783f92Cb32718E32eA43675964412F3De772a",
+    [NETWORKS.MAINNET]: "0x9c3326594b49AFa24db9b988Cda1258d0dcb4e40",
 };
 
 const gasCenterAddresses = { //TODO
