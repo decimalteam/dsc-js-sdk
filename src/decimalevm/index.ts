@@ -78,6 +78,7 @@ export default class DecimalEVM {
     }>;
     buildTxSendDEL: (safeAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxSendToken: (safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxBurnToken: (safeAddress: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>
     buildTxDelegateDEL: (safeAddress: string, validator: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxDelegateToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
@@ -109,6 +110,7 @@ export default class DecimalEVM {
     create: this.createMultiSig.bind(this),
     buildTxSendDEL: this.buildMultiSigTxSendDEL.bind(this),
     buildTxSendToken: this.buildMultiSigTxSendToken.bind(this),
+    buildTxBurnToken: this.buildMultiSigTxBurnToken.bind(this),
     buildTxSendNFT: this.buildMultiSigTxSendNFT.bind(this),
     buildTxDelegateDEL: this.buildMultiSigTxDelegateDEL.bind(this),
     buildTxDelegateToken: this.buildMultiSigTxDelegateToken.bind(this),
@@ -1102,6 +1104,15 @@ export default class DecimalEVM {
     return buildSafeTransaction({ data, to: tokenAddress, nonce: actualNonce });
   }
 
+  private async buildMultiSigTxBurnToken(safeAddress: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const iFace = new ethers.utils.Interface(["function burn(uint256 amount)"]);
+    const data = iFace.encodeFunctionData('burn', [amount])
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: tokenAddress, nonce: actualNonce });
+  }
+
   private async buildMultiSigTxSendNFT(safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
@@ -1424,6 +1435,15 @@ export default class DecimalEVM {
       token: safeTx.to,
       to: resultTransferDRC20[0],
       amount: resultTransferDRC20[1].toString()
+    }
+    // Burn token (DRC20)
+    const resultBurnDRC20 = this.decodeData("function burn(uint256 amount)", safeTx.data)
+    if (resultBurnDRC20) return {
+      action: 'burn',
+      tokenType: 'DRC20',
+      token: safeTx.to,
+      to: '0x0000000000000000000000000000000000000000',
+      amount: resultBurnDRC20[0].toString()
     }
     const resultTransferDRC721 = this.decodeData("function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)", safeTx.data)
     if (resultTransferDRC721) return {

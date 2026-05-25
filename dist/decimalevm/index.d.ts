@@ -37,6 +37,7 @@ export default class DecimalEVM {
         }>;
         buildTxSendDEL: (safeAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxSendToken: (safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxBurnToken: (safeAddress: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxDelegateDEL: (safeAddress: string, validator: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxDelegateToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
@@ -178,6 +179,7 @@ export default class DecimalEVM {
     updateValidatorMeta(meta: ValidatorMeta, estimateGas?: boolean): Promise<any>;
     private buildMultiSigTxSendDEL;
     private buildMultiSigTxSendToken;
+    private buildMultiSigTxBurnToken;
     private buildMultiSigTxSendNFT;
     private buildMultiSigTxDelegateDEL;
     private buildMultiSigTxDelegateToken;
