@@ -47,6 +47,16 @@ export default class DecimalEVM {
         buildTxTransferStakeNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxWithdrawStakeToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxWithdrawStakeNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxDelegateDELHold: (safeAddress: string, validator: string, amount: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxDelegateTokenHold: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxTransferStakeTokenHold: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxWithdrawStakeTokenHold: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxDelegateNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxDelegateNFT1155: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxWithdrawNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxWithdrawNFT1155: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxTransferNFTStake: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxTransferNFT1155Stake: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxSetFallbackHandler: (safeAddress: string, handlerAddress?: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
         signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
         approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<{
@@ -73,6 +83,7 @@ export default class DecimalEVM {
             tokenId?: string;
             amount?: string;
             newValidator?: string;
+            holdTimestamp?: string;
         };
     };
     constructor(wallet: Wallet, network: NETWORKS);
@@ -189,6 +200,16 @@ export default class DecimalEVM {
     private buildMultiSigTxTransferStakeNFT;
     private buildMultiSigTxWithdrawStakeToken;
     private buildMultiSigTxWithdrawStakeNFT;
+    private buildMultiSigTxDelegateDELHold;
+    private buildMultiSigTxDelegateTokenHold;
+    private buildMultiSigTxTransferStakeTokenHold;
+    private buildMultiSigTxWithdrawStakeTokenHold;
+    private buildMultiSigTxDelegateNFT;
+    private buildMultiSigTxDelegateNFT1155;
+    private buildMultiSigTxWithdrawNFT;
+    private buildMultiSigTxWithdrawNFT1155;
+    private buildMultiSigTxTransferNFTStake;
+    private buildMultiSigTxTransferNFT1155Stake;
     private signMultiSigTx;
     private approveHashMultiSig;
     private approveHashMultiSigEstimateGas;
