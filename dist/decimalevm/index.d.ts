@@ -57,6 +57,15 @@ export default class DecimalEVM {
         buildTxWithdrawNFT1155: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxTransferNFTStake: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxTransferNFT1155Stake: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxTransferStakeNFTHold: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxWithdrawStakeNFTHold: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxStakeNFTToHold: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxWithdrawNFTWithReset: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxTransferNFTWithReset: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, holdTimestampsToReset: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxHoldNFTWithReset: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxStakeNFTResetHold: (safeAddress: string, validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxStakeNFTResetHolds: (safeAddress: string, validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
+        buildTxCompleteStakeNFT: (safeAddress: string, indexes: string[] | number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
         buildTxSetFallbackHandler: (safeAddress: string, handlerAddress?: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
         signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
         approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<{
@@ -178,6 +187,7 @@ export default class DecimalEVM {
     withdrawStakeNFTHold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     stakeNFTToHold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean): Promise<any>;
     stakeNFTResetHold(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
+    stakeNFTResetHolds(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], estimateGas?: boolean): Promise<any>;
     withdrawNFTWithReset(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
     transferNFTWithReset(oldValidator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
     holdNFTWithReset(validator: string, nftAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
@@ -200,6 +210,15 @@ export default class DecimalEVM {
     private buildMultiSigTxTransferStakeNFT;
     private buildMultiSigTxWithdrawStakeToken;
     private buildMultiSigTxWithdrawStakeNFT;
+    private buildMultiSigTxTransferStakeNFTHold;
+    private buildMultiSigTxWithdrawStakeNFTHold;
+    private buildMultiSigTxStakeNFTToHold;
+    private buildMultiSigTxWithdrawNFTWithReset;
+    private buildMultiSigTxTransferNFTWithReset;
+    private buildMultiSigTxHoldNFTWithReset;
+    private buildMultiSigTxStakeNFTResetHold;
+    private buildMultiSigTxStakeNFTResetHolds;
+    private buildMultiSigTxCompleteStakeNFT;
     private buildMultiSigTxDelegateDELHold;
     private buildMultiSigTxDelegateTokenHold;
     private buildMultiSigTxTransferStakeTokenHold;
@@ -286,6 +305,11 @@ export default class DecimalEVM {
         Withdraw: any;
         Transfer: any;
     }>;
+    getStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint): Promise<any>;
+    getStakeIdNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint): Promise<string>;
+    getHoldStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number): Promise<any>;
+    getFrozenStakeNFT(index: string | number | bigint): Promise<any>;
+    getFrozenStakesNFT(indexes: string[] | number[]): Promise<any>;
     getSignPermitDRC721(address: string, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature>;
     getSignPermitDRC1155(address: string, spender: string): Promise<ethers.Signature>;
     getValidatorStatus(validator: string): Promise<ValidatorStatus>;

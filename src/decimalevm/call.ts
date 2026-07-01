@@ -952,23 +952,30 @@ export default class Call {
             await this.delegationNft!.contract.callStatic.resetHold(validator, delegator, tokenAddress, tokenId, holdTimestamp, await this.txOptions())
         return await this.delegationNft!.contract.resetHold(validator, delegator, tokenAddress, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
-    
+
+    public async stakeNFTResetHolds(validator:string, delegator: string, tokenAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], estimateGas?: boolean) {
+        if (estimateGas) return await this.delegationNft!.contract.estimateGas.resetHolds(validator, delegator, tokenAddress, tokenId, holdTimestamps, await this.txOptions())
+        if (this.debug)
+            await this.delegationNft!.contract.callStatic.resetHolds(validator, delegator, tokenAddress, tokenId, holdTimestamps, await this.txOptions())
+        return await this.delegationNft!.contract.resetHolds(validator, delegator, tokenAddress, tokenId, holdTimestamps, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+    }
+
     public async withdrawNFTWithReset(validator:string, tokenAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawWithReset(validator, tokenAddress, tokenId, amount, holdTimestampsToReset, await this.txOptions())
+        if (estimateGas) return await this.delegationNft!.contract.estimateGas.withdrawWithReset(validator, tokenAddress, tokenId, amount, holdTimestampsToReset, await this.txOptions())
         if (this.debug)
             await this.delegationNft!.contract.callStatic.withdrawWithReset(validator, tokenAddress, tokenId, amount, holdTimestampsToReset, await this.txOptions())
         return await this.delegationNft!.contract.withdrawWithReset(validator, tokenAddress, tokenId, amount, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     public async transferNFTWithReset(oldValidator:string, tokenAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator:string, holdTimestampsToReset: number[], estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.transferWithReset(oldValidator, tokenAddress, tokenId, amount, newValidator, holdTimestampsToReset, await this.txOptions())
+        if (estimateGas) return await this.delegationNft!.contract.estimateGas.transferWithReset(oldValidator, tokenAddress, tokenId, amount, newValidator, holdTimestampsToReset, await this.txOptions())
         if (this.debug)
             await this.delegationNft!.contract.callStatic.transferWithReset(oldValidator, tokenAddress, tokenId, amount, newValidator, holdTimestampsToReset, await this.txOptions())
         return await this.delegationNft!.contract.transferWithReset(oldValidator, tokenAddress, tokenId, amount, newValidator, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
     }
 
     public async holdNFTWithReset(validator:string, tokenAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.holdWithReset(validator, tokenAddress, tokenId, amountToHold, newHoldTimestamp, holdTimestampsToReset, await this.txOptions())
+        if (estimateGas) return await this.delegationNft!.contract.estimateGas.holdWithReset(validator, tokenAddress, tokenId, amountToHold, newHoldTimestamp, holdTimestampsToReset, await this.txOptions())
         if (this.debug)
             await this.delegationNft!.contract.callStatic.holdWithReset(validator, tokenAddress, tokenId, amountToHold, newHoldTimestamp, holdTimestampsToReset, await this.txOptions())
         return await this.delegationNft!.contract.holdWithReset(validator, tokenAddress, tokenId, amountToHold, newHoldTimestamp, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
@@ -1347,6 +1354,21 @@ export default class Call {
             "Withdraw": freezeTimeWithdraw,
             "Transfer": freezeTimeTransfer
         }
+    }
+    public async getStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint) {
+        return await this.delegationNft!.contract.getStake(validator, delegator, nftAddress, tokenId);
+    }
+    public async getStakeIdNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint): Promise<string> {
+        return await this.delegationNft!.contract.getStakeId(validator, delegator, nftAddress, tokenId);
+    }
+    public async getHoldStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number) {
+        return await this.delegationNft!.contract.getHoldStake(validator, delegator, nftAddress, tokenId, holdTimestamp);
+    }
+    public async getFrozenStakeNFT(index: string | number | bigint) {
+        return await this.delegationNft!.contract.getFrozenStake(index);
+    }
+    public async getFrozenStakesNFT(indexes: string[] | number[]) {
+        return await this.delegationNft!.contract.getFrozenStakes(indexes);
     }
 
     //master-validator

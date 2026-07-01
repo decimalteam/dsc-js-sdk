@@ -202,24 +202,133 @@ describe('Delegation NFT', () => {
         }
     });
 
+    test('hold and reset hold stake', async() => {
+        try {
+            // Sdk.
+            const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+            const decimalWallet = new Wallet(mnemonic);
+
+            const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+            await decimalEVM.connect();
+
+            const owner = decimalWallet.evmAddress!
+            const TokenTypes = decimalEVM.getTokenTypes()
+
+            let stakes = await decimalEVM.getNFTStakesByMember(owner)
+            const stakeDRC721 = stakes.filter(({tokenType}) => tokenType == TokenTypes.DRC721)[0]
+
+            const block = await decimalEVM.getLatestBlock();
+            const oldHoldTimestamp = 0 // move a non-hold stake into hold
+            const newHoldTimestamp = block.timestamp + 60
+
+            await decimalEVM.stakeNFTToHold(stakeDRC721.validator, stakeDRC721.token, stakeDRC721.tokenId, stakeDRC721.amount, oldHoldTimestamp, newHoldTimestamp)
+            await decimalEVM.stakeNFTResetHold(stakeDRC721.validator, owner, stakeDRC721.token, stakeDRC721.tokenId, newHoldTimestamp)
+            await decimalEVM.stakeNFTResetHolds(stakeDRC721.validator, owner, stakeDRC721.token, stakeDRC721.tokenId, [newHoldTimestamp])
+
+            console.log(`successfully stakeNFTToHold / stakeNFTResetHold / stakeNFTResetHolds`)
+        } catch (e) {
+            console.log(e)
+        }
+    });
+
+    test('withReset variants', async() => {
+        try {
+            // Sdk.
+            const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+            const decimalWallet = new Wallet(mnemonic);
+
+            const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+            await decimalEVM.connect();
+
+            const owner = decimalWallet.evmAddress!
+            const TokenTypes = decimalEVM.getTokenTypes()
+
+            let stakes = await decimalEVM.getNFTStakesByMember(owner)
+            const stakeDRC721 = stakes.filter(({tokenType}) => tokenType == TokenTypes.DRC721)[0]
+
+            const block = await decimalEVM.getLatestBlock();
+            const newHoldTimestamp = block.timestamp + 60
+            const newValidator = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
+
+            await decimalEVM.holdNFTWithReset(stakeDRC721.validator, stakeDRC721.token, stakeDRC721.tokenId, stakeDRC721.amount, newHoldTimestamp, [])
+            await decimalEVM.transferNFTWithReset(stakeDRC721.validator, stakeDRC721.token, stakeDRC721.tokenId, stakeDRC721.amount, newValidator, [])
+            await decimalEVM.withdrawNFTWithReset(newValidator, stakeDRC721.token, stakeDRC721.tokenId, stakeDRC721.amount, [])
+
+            console.log(`successfully holdNFTWithReset / transferNFTWithReset / withdrawNFTWithReset`)
+        } catch (e) {
+            console.log(e)
+        }
+    });
+
     test('others view functions', async() => {
         try {
             // Sdk.
             const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
             const decimalWallet = new Wallet(mnemonic);
-          
+
             const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
             await decimalEVM.connect();
+
+            const owner = decimalWallet.evmAddress!
+            const TokenTypes = decimalEVM.getTokenTypes()
 
             const resultFreezeTimeNFT = await decimalEVM.getFreezeTimeNFT()
 
             console.log(`
-                resultFreezeTimeNFT Transfer: ${resultFreezeTimeNFT.Transfer} Withdraw: ${resultFreezeTimeNFT.Withdraw} 
+                resultFreezeTimeNFT Transfer: ${resultFreezeTimeNFT.Transfer} Withdraw: ${resultFreezeTimeNFT.Withdraw}
             `)
+
+            let stakes = await decimalEVM.getNFTStakesByMember(owner)
+            const stakeDRC721 = stakes.filter(({tokenType}) => tokenType == TokenTypes.DRC721)[0]
+            if (stakeDRC721 != undefined) {
+                const stake = await decimalEVM.getStakeNFT(stakeDRC721.validator, owner, stakeDRC721.token, stakeDRC721.tokenId)
+                const stakeId = await decimalEVM.getStakeIdNFT(stakeDRC721.validator, owner, stakeDRC721.token, stakeDRC721.tokenId)
+                console.log(`getStakeNFT amount: ${stake.amount} stakeId: ${stakeId}`)
+            }
+
+            const queue = await decimalEVM.getFrozenStakesQueueNFT()
+            if (queue.length > 0) {
+                const frozen = await decimalEVM.getFrozenStakeNFT(0)
+                const frozenList = await decimalEVM.getFrozenStakesNFT([0])
+                console.log(`getFrozenStakeNFT: ${frozen} getFrozenStakesNFT length: ${frozenList.length}`)
+            }
 
         } catch (e) {
             console.log(e)
         }
     })
-    
+
+    test('multisig build nft stake txs (offline encoding)', async() => {
+        try {
+            // Sdk.
+            const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
+            const decimalWallet = new Wallet(mnemonic);
+
+            const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+            await decimalEVM.connect();
+
+            const safeAddress = "0x0000000000000000000000000000000000000001" // dummy safe, explicit nonce skips on-chain nonce()
+            const nftAddress = "0x0000000000000000000000000000000000000002"
+            const newValidator = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
+            const tokenId = 0
+            const amount = 1
+            const holdTimestamp = 100
+            const nonce = 0
+
+            await decimalEVM.multisig.buildTxTransferStakeNFTHold(safeAddress, Validator, nftAddress, tokenId, amount, holdTimestamp, newValidator, nonce)
+            await decimalEVM.multisig.buildTxWithdrawStakeNFTHold(safeAddress, Validator, nftAddress, tokenId, amount, holdTimestamp, nonce)
+            await decimalEVM.multisig.buildTxStakeNFTToHold(safeAddress, Validator, nftAddress, tokenId, amount, 0, holdTimestamp, nonce)
+            await decimalEVM.multisig.buildTxWithdrawNFTWithReset(safeAddress, Validator, nftAddress, tokenId, amount, [holdTimestamp], nonce)
+            await decimalEVM.multisig.buildTxTransferNFTWithReset(safeAddress, Validator, nftAddress, tokenId, amount, newValidator, [holdTimestamp], nonce)
+            await decimalEVM.multisig.buildTxHoldNFTWithReset(safeAddress, Validator, nftAddress, tokenId, amount, holdTimestamp, [holdTimestamp], nonce)
+            await decimalEVM.multisig.buildTxStakeNFTResetHold(safeAddress, Validator, decimalWallet.evmAddress!, nftAddress, tokenId, holdTimestamp, nonce)
+            await decimalEVM.multisig.buildTxStakeNFTResetHolds(safeAddress, Validator, decimalWallet.evmAddress!, nftAddress, tokenId, [holdTimestamp], nonce)
+            await decimalEVM.multisig.buildTxCompleteStakeNFT(safeAddress, [0], nonce)
+
+            console.log(`successfully built all multisig nft stake txs`)
+        } catch (e) {
+            console.log(e)
+        }
+    })
+
 })

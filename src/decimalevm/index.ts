@@ -98,6 +98,15 @@ export default class DecimalEVM {
     buildTxWithdrawNFT1155: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxTransferNFTStake: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxTransferNFT1155Stake: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxTransferStakeNFTHold: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxWithdrawStakeNFTHold: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxStakeNFTToHold: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxWithdrawNFTWithReset: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxTransferNFTWithReset: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, holdTimestampsToReset: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxHoldNFTWithReset: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxStakeNFTResetHold: (safeAddress: string, validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxStakeNFTResetHolds: (safeAddress: string, validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
+    buildTxCompleteStakeNFT: (safeAddress: string, indexes: string[] | number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxSetFallbackHandler: (safeAddress: string, handlerAddress?: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
     signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
     approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<{ safeTransaction: SafeSignature, tx: any }>;
@@ -141,6 +150,15 @@ export default class DecimalEVM {
     buildTxWithdrawNFT1155: this.buildMultiSigTxWithdrawNFT1155.bind(this),
     buildTxTransferNFTStake: this.buildMultiSigTxTransferNFTStake.bind(this),
     buildTxTransferNFT1155Stake: this.buildMultiSigTxTransferNFT1155Stake.bind(this),
+    buildTxTransferStakeNFTHold: this.buildMultiSigTxTransferStakeNFTHold.bind(this),
+    buildTxWithdrawStakeNFTHold: this.buildMultiSigTxWithdrawStakeNFTHold.bind(this),
+    buildTxStakeNFTToHold: this.buildMultiSigTxStakeNFTToHold.bind(this),
+    buildTxWithdrawNFTWithReset: this.buildMultiSigTxWithdrawNFTWithReset.bind(this),
+    buildTxTransferNFTWithReset: this.buildMultiSigTxTransferNFTWithReset.bind(this),
+    buildTxHoldNFTWithReset: this.buildMultiSigTxHoldNFTWithReset.bind(this),
+    buildTxStakeNFTResetHold: this.buildMultiSigTxStakeNFTResetHold.bind(this),
+    buildTxStakeNFTResetHolds: this.buildMultiSigTxStakeNFTResetHolds.bind(this),
+    buildTxCompleteStakeNFT: this.buildMultiSigTxCompleteStakeNFT.bind(this),
     buildTxSetFallbackHandler: this.buildMultiSigTxSetFallbackHandler.bind(this),
     signTx: this.signMultiSigTx.bind(this),
     approveHash: this.approveHashMultiSig.bind(this),
@@ -1047,6 +1065,13 @@ export default class DecimalEVM {
     return await this.call!.stakeNFTResetHold(validator, delegator, nftAddress, tokenId, holdTimestamp, estimateGas)
   }
 
+  public async stakeNFTResetHolds(validator:string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], estimateGas?: boolean) {
+    await this.checkConnect('delegation-nft');
+    const typeNFT = await this.getNftType(nftAddress)
+    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
+    return await this.call!.stakeNFTResetHolds(validator, delegator, nftAddress, tokenId, holdTimestamps, estimateGas)
+  }
+
   public async withdrawNFTWithReset(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], estimateGas?: boolean) {
     await this.checkConnect('delegation-nft');
     const typeNFT = await this.getNftType(nftAddress)
@@ -1257,6 +1282,107 @@ export default class DecimalEVM {
     const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
     const iFace = new ethers.utils.Interface(["function withdraw(address validator, address nftAddress, uint256 tokenId, uint256 amount)"]);
     const data = iFace.encodeFunctionData('withdraw', [validator, nftAddress, tokenId, amount]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
+  // === Hold / reset / complete variants for NFT stake via delegation-nft contract ===
+
+  private async buildMultiSigTxTransferStakeNFTHold(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, newValidator: string, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function transferHold(address validator, address nftAddress, uint256 tokenId, uint256 amount, uint256 holdTimestamp, address newValidator)"]);
+    const data = iFace.encodeFunctionData('transferHold', [validator, nftAddress, tokenId, amount, holdTimestamp, newValidator]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxWithdrawStakeNFTHold(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function withdrawHold(address validator, address nftAddress, uint256 tokenId, uint256 amount, uint256 holdTimestamp)"]);
+    const data = iFace.encodeFunctionData('withdrawHold', [validator, nftAddress, tokenId, amount, holdTimestamp]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxStakeNFTToHold(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function hold(address validator, address nftAddress, uint256 tokenId, uint256 amountToHold, uint256 oldHoldTimestamp, uint256 newHoldTimestamp)"]);
+    const data = iFace.encodeFunctionData('hold', [validator, nftAddress, tokenId, amount, oldHoldTimestamp, newHoldTimestamp]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxWithdrawNFTWithReset(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function withdrawWithReset(address validator, address nftAddress, uint256 tokenId, uint256 amount, uint256[] holdTimestampsToReset)"]);
+    const data = iFace.encodeFunctionData('withdrawWithReset', [validator, nftAddress, tokenId, amount, holdTimestampsToReset]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxTransferNFTWithReset(safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, holdTimestampsToReset: number[], nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function transferWithReset(address oldValidator, address nftAddress, uint256 tokenId, uint256 amount, address newValidator, uint256[] holdTimestampsToReset)"]);
+    const data = iFace.encodeFunctionData('transferWithReset', [oldValidator, nftAddress, tokenId, amount, newValidator, holdTimestampsToReset]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxHoldNFTWithReset(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function holdWithReset(address validator, address nftAddress, uint256 tokenId, uint256 amountToHold, uint256 newHoldTimestamp, uint256[] holdTimestampsToReset)"]);
+    const data = iFace.encodeFunctionData('holdWithReset', [validator, nftAddress, tokenId, amountToHold, newHoldTimestamp, holdTimestampsToReset]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxStakeNFTResetHold(safeAddress: string, validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function resetHold(address validator, address delegator, address nftAddress, uint256 tokenId, uint256 holdTimestamp)"]);
+    const data = iFace.encodeFunctionData('resetHold', [validator, delegator, nftAddress, tokenId, holdTimestamp]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxStakeNFTResetHolds(safeAddress: string, validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function resetHolds(address validator, address delegator, address nftAddress, uint256 tokenId, uint256[] holdTimestamps)"]);
+    const data = iFace.encodeFunctionData('resetHolds', [validator, delegator, nftAddress, tokenId, holdTimestamps]);
+    const actualNonce = nonce ?? await safe.contract.nonce();
+    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
+  }
+
+  private async buildMultiSigTxCompleteStakeNFT(safeAddress: string, indexes: string[] | number[], nonce?: BigNumberish): Promise<SafeTransaction> {
+    await this.checkConnect('multi-sig');
+    await this.checkConnect('delegation-nft');
+    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
+    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
+    const iFace = new ethers.utils.Interface(["function complete(uint256[] indexes)"]);
+    const data = iFace.encodeFunctionData('complete', [indexes]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
   }
@@ -2187,6 +2313,31 @@ export default class DecimalEVM {
   public async getFreezeTimeNFT() {
     await this.checkConnect('delegation-nft');
     return await this.call!.getFreezeTimeNFT()
+  }
+
+  public async getStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint) {
+    await this.checkConnect('delegation-nft');
+    return await this.call!.getStakeNFT(validator, delegator, nftAddress, tokenId)
+  }
+
+  public async getStakeIdNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint) {
+    await this.checkConnect('delegation-nft');
+    return await this.call!.getStakeIdNFT(validator, delegator, nftAddress, tokenId)
+  }
+
+  public async getHoldStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number) {
+    await this.checkConnect('delegation-nft');
+    return await this.call!.getHoldStakeNFT(validator, delegator, nftAddress, tokenId, holdTimestamp)
+  }
+
+  public async getFrozenStakeNFT(index: string | number | bigint) {
+    await this.checkConnect('delegation-nft');
+    return await this.call!.getFrozenStakeNFT(index)
+  }
+
+  public async getFrozenStakesNFT(indexes: string[] | number[]) {
+    await this.checkConnect('delegation-nft');
+    return await this.call!.getFrozenStakesNFT(indexes)
   }
 
   public async getSignPermitDRC721(address: string, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature> {

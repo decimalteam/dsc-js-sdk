@@ -137,6 +137,7 @@ export default class Call {
     withdrawStakeNFTHold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
     stakeNFTToHold(validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean): Promise<any>;
     stakeNFTResetHold(validator: string, delegator: string, tokenAddress: string, tokenId: string | number | bigint, holdTimestamp: number, estimateGas?: boolean): Promise<any>;
+    stakeNFTResetHolds(validator: string, delegator: string, tokenAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], estimateGas?: boolean): Promise<any>;
     withdrawNFTWithReset(validator: string, tokenAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
     transferNFTWithReset(oldValidator: string, tokenAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
     holdNFTWithReset(validator: string, tokenAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], estimateGas?: boolean): Promise<any>;
@@ -201,6 +202,11 @@ export default class Call {
         Withdraw: any;
         Transfer: any;
     }>;
+    getStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint): Promise<any>;
+    getStakeIdNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint): Promise<string>;
+    getHoldStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number): Promise<any>;
+    getFrozenStakeNFT(index: string | number | bigint): Promise<any>;
+    getFrozenStakesNFT(indexes: string[] | number[]): Promise<any>;
     getValidatorStatus(validator: string): Promise<ValidatorStatus>;
     validatorIsActive(validator: string): Promise<any>;
     validatorIsMember(validator: string): Promise<any>;
