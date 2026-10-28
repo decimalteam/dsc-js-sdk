@@ -9,6 +9,7 @@ export default class Queries {
     private readonly network;
     constructor(network: NETWORKS);
     private query;
+    private queryIfSupported;
     getDecimalContracts(): Promise<DecimalContract[]>;
     getTokens(options: string): Promise<Token[]>;
     getTokensReserveless(options: string): Promise<TokenReserveless[]>;
@@ -16,6 +17,7 @@ export default class Queries {
     getAddressBalances(options: string): Promise<AddressBalance[]>;
     getAddressBalancesReserveless(options: string): Promise<AddressBalance[]>;
     getStakes(options: string): Promise<SubgraphResponse<Stake[]>>;
+    getNFTStakes(nftStakesOptions: string, legacyOptions: string): Promise<SubgraphResponse<Stake[]>>;
     getTransferStakes(options: string): Promise<TransferStake[]>;
     getWithdrawStakes(options: string): Promise<WithdrawStake[]>;
     getValidators(): Promise<Validator[]>;

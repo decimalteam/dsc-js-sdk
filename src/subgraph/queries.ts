@@ -8,7 +8,7 @@ import {
 } from "../endpoints";
 import { DecimalContract, DecimalBridgeContract } from "./interfaces/contracts";
 import { Token, AddressBalance, BridgeToken, BridgeTransfer, TokenReserveless } from "./interfaces/tokens";
-import { Stake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
+import { Stake, NFTStake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 import { MultisigWallets, TransactionData } from "./interfaces/multisig";
 import fetch from "node-fetch";
@@ -34,6 +34,26 @@ export default class Queries {
             })
         })
         const characters = await results.json();
+        return characters.data;
+    }
+
+    // Like query(), but returns null when the subgraph rejects the query because its
+    // schema lacks a field or entity (deployments that predate NFT delegation via the
+    // main delegation contract have no `nftstakes` and no `Stake.nftBackedAmount`).
+    private async queryIfSupported(q:string, endpoint: string) {
+        const results = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                query: q
+            })
+        })
+        const characters = await results.json();
+        if (characters.errors?.some((e: { message?: string }) => /has no field/i.test(e.message ?? ''))) {
+            return null;
+        }
         return characters.data;
     }
 
@@ -152,7 +172,7 @@ export default class Queries {
     }
 
     public async getStakes(options: string): Promise<SubgraphResponse<Stake[]>> {
-        const result = await this.query(`{
+        const stakesQuery = (extraFields: string) => `{
             _meta {
                 block {
                     number
@@ -166,7 +186,7 @@ export default class Queries {
                 delegator
                 token {
                     address
-                    symbol  
+                    symbol
                 }
                 nft {
                     tokenURI
@@ -179,12 +199,84 @@ export default class Queries {
                 tokenId
                 amount
                 tokenType
-                holdTimestamp
+                holdTimestamp${extraFields}
             }
-        }`, getSubgraphEndpoint(this.network))
+        }`
+        const endpoint = getSubgraphEndpoint(this.network)
+        const result = await this.queryIfSupported(stakesQuery(`
+                nftBackedAmount`), endpoint) ?? await this.query(stakesQuery(''), endpoint)
         return {
             meta: result._meta,
             data: result.stakes
+        }
+    }
+
+    // NFT delegations: active NFTs delegated via the main delegation contract (`nftstakes`)
+    // plus legacy NFT stakes of the old delegation-nft contract (`stakes` with an NFT
+    // tokenType), both in the Stake shape. On subgraphs without `nftstakes` only the
+    // legacy ones are returned. `first`/`skip` apply to each of the two lists.
+    public async getNFTStakes(nftStakesOptions: string, legacyOptions: string): Promise<SubgraphResponse<Stake[]>> {
+        const result = await this.queryIfSupported(`{
+            _meta {
+                block {
+                    number
+                }
+            }
+            nftstakes${nftStakesOptions} {
+                id
+                validator {
+                    address
+                }
+                delegator
+                nftContract {
+                    address
+                    symbol
+                    name
+                    tokenType
+                }
+                nft {
+                    tokenURI
+                    collection {
+                        address
+                        symbol
+                        name
+                    }
+                }
+                tokenId
+                amount
+                reserveToken {
+                    address
+                    symbol
+                }
+                reserveAmount
+                isActive
+                coinStake {
+                    id
+                    amount
+                    nftBackedAmount
+                    holdTimestamp
+                }
+            }
+        }`, getSubgraphEndpoint(this.network))
+        const legacy = await this.getStakes(legacyOptions)
+        if (!result) return legacy
+        const nftStakes: Stake[] = (result.nftstakes as NFTStake[]).map((s) => ({
+            id: s.id,
+            validator: s.validator,
+            delegator: s.delegator,
+            token: null,
+            nft: s.nft,
+            tokenId: s.tokenId,
+            amount: s.amount,
+            tokenType: s.nftContract.tokenType,
+            holdTimestamp: s.coinStake?.holdTimestamp ?? '0',
+            reserveToken: s.reserveToken,
+            reserveAmount: s.reserveAmount,
+            coinStakeId: s.coinStake?.id,
+        }))
+        return {
+            meta: result._meta,
+            data: [...nftStakes, ...legacy.data]
         }
     }
 

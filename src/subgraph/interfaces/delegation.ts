@@ -20,6 +20,55 @@ export interface Stake {
     amount: string;
     tokenType: string;
     holdTimestamp: string;
+    // coin stakes only: part of the stake backed by delegated NFT reserves (delegateNFT).
+    // The full stake in the contract is amount + nftBackedAmount. Undefined on subgraph
+    // deployments that predate NFT delegation via the main delegation contract.
+    nftBackedAmount?: string | null;
+    // NFT stakes delegated via the main delegation contract (delegateNFT) only
+    reserveToken?: {
+        address: string;
+        symbol: string;
+    } | null
+    reserveAmount?: string;
+    coinStakeId?: string;
+}
+
+// NFT delegated via the main delegation contract (delegateNFT). Its reserve is added to the
+// delegator's coin stake (coinStake.nftBackedAmount) at the same validator.
+export interface NFTStake {
+    id: string;
+    validator: {
+        address: string;
+    }
+    delegator: string;
+    nftContract: {
+        address: string;
+        symbol: string;
+        name: string;
+        tokenType: string;
+    }
+    nft: {
+        tokenURI: string;
+        collection: {
+            address: string;
+            symbol: string;
+            name: string;
+        }
+    } | null
+    tokenId: string;
+    amount: string;
+    reserveToken: {
+        address: string;
+        symbol: string;
+    } | null
+    reserveAmount: string;
+    isActive: boolean;
+    coinStake: {
+        id: string;
+        amount: string;
+        nftBackedAmount: string | null;
+        holdTimestamp: string;
+    } | null
 }
 
 export interface TransferStake {

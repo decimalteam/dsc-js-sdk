@@ -20,6 +20,48 @@ export interface Stake {
     amount: string;
     tokenType: string;
     holdTimestamp: string;
+    nftBackedAmount?: string | null;
+    reserveToken?: {
+        address: string;
+        symbol: string;
+    } | null;
+    reserveAmount?: string;
+    coinStakeId?: string;
+}
+export interface NFTStake {
+    id: string;
+    validator: {
+        address: string;
+    };
+    delegator: string;
+    nftContract: {
+        address: string;
+        symbol: string;
+        name: string;
+        tokenType: string;
+    };
+    nft: {
+        tokenURI: string;
+        collection: {
+            address: string;
+            symbol: string;
+            name: string;
+        };
+    } | null;
+    tokenId: string;
+    amount: string;
+    reserveToken: {
+        address: string;
+        symbol: string;
+    } | null;
+    reserveAmount: string;
+    isActive: boolean;
+    coinStake: {
+        id: string;
+        amount: string;
+        nftBackedAmount: string | null;
+        holdTimestamp: string;
+    } | null;
 }
 export interface TransferStake {
     id: string;

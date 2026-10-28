@@ -135,25 +135,29 @@ export default class Subgraph {
         return await this.query.getWithdrawStakes(options)
     }
 
-    // stakes nft
+    // stakes nft: NFTs delegated via the main delegation contract (delegateNFT) and legacy
+    // stakes of the old delegation-nft contract; `first`/`skip` apply to each of the two lists
     public async getNFTStakes(first: number, skip: number): Promise<SubgraphResponse<Stake[]>>  {
         this.checkFirstAndSkip(first, skip)
+        const nftStakesOptions = `(where: { isActive: true }, first: ${first}, skip: ${skip})`
         const options = `(where: { tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
-        return await this.query.getStakes(options)
+        return await this.query.getNFTStakes(nftStakesOptions, options)
     }
-    
+
     public async getNFTStakesByAddress(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
+        const nftStakesOptions = `(where: { delegator: "${verifyAddress}", isActive: true }, first: ${first}, skip: ${skip})`
         const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
-        return await this.query.getStakes(options)
+        return await this.query.getNFTStakes(nftStakesOptions, options)
     }
 
     public async getNFTStakesByValidotor(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
         const verifyAddress = ethers.utils.getAddress(address)
+        const nftStakesOptions = `(where: { validator: "${verifyAddress.toLowerCase()}", isActive: true }, first: ${first}, skip: ${skip})`
         const options = `(where: { validator: "${verifyAddress.toLowerCase()}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
-        return await this.query.getStakes(options)
+        return await this.query.getNFTStakes(nftStakesOptions, options)
     }
 
     public async getTransferNFTStakes(first: number, skip: number): Promise<TransferStake[]> {
