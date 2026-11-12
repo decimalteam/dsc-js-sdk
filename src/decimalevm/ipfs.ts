@@ -1,13 +1,14 @@
-
-import FormData from 'form-data'
-import {Blob} from 'buffer';
-import fetch from "node-fetch";
-
 import {
     NETWORKS,
     getIpfsEndpoints
 } from "../endpoints";
 
+const MAX_FILE_SIZE = 100000000; // 100 MB
+
+/**
+ * Upload of NFT/token images and metadata to the Decimal IPFS service.
+ * Uses the global `fetch`, `FormData` and `Blob` (browsers and Node.js >= 18).
+ */
 export default class IPFS {
 
     private readonly network: NETWORKS;
@@ -25,8 +26,8 @@ export default class IPFS {
             "image": ""
         }
     }
-    
-    public async upload(form: any, nft: boolean){
+
+    public async upload(form: FormData, nft: boolean){
         const result = await fetch(`${getIpfsEndpoints(this.network)}${nft ? 'upload' : 'upload-image'}`, {
             method: 'POST',
             body: form
@@ -34,26 +35,15 @@ export default class IPFS {
         return await result.json()
     }
 
-    // for node js
-    public async uploadNFTBufferToIPFS(buffer:Buffer, fileName:string, name:string, description:string) {
-        if (Buffer.byteLength(buffer) > 100000000) throw new Error('File size should not exceed 100 MB.');
-        const form: any = new FormData();
-        const metadata = this.getMetadata(name, description)
-
-        form.append('uploading_files', buffer, { filename: fileName });
-        form.append('uploading_files', JSON.stringify(metadata), { filename: "metadata.json" });
-
-        return await this.upload(form, true)
+    public async uploadNFTBufferToIPFS(buffer: Uint8Array, fileName:string, name:string, description:string) {
+        return await this.uploadNFTBlobToIPFS(new Blob([buffer as BlobPart]), fileName, name, description)
     }
 
-    // for browser
-
-    public async uploadNFTBlobToIPFS(blob:any, fileName:string, name:string, description:string) {
-        if (blob.size > 100000000) throw new Error('File size should not exceed 100 MB.');
-        const form: any = new FormData();
-        const metadata = this.getBlobMetadata(name, description)
+    public async uploadNFTBlobToIPFS(blob: Blob, fileName:string, name:string, description:string) {
+        if (blob.size > MAX_FILE_SIZE) throw new Error('File size should not exceed 100 MB.');
+        const form = new FormData();
         form.append('uploading_files', blob, fileName);
-        form.append('uploading_files', metadata, "metadata.json");
+        form.append('uploading_files', this.getBlobMetadata(name, description), "metadata.json");
 
         return await this.upload(form, true)
     }
@@ -63,12 +53,11 @@ export default class IPFS {
         return new Blob([JSON.stringify(metadata, null, 0)], { type: "application/json" });
     }
 
-    public async uploadTokenBufferToIPFS(buffer: Buffer, fileName: string): Promise<{ image: string }> {
-        if (Buffer.byteLength(buffer) > 100000000) throw new Error('File size should not exceed 100 MB.');
-        
-        const form = new FormData();
+    public async uploadTokenBufferToIPFS(buffer: Uint8Array, fileName: string): Promise<{ image: string }> {
+        if (buffer.byteLength > MAX_FILE_SIZE) throw new Error('File size should not exceed 100 MB.');
 
-        form.append('uploading_files', buffer, { filename: fileName });
+        const form = new FormData();
+        form.append('uploading_files', new Blob([buffer as BlobPart]), fileName);
 
         return await this.upload(form, false)
     }
@@ -76,5 +65,5 @@ export default class IPFS {
     public getUrlFromCid(cid:string) {
         return `${getIpfsEndpoints(this.network)}ipfs/${cid}`
     }
-    
+
 }

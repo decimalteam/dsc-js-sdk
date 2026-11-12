@@ -1,11 +1,8 @@
-/// <reference types="node" />
-/// <reference types="node" />
-import { PrivKey, PubKey } from "./types/ethermint/crypto/v1/ethsecp256k1/keys";
 export declare function generateDerivationPath(depth: number): string;
 export declare function generateMnemonic(): string;
 export declare function validateMnemonic(mnemonic: string): boolean;
-export declare function mnemonicToSeedSync(mnemonic: string): Buffer;
-export declare function createDecimalWalletFromMnemonic(mnemonic: string, addressPrefix?: string, derivation_path?: string, id?: number): generatedWallet;
+export declare function mnemonicToSeedSync(mnemonic: string): Uint8Array;
+export declare function createDecimalWalletFromMnemonic(mnemonic: string, addressPrefix?: string, derivationPath?: string, id?: number): generatedWallet;
 export interface generatedWallet {
     privateKey: Uint8Array;
     address: string;
@@ -13,10 +10,13 @@ export interface generatedWallet {
     id: number;
     evmAddress?: string;
 }
+/**
+ * HD wallet of the Decimal chain. Holds the master mnemonic and the derived accounts
+ * (`m/44'/60'/0'/0/<id>`); `address` is the bech32 (d0...) form, `evmAddress` the 0x form.
+ */
 export default class Wallet {
     mnemonic: string;
-    isNodeDirectMode: boolean;
-    validatorAddress: any;
+    validatorAddress: string | undefined;
     wallet: generatedWallet;
     depth: number;
     id: number;
@@ -24,32 +24,27 @@ export default class Wallet {
     publicKey: Uint8Array;
     evmAddress: string | undefined;
     address: string;
-    readonly availableProposalSubmit: boolean;
     private gateUrl;
-    private nodeRestUrl;
     wallets: generatedWallet[];
-    currentNonce: number | null;
-    currentNonceValidUntil: any;
+    /**
+     * @param mnemonic master mnemonic; an empty string generates a new one
+     * @param address with `publicKey` creates a read-only wallet (no private key)
+     * @param publicKey public key of the read-only wallet
+     */
     constructor(mnemonic: string, address?: string | null, publicKey?: Uint8Array | null);
-    setNodeDirectMode(isNodeDirectMode: boolean): void;
-    setNodeRestUrl(nodeRestUrl: string): void;
-    getNodeRestUrl(): string;
     setGateUrl(gateUrl: string): void;
     getGateUrl(): string;
-    getPrivateKeyString(): string;
+    /** Private key of the current account as 0x-prefixed hex. */
     getPrivateKeyHex(): string;
-    getPublicKeyString(): string;
-    getPrivateKey(): PrivKey;
-    getPublicKey(compressed?: boolean): PubKey;
+    /** Compressed public key of the current account as 0x-prefixed hex. */
+    getPublicKeyHex(): string;
     switchAccount(id: number): void;
     generateAccount(): void;
     generateAndSwitchAccount(depth: number, id: number): void;
+    /** Restores accounts previously saved with `sendAndSaveGeneratedWallets` (needs `setGateUrl`). */
     getAndUseGeneratedWallets(): Promise<void>;
+    /** Saves ids of the generated accounts in the gate API (needs `setGateUrl`). */
     sendAndSaveGeneratedWallets(): Promise<void>;
-    updateNonce(nonce: number | null): void;
     static encodeCosmosAccountAddress(address: string, prefix?: string): string;
     static decodeCosmosAccountAddress(address: string): string | null;
-    static createPublicKey(pubKey: Uint8Array): PubKey;
-    static encodePubKey(pubKeyCompressed: PubKey): any;
-    static txEncoderDecoder(msgAny: any, memo: string): Uint8Array;
 }

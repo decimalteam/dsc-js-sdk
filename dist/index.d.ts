@@ -1,16 +1,10 @@
 import Wallet from "./wallet";
-import Decimal from "./decimal";
 import TX_TYPE from "./txTypesNew";
 import { DecimalNetworks } from "./networks";
-import { PubKey } from "./types/ethermint/crypto/v1/ethsecp256k1/keys";
-import { EncoderDecoder } from "./utils/encoderDecoder";
-import { MsgRedelegate, MsgUndelegate, MsgDelegate } from "./types/validator/v1/tx";
-import { Transaction } from "./transaction";
 import DecimalEVM from "./decimalevm";
 import Subgraph from "./subgraph";
 declare const Sdk: {
     Wallet: typeof Wallet;
-    Decimal: typeof Decimal;
     DecimalEVM: typeof DecimalEVM;
     Subgraph: typeof Subgraph;
     TX_TYPE: {
@@ -62,94 +56,7 @@ declare const Sdk: {
         testnet: import("./endpoints").NETWORKS;
         mainnet: import("./endpoints").NETWORKS;
     };
-    PubKey: {
-        encode(message: PubKey, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
-        decode(input: Uint8Array | import("protobufjs").Reader, length?: number | undefined): PubKey;
-        fromJSON(object: any): PubKey;
-        toJSON(message: PubKey): unknown;
-        fromPartial<I extends {
-            key?: Uint8Array | undefined;
-        } & {
-            key?: Uint8Array | undefined;
-        } & Record<Exclude<keyof I, "key">, never>>(object: I): PubKey;
-    };
-    EncoderDecoder: typeof EncoderDecoder;
-    Transaction: typeof Transaction;
-    MsgRedelegate: {
-        encode(message: MsgRedelegate, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
-        decode(input: Uint8Array | import("protobufjs").Reader, length?: number | undefined): MsgRedelegate;
-        fromJSON(object: any): MsgRedelegate;
-        toJSON(message: MsgRedelegate): unknown;
-        fromPartial<I_1 extends {
-            delegator?: string | undefined;
-            validatorSrc?: string | undefined;
-            validatorDst?: string | undefined;
-            coin?: {
-                denom?: string | undefined;
-                amount?: string | undefined;
-            } | undefined;
-        } & {
-            delegator?: string | undefined;
-            validatorSrc?: string | undefined;
-            validatorDst?: string | undefined;
-            coin?: ({
-                denom?: string | undefined;
-                amount?: string | undefined;
-            } & {
-                denom?: string | undefined;
-                amount?: string | undefined;
-            } & { [K in Exclude<keyof I_1["coin"], keyof import("./types/cosmos/base/v1beta1/coin").Coin>]: never; }) | undefined;
-        } & { [K_1 in Exclude<keyof I_1, keyof MsgRedelegate>]: never; }>(object: I_1): MsgRedelegate;
-    };
-    MsgUndelegate: {
-        encode(message: MsgUndelegate, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
-        decode(input: Uint8Array | import("protobufjs").Reader, length?: number | undefined): MsgUndelegate;
-        fromJSON(object: any): MsgUndelegate;
-        toJSON(message: MsgUndelegate): unknown;
-        fromPartial<I_2 extends {
-            delegator?: string | undefined;
-            validator?: string | undefined;
-            coin?: {
-                denom?: string | undefined;
-                amount?: string | undefined;
-            } | undefined;
-        } & {
-            delegator?: string | undefined;
-            validator?: string | undefined;
-            coin?: ({
-                denom?: string | undefined;
-                amount?: string | undefined;
-            } & {
-                denom?: string | undefined;
-                amount?: string | undefined;
-            } & { [K_2 in Exclude<keyof I_2["coin"], keyof import("./types/cosmos/base/v1beta1/coin").Coin>]: never; }) | undefined;
-        } & { [K_3 in Exclude<keyof I_2, keyof MsgUndelegate>]: never; }>(object: I_2): MsgUndelegate;
-    };
-    MsgDelegate: {
-        encode(message: MsgDelegate, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
-        decode(input: Uint8Array | import("protobufjs").Reader, length?: number | undefined): MsgDelegate;
-        fromJSON(object: any): MsgDelegate;
-        toJSON(message: MsgDelegate): unknown;
-        fromPartial<I_3 extends {
-            delegator?: string | undefined;
-            validator?: string | undefined;
-            coin?: {
-                denom?: string | undefined;
-                amount?: string | undefined;
-            } | undefined;
-        } & {
-            delegator?: string | undefined;
-            validator?: string | undefined;
-            coin?: ({
-                denom?: string | undefined;
-                amount?: string | undefined;
-            } & {
-                denom?: string | undefined;
-                amount?: string | undefined;
-            } & { [K_4 in Exclude<keyof I_3["coin"], keyof import("./types/cosmos/base/v1beta1/coin").Coin>]: never; }) | undefined;
-        } & { [K_5 in Exclude<keyof I_3, keyof MsgDelegate>]: never; }>(object: I_3): MsgDelegate;
-    };
 };
 export default Sdk;
-export { Wallet, Decimal, DecimalEVM, Subgraph, TX_TYPE, DecimalNetworks };
+export { Wallet, DecimalEVM, Subgraph, TX_TYPE, DecimalNetworks };
 export * from "./utils/walletUtils";

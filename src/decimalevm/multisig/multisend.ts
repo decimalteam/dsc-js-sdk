@@ -2,8 +2,8 @@ import { ethers, BigNumberish } from "ethers";
 import { buildContractCall, MetaTransaction, SafeTransaction } from "./execution";
 
 const encodeMetaTransaction = (tx: MetaTransaction): string => {
-    const data = ethers.utils.arrayify(tx.data);
-    const encoded = ethers.utils.solidityPack(
+    const data = ethers.getBytes(tx.data);
+    const encoded = ethers.solidityPacked(
         ["uint8", "address", "uint256", "uint256", "bytes"],
         [tx.operation, tx.to, tx.value, data.length, data],
     );

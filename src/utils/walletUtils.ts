@@ -1,290 +1,122 @@
-import axios from "axios";
-import { decode } from "bech32";
-import * as bech32 from "bech32-buffer";
-import bs58 from "bs58";
-import * as CryptoJS from "crypto-js";
-import { decode as rlpDecode } from "rlp";
-import { publicKeyConvert } from "secp256k1";
-import Wallet from "src/wallet";
-import { PubKey } from "../types/ethermint/crypto/v1/ethsecp256k1/keys";
-import { EncoderDecoder } from "./encoderDecoder";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const sortobject = require("deep-sort-object");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const sha3 = require("js-sha3");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const EC = require("elliptic").ec;
+import { bech32 } from "bech32";
+import {
+  SigningKey,
+  computeAddress,
+  getBytes,
+  hexlify,
+  keccak256,
+  toUtf8Bytes,
+} from "ethers";
 
-const ec = new EC("secp256k1");
-
-// constants
-const MAX_AUTOMATICALLY_NONCE_VALID_UNTIL = 6 * 1000;
+export const ADDRESS_PREFIX = "d0";
 
 /**
- * @param {string} address Decimal blockchain address
- * @param {'d0' | 'd0valoper' | string} prefix Prefix
- * @returns {boolean} boolean to indicate address validation
+ * Checks that `address` is a valid bech32 Decimal address with the given prefix.
+ * @param address Decimal address (d0...)
+ * @param prefix expected prefix, `d0` by default (`d0valoper` for validators)
  */
-export function verifyAddress(address: string, prefix = "d0") {
+export function verifyAddress(address: string, prefix = ADDRESS_PREFIX): boolean {
   if (!address) {
     throw new Error("address is missing.");
   }
 
   try {
-    const decoded = decode(address);
+    const decoded = bech32.decode(address);
     return prefix === decoded.prefix && decoded.words !== undefined;
   } catch (error) {
     return false;
   }
 }
 
-export function verifyCheck(check: any) {
+/**
+ * Converts a bech32 Decimal address (d0...) to a lowercase EVM address (0x...).
+ * Returns null when the address can not be decoded.
+ */
+export const decodeCosmosAccountAddress = (cosmosAccountAddress: string): string | null => {
   try {
-    const decodedCheck = bs58.decode(check);
-    return rlpDecode(decodedCheck);
+    const { words } = bech32.decode(cosmosAccountAddress);
+    return hexlify(Uint8Array.from(bech32.fromWords(words)));
   } catch (e) {
-    return false;
+    return null;
   }
+};
+
+/** Converts an EVM address (0x...) to a bech32 Decimal address with the given prefix. */
+export const encodeCosmosAccountAddress = (
+  evmAccountAddress: string,
+  prefix = ADDRESS_PREFIX
+): string => {
+  const hex = evmAccountAddress.startsWith("0x") ? evmAccountAddress : `0x${evmAccountAddress}`;
+  return bech32.encode(prefix, bech32.toWords(getBytes(hex)));
+};
+
+/** Computes a lowercase EVM address from a (compressed or uncompressed) secp256k1 public key. */
+export const encodeEvmAccountAddress = (publicKey: Uint8Array | string): string => {
+  return computeAddress(hexlify(publicKey)).toLowerCase();
+};
+
+export const encodeAddresses = (publicKey: Uint8Array | string, prefix = ADDRESS_PREFIX) => {
+  const evmAccountAddress = encodeEvmAccountAddress(publicKey);
+  const cosmosAccountAddress = encodeCosmosAccountAddress(evmAccountAddress, prefix);
+  return { cosmosAccountAddress, evmAccountAddress };
+};
+
+/**
+ * Signs `{ timestamp }` the way the Decimal gate API expects:
+ * keccak256 of the JSON message, signature serialized as `{"r","s","recoveryParam"}` with
+ * unpadded hex `r`/`s` (compatible with signatures previously produced by `elliptic`).
+ */
+export function signTimestamp(privateKey: Uint8Array | string, timestamp: number): string {
+  const msgHash = keccak256(toUtf8Bytes(JSON.stringify({ timestamp })));
+  const sig = new SigningKey(hexlify(privateKey)).sign(msgHash);
+  return JSON.stringify({
+    r: BigInt(sig.r).toString(16),
+    s: BigInt(sig.s).toString(16),
+    recoveryParam: sig.yParity,
+  });
 }
 
-export async function getAndUseGeneratedWallets(gateUrl: any, address: any) {
+/** Loads ids of the additionally generated accounts saved for `address` in the gate API. */
+export async function getAndUseGeneratedWallets(gateUrl: string, address: string): Promise<number[]> {
   try {
-    const { data } = await axios.get(
-      `${gateUrl}address/${address}/generated-wallets`
-    );
-    console.log(data);
-    return (data && data.result && data.result.generatedWallets) || [];
-  } catch (e: any) {
-    if (e.response && e.response.code && e.response.code !== 404) {
-      console.error(e);
+    const res = await fetch(`${gateUrl}address/${address}/generated-wallets`);
+    if (!res.ok) {
+      if (res.status !== 404) console.error(`Failed to load generated wallets: HTTP ${res.status}`);
+      return [];
     }
-
+    const data: any = await res.json();
+    return (data && data.result && data.result.generatedWallets) || [];
+  } catch (e) {
+    console.error(e);
     return [];
   }
 }
 
+/** Saves ids of the generated accounts for the master wallet (`wallets[0]`) in the gate API. */
 export async function sendAndSaveGeneratedWallets(
-  gateUrl: any,
-  wallets: any,
-  generatedWallets: any
-) {
+  gateUrl: string,
+  wallets: Array<{ privateKey: Uint8Array; address: string }>,
+  generatedWallets: number[]
+): Promise<boolean> {
   try {
     const timestamp = Math.round(new Date().getTime() / 1000.0);
-
-    const msg = {
-      timestamp,
-    };
-
-    const msgHash = sha3.keccak256(JSON.stringify(msg));
-
-    const signature = JSON.stringify(
-      ec.sign(msgHash, wallets[0].privateKey, "hex", { canonical: true })
-    );
-
     const payload = {
       generatedWallets,
       timestamp,
-      signature,
+      signature: signTimestamp(wallets[0].privateKey, timestamp),
     };
 
-    const { data } = await axios.put(
-      `${gateUrl}address/${wallets[0].address}/generated-wallets`,
-      payload
-    );
-    console.log(data);
-    return false;
-  } catch (e: any) {
-    if (e.response && e.response.code && e.response.code !== 404) {
-      console.error(e);
+    const res = await fetch(`${gateUrl}address/${wallets[0].address}/generated-wallets`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok && res.status !== 404) {
+      console.error(`Failed to save generated wallets: HTTP ${res.status}`);
     }
-
+    return res.ok;
+  } catch (e) {
+    console.error(e);
     return false;
   }
-}
-
-export function getStringHash(value: any) {
-  return CryptoJS.SHA1(value).toString();
-}
-
-export function generateNftId(
-  headline: any,
-  description: any,
-  slug: any,
-  coverHash = null,
-  assetHash = null
-) {
-  try {
-    const hashes = [
-      getStringHash(headline),
-      getStringHash(description),
-      getStringHash(slug),
-      coverHash,
-      assetHash,
-    ];
-
-    const id = hashes.reduce((acc: any, value) => acc + value);
-
-    return getStringHash(id);
-  } catch (e: any) {
-    console.error(e);
-
-    throw new Error("Error when trying to get a hash " + e.message);
-  }
-}
-
-export function getTimestamp() {
-  return new Date().getTime();
-}
-
-export function isNonceSetAutomatically(wallet: any, options: any) {
-  return (
-    options.setNonceAutomatically &&
-    Boolean(wallet.currentNonce) &&
-    getTimestamp() - wallet.currentNonceValidUntil <
-      MAX_AUTOMATICALLY_NONCE_VALID_UNTIL
-  );
-}
-
-// export function updateNonce(wallet: any, nonce: any) {
-//   wallet.updateNonce(+nonce);
-// }
-
-export const decodeCosmosAccountAddress = (cosmosAccountAddress: any) => {
-  try {
-    const decodedCosmosAccountAddress = bech32.decode(cosmosAccountAddress);
-
-    const hexedEvmAccountAddress = Buffer.from(
-      decodedCosmosAccountAddress.data
-    ).toString("hex");
-
-    const evmAccountAddress = `0x${hexedEvmAccountAddress}`;
-
-    return evmAccountAddress;
-  } catch (e) {
-    return null;
-  }
-};
-
-export const encodeCosmosAccountAddress = (
-  evmAccountAddress: any,
-  prefix = "d0"
-) => {
-  const formattedEvmAccountAddress = evmAccountAddress.startsWith("0x")
-    ? evmAccountAddress.slice(2)
-    : evmAccountAddress;
-
-  const bufferedEvmAccountAddress = Buffer.from(
-    formattedEvmAccountAddress,
-    "hex"
-  );
-
-  const cosmosAccountAddress = bech32.encode(prefix, bufferedEvmAccountAddress);
-
-  return cosmosAccountAddress;
-};
-
-export const encodeEvmAccountAddress = (publicKey: any) => {
-  const decompressedPublicKey = publicKeyConvert(publicKey, false);
-
-  const slicedDecompressedPublicKey = decompressedPublicKey.slice(1);
-
-  const hexedDecompressedPublicKey = sha3.keccak256(
-    slicedDecompressedPublicKey
-  );
-
-  const evmAccountAddress = `0x${hexedDecompressedPublicKey.substring(
-    hexedDecompressedPublicKey.length - 40,
-    hexedDecompressedPublicKey.length
-  )}`;
-
-  return evmAccountAddress;
-};
-
-export const encodeAddresses = (publicKey: any, prefix = "d0") => {
-  const evmAccountAddress = encodeEvmAccountAddress(publicKey);
-
-  const cosmosAccountAddress = encodeCosmosAccountAddress(
-    evmAccountAddress,
-    prefix
-  );
-
-  return { cosmosAccountAddress, evmAccountAddress };
-};
-
-export const perpareTimestampAndSignature = (wallet: Wallet) => {
-  const timestamp = Math.round(new Date().getTime() / 1000.0);
-
-  const data: any = {
-    timestamp,
-  };
-  const msg = sortobject(data);
-  const msgHash = sha3.keccak256(JSON.stringify(msg));
-  // const key = ec.keyFromPrivate(wallet.wallets[0].privateKey);
-  const signature = ec.sign(msgHash, wallet.privateKey, "hex", {
-    canonical: true,
-  });
-  return {
-    timestamp,
-    signature,
-  };
-};
-
-export function getWalletAddressFromSignature(
-  data: Record<string, string | string[] | number>,
-  signature: string | string[]
-): string | null {
-  try {
-    // sort msg object by keys
-    const msg = sortobject(data);
-
-    // getting message hash
-    const msgHash = sha3.keccak256(JSON.stringify(msg));
-    // hex to decimal function
-    const hexToDecimal = (x: any) =>
-      ec.keyFromPrivate(x, "hex").getPrivate().toString(10);
-
-    // casting signature as string
-    const rawSignature = signature as string;
-
-    // parsing raw signature from string
-    const parsedSignature = JSON.parse(rawSignature);
-
-    // getting public key from signature
-    const pubKeyRecovered = ec.recoverPubKey(
-      hexToDecimal(msgHash),
-      parsedSignature,
-      parsedSignature.recoveryParam,
-      "hex"
-    );
-
-    // getting wallet address from recovered public key
-    const pubKey = new Uint8Array(pubKeyRecovered.encodeCompressed("bites"));
-    const { cosmosAccountAddress } = encodeAddresses(pubKey);
-    // console.log("address from utils: ", cosmosAccountAddress);
-
-    return cosmosAccountAddress;
-  } catch (e) {
-    console.error(e);
-
-    return null;
-  }
-}
-
-export const createPublicKey = (pubKey: Uint8Array) => {
-  return PubKey.fromPartial({
-    key: pubKey,
-  });
-};
-
-export function encodePubKey(pubKeyCompressed: PubKey): any {
-  const encoderDecoder = new EncoderDecoder();
-  return encoderDecoder.encodePubKey(pubKeyCompressed);
-}
-
-export function txEncoderDecoder(msgAny: any, memo: string): Uint8Array {
-  const txEncoderDecoder = new EncoderDecoder();
-  return txEncoderDecoder.encodeTxBody({
-    messages: [msgAny],
-    memo: memo,
-  });
 }

@@ -1,5 +1,4 @@
 const path = require('path');
-const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = ({ development }) => ({
@@ -10,14 +9,16 @@ module.exports = ({ development }) => ({
     output: {
         filename: 'index.js',
         path: path.resolve(__dirname, 'dist'),
-        library: 'decimal',
-        libraryExport: 'default',
-        libraryTarget: 'umd',
-        umdNamedDefine: true,
+        clean: true,
+        library: {
+            name: 'decimal',
+            type: 'umd',
+            umdNamedDefine: true,
+        },
         globalObject: 'typeof self === \'undefined\' ? this : self',
     },
     resolve: {
-        extensions: ['.ts'],
+        extensions: ['.ts', '.js'],
     },
     module: {
         rules: [
@@ -28,17 +29,7 @@ module.exports = ({ development }) => ({
                     loader: 'ts-loader',
                 },
             },
-            // {
-            //     test: /\.js$/,
-            //     exclude: /node_modules/,
-            //     use: {
-            //         loader: 'babel-loader',
-            //     }
-            // },
         ],
     },
-    plugins: [
-        new NodePolyfillPlugin()
-    ],
-    externals: [nodeExternals()]
+    externals: [nodeExternals()],
 });

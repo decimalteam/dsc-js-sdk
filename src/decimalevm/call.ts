@@ -1,4 +1,4 @@
-import {ethers, Wallet as HDNodeWallet} from "ethers";
+import { ethers, HDNodeWallet } from "ethers";
 import DecimalContractEVM from "./contract";
 import { Stake, NFTStake } from "./interfaces/delegation";
 import { ValidatorStatus } from "./interfaces/validator";
@@ -12,7 +12,6 @@ import {
     executeTx,
     executeTxWithSigners,
     MetaTransaction,
-    safeApproveHash,
     SafeSignature,
     safeSignTypedData,
     SafeTransaction
@@ -22,8 +21,6 @@ import { buildMultiSendSafeTx } from "./multisig/multisend";
 export enum TypeNFT {
     DRC721,
     DRC1155,
-    //DRC721Standart,
-    //DRC1155Standart,
 }
 
 export enum FreezeType {
@@ -49,12 +46,12 @@ export type NFTCollection = {
     symbol: string;
     name: string;
     contractURI: string;
-    allowMint: boolean;
     burnable: boolean;
     refundable: boolean;
 }
 
-export type NFTCollectionReserveless = Omit<NFTCollection, 'refundable'>
+/** `refundable` is ignored by reserveless collections (there is no reserve) and defaults to `false`. */
+export type NFTCollectionReserveless = Omit<NFTCollection, 'refundable'> & { refundable?: boolean }
 
 
 export type ValidotorStake = {
@@ -65,13 +62,12 @@ export type ValidotorStake = {
 export default class Call {
 
     private readonly network: NETWORKS;
-    private readonly provider: ethers.providers.JsonRpcProvider;
+    private readonly provider: ethers.JsonRpcProvider;
     private readonly account: HDNodeWallet;
     public contractCenter?: DecimalContractEVM;
     public tokenCenter?: DecimalContractEVM;
     public delegation?: DecimalContractEVM;
     public nftCenter?: DecimalContractEVM;
-    public delegationNft?: DecimalContractEVM;
     public masterValidator?: DecimalContractEVM;
     public multiCall?: DecimalContractEVM;
     public safe?: DecimalContractEVM;
@@ -85,7 +81,7 @@ export default class Call {
 
     public constructor(
         network: NETWORKS,
-        provider: ethers.providers.JsonRpcProvider,
+        provider: ethers.JsonRpcProvider,
         account: HDNodeWallet,
     ) {
         this.network = network
@@ -110,9 +106,6 @@ export default class Call {
                 break;
             case 'nftCenter':
                 this.nftCenter = decimalContractEVM
-                break;
-            case 'delegationNft':
-                this.delegationNft = decimalContractEVM
                 break;
             case 'masterValidator':
                 this.masterValidator = decimalContractEVM
@@ -144,14 +137,14 @@ export default class Call {
         if (options === undefined) options = {};
         if (this.network == NETWORKS.TESTNET) {
             const feeData = await this.provider.getFeeData()
-            const gasPrice = feeData.gasPrice!.add(1)
+            const gasPrice = feeData.gasPrice! + BigInt(1)
             options.gasPrice = gasPrice
         }
         return options
     }
     private parseLog(contract: ethers.Contract,  logs:any, eventName: string) {
         return logs
-        .filter((log:any) => (ethers.utils.getAddress(log.address) == ethers.utils.getAddress(contract.address)))
+        .filter((log:any) => (ethers.getAddress(log.address) == ethers.getAddress((contract.target as string))))
         .map((log:any) => {
           try {
             return contract.interface.parseLog(log);
@@ -159,7 +152,7 @@ export default class Call {
             return undefined;
           }
         })
-        .find((event:ethers.utils.LogDescription) => event?.name === eventName)
+        .find((event:ethers.LogDescription) => event?.name === eventName)
     }
     
     // -----------write functions----------
@@ -167,23 +160,23 @@ export default class Call {
     //multicall
     public async multicall(value: string | number | bigint, calls: {target: string; value: string; callData: string;}[], estimateGas?: boolean) {
         if (estimateGas) {
-            return await this.multiCall!.contract.estimateGas.aggregate(calls, await this.txOptions({value: value}))
+            return await this.multiCall!.contract.aggregate.estimateGas(calls, await this.txOptions({value: value}))
         }
         if (this.debug)
-            await this.multiCall!.contract.callStatic.aggregate(calls, await this.txOptions({value: value}))
-        return await this.multiCall!.contract.aggregate(calls, await this.txOptions({value: value})).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.multiCall!.contract.aggregate.staticCall(calls, await this.txOptions({value: value}))
+        return await this.multiCall!.contract.aggregate(calls, await this.txOptions({value: value})).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     //token-center
     public async createToken(token:Token, reserve: string | number | bigint, estimateGas?: boolean): Promise<any> {
         if (estimateGas) {
-            return await this.tokenCenter!.contract.estimateGas.createToken(token, await this.txOptions({value: reserve}))
+            return await this.tokenCenter!.contract.createToken.estimateGas(token, await this.txOptions({value: reserve}))
         }
 
         if (this.debug)
-            await this.tokenCenter!.contract.callStatic.createToken(token, await this.txOptions({value: reserve}))
-        const tx = await this.tokenCenter!.contract.createToken(token, await this.txOptions({value: reserve})).then((tx: ethers.ContractTransaction) => tx.wait());
-        const event = this.parseLog(this.tokenCenter!.contract, tx.logs, 'TokenDeployed')
+            await this.tokenCenter!.contract.createToken.staticCall(token, await this.txOptions({value: reserve}))
+        const tx = await this.tokenCenter!.contract.createToken(token, await this.txOptions({value: reserve})).then((tx: ethers.ContractTransactionResponse) => tx.wait());
+        const event = this.parseLog(this.tokenCenter!.contract, tx!.logs, 'TokenDeployed')
         return {tx: tx, tokenAddress: event.args[0]};
     }
 
@@ -201,7 +194,7 @@ export default class Call {
             cap = '0'
         }
         if (estimateGas) {
-            return await this.tokenCenter!.contract.estimateGas.createTokenReserveless(
+            return await this.tokenCenter!.contract.createTokenReserveless.estimateGas(
                 name,
                 symbol,
                 mintable,
@@ -214,7 +207,7 @@ export default class Call {
         }
 
         if (this.debug)
-            await this.tokenCenter!.contract.callStatic.createTokenReserveless(
+            await this.tokenCenter!.contract.createTokenReserveless.staticCall(
                 name,
                 symbol,
                 mintable,
@@ -234,388 +227,346 @@ export default class Call {
             cap,
             identity,
             await this.txOptions()
-        ).then((tx: ethers.ContractTransaction) => tx.wait());
-        const event = this.parseLog(this.tokenCenter!.contract, tx.logs, 'TokenReservelessDeployed')
+        ).then((tx: ethers.ContractTransactionResponse) => tx.wait());
+        const event = this.parseLog(this.tokenCenter!.contract, tx!.logs, 'TokenReservelessDeployed')
         return {tx: tx, tokenAddress: event.args[0]};
     }
 
     public async convertToken(tokenIn:string, tokenOut: string, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign === undefined) {
-            if (estimateGas) return await this.tokenCenter!.contract.estimateGas["convert(address,address,uint256,uint256,address)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, await this.txOptions())
+            if (estimateGas) return await this.tokenCenter!.contract["convert(address,address,uint256,uint256,address)"].estimateGas(tokenIn, tokenOut, amountIn, amountOutMin, recipient, await this.txOptions())
             if (this.debug)
-                await this.tokenCenter!.contract.callStatic["convert(address,address,uint256,uint256,address)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, await this.txOptions())
-            return await this.tokenCenter!.contract["convert(address,address,uint256,uint256,address)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+                await this.tokenCenter!.contract["convert(address,address,uint256,uint256,address)"].staticCall(tokenIn, tokenOut, amountIn, amountOutMin, recipient, await this.txOptions())
+            return await this.tokenCenter!.contract["convert(address,address,uint256,uint256,address)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         } else {
-            const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await this.tokenCenter!.contract.estimateGas["convert(address,address,uint256,uint256,address,uint256,uint8,bytes32,bytes32)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            const deadline = ethers.MaxUint256
+            if (estimateGas) return await this.tokenCenter!.contract["convert(address,address,uint256,uint256,address,uint256,uint8,bytes32,bytes32)"].estimateGas(tokenIn, tokenOut, amountIn, amountOutMin, recipient, deadline, sign.v, sign.r, sign.s, await this.txOptions())
             if (this.debug)
-                await this.tokenCenter!.contract.callStatic["convert(address,address,uint256,uint256,address,uint256,uint8,bytes32,bytes32)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await this.tokenCenter!.contract["convert(address,address,uint256,uint256,address,uint256,uint8,bytes32,bytes32)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+                await this.tokenCenter!.contract["convert(address,address,uint256,uint256,address,uint256,uint8,bytes32,bytes32)"].staticCall(tokenIn, tokenOut, amountIn, amountOutMin, recipient, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            return await this.tokenCenter!.contract["convert(address,address,uint256,uint256,address,uint256,uint8,bytes32,bytes32)"](tokenIn, tokenOut, amountIn, amountOutMin, recipient, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         }
     }
 
      // token reserveless
 
      public async mintTokenReserveless(contract: ethers.Contract, amount: string | number | bigint, recipient: string, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.mint(recipient, amount, await this.txOptions())
+        if (estimateGas) return await contract.mint.estimateGas(recipient, amount, await this.txOptions())
         if (this.debug)
-            await contract.callStatic.mint(recipient, amount, await this.txOptions())
-        return await contract.mint(recipient, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.mint.staticCall(recipient, amount, await this.txOptions())
+        return await contract.mint(recipient, amount, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     //token
     public async convertToDEL(owner: string, token: string, amount: string | number | bigint, estimateGas: string | number | bigint, sign: ethers.Signature, estimateGasUsage?: boolean) {
-        const deadline = ethers.constants.MaxUint256;
-        if (estimateGasUsage) return await this.gasCenter!.contract.estimateGas.convertToDEL(owner, token, amount, estimateGas, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+        const deadline = ethers.MaxUint256;
+        if (estimateGasUsage) return await this.gasCenter!.contract.convertToDEL.estimateGas(owner, token, amount, estimateGas, deadline, sign.v, sign.r, sign.s, await this.txOptions())
         if (this.debug)
-            await this.gasCenter!.contract.callStatic.convertToDEL(owner, token, amount, estimateGas, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-        return await this.gasCenter!.contract.convertToDEL(owner, token, amount, estimateGas, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.gasCenter!.contract.convertToDEL.staticCall(owner, token, amount, estimateGas, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+        return await this.gasCenter!.contract.convertToDEL(owner, token, amount, estimateGas, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async approveToken(contract: ethers.Contract, spender: string, amount: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.approve(spender, amount, await this.txOptions())
+        if (estimateGas) return await contract.approve.estimateGas(spender, amount, await this.txOptions())
         if (this.debug)
-            await contract.callStatic.approve(spender, amount, await this.txOptions())
-        return await contract.approve(spender, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.approve.staticCall(spender, amount, await this.txOptions())
+        return await contract.approve(spender, amount, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async transferToken(contract: ethers.Contract, to: string, amount: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.transfer(to, amount)
+        if (estimateGas) return await contract.transfer.estimateGas(to, amount)
         if (this.debug)
-            await contract.callStatic.transfer(to, amount)
-        return await contract.transfer(to, amount).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.transfer.staticCall(to, amount)
+        return await contract.transfer(to, amount).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async transferFromToken(contract: ethers.Contract, from: string, to: string, amount: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.transferFrom(from, to, amount)
+        if (estimateGas) return await contract.transferFrom.estimateGas(from, to, amount)
         if (this.debug)
-            await contract.callStatic.transferFrom(from, to, amount)
-        return await contract.transferFrom(from, to, amount).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.transferFrom.staticCall(from, to, amount)
+        return await contract.transferFrom(from, to, amount).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async burnToken(contract: ethers.Contract, amount: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.burn(amount)
+        if (estimateGas) return await contract.burn.estimateGas(amount)
         if (this.debug)
-            await contract.callStatic.burn(amount)
-        return await contract.burn(amount).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.burn.staticCall(amount)
+        return await contract.burn(amount).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async buyTokenForExactDEL(contract: ethers.Contract, amountDel: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.buyTokenForExactDEL(amountOutMin, recipient, await this.txOptions({value: amountDel}))
+        if (estimateGas) return await contract.buyTokenForExactDEL.estimateGas(amountOutMin, recipient, await this.txOptions({value: amountDel}))
         if (this.debug)
-            await contract.callStatic.buyTokenForExactDEL(amountOutMin, recipient, await this.txOptions({value: amountDel}))
-        return await contract.buyTokenForExactDEL(amountOutMin, recipient, await this.txOptions({value: amountDel})).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.buyTokenForExactDEL.staticCall(amountOutMin, recipient, await this.txOptions({value: amountDel}))
+        return await contract.buyTokenForExactDEL(amountOutMin, recipient, await this.txOptions({value: amountDel})).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async buyExactTokenForDEL(contract: ethers.Contract, amountDel: string | number | bigint, amountOut: string | number | bigint, recipient: string, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.buyExactTokenForDEL(amountOut, recipient, await this.txOptions({value: amountDel}))
+        if (estimateGas) return await contract.buyExactTokenForDEL.estimateGas(amountOut, recipient, await this.txOptions({value: amountDel}))
         if (this.debug)
-            await contract.callStatic.buyExactTokenForDEL(amountOut, recipient, await this.txOptions({value: amountDel}))
-        return await contract.buyExactTokenForDEL(amountOut, recipient, await this.txOptions({value: amountDel})).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.buyExactTokenForDEL.staticCall(amountOut, recipient, await this.txOptions({value: amountDel}))
+        return await contract.buyExactTokenForDEL(amountOut, recipient, await this.txOptions({value: amountDel})).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async sellTokensForExactDEL(contract: ethers.Contract, amountOut: string | number | bigint, amountInMax: string | number | bigint, recipient: string, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.sellTokensForExactDEL(amountOut, amountInMax, recipient)
+        if (estimateGas) return await contract.sellTokensForExactDEL.estimateGas(amountOut, amountInMax, recipient)
         if (this.debug)
-            await contract.callStatic.sellTokensForExactDEL(amountOut, amountInMax, recipient)
-        return await contract.sellTokensForExactDEL(amountOut, amountInMax, recipient).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.sellTokensForExactDEL.staticCall(amountOut, amountInMax, recipient)
+        return await contract.sellTokensForExactDEL(amountOut, amountInMax, recipient).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async sellExactTokensForDEL(contract: ethers.Contract, amountIn: string | number | bigint, amountOutMin: string | number | bigint, recipient: string, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.sellExactTokensForDEL(amountIn, amountOutMin, recipient)
+        if (estimateGas) return await contract.sellExactTokensForDEL.estimateGas(amountIn, amountOutMin, recipient)
         if (this.debug)
-            await contract.callStatic.sellExactTokensForDEL(amountIn, amountOutMin, recipient)
-        return await contract.sellExactTokensForDEL(amountIn, amountOutMin, recipient).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.sellExactTokensForDEL.staticCall(amountIn, amountOutMin, recipient)
+        return await contract.sellExactTokensForDEL(amountIn, amountOutMin, recipient).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async updateTokenIdentity(contract: ethers.Contract, newIdentity: string, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.updateTokenIdentity(newIdentity)
+        if (estimateGas) return await contract.updateIdentity.estimateGas(newIdentity, await this.txOptions())
         if (this.debug)
-            await contract.callStatic.updateTokenIdentity(newIdentity)
-        return await contract.updateTokenIdentity(newIdentity).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.updateIdentity.staticCall(newIdentity, await this.txOptions())
+        return await contract.updateIdentity(newIdentity, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
     
     public async updateTokenMaxTotalSupply(contract: ethers.Contract, newMaxTotalSupply: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.updateMaxTotalSupply(newMaxTotalSupply)
+        if (estimateGas) return await contract.updateMaxTotalSupply.estimateGas(newMaxTotalSupply)
         if (this.debug)
-            await contract.callStatic.updateMaxTotalSupply(newMaxTotalSupply)
-        return await contract.updateMaxTotalSupply(newMaxTotalSupply).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.updateMaxTotalSupply.staticCall(newMaxTotalSupply)
+        return await contract.updateMaxTotalSupply(newMaxTotalSupply).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async updateTokenMinTotalSupply(contract: ethers.Contract, newMinTotalSupply: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.updateMinTotalSupply(newMinTotalSupply)
+        if (estimateGas) return await contract.updateMinTotalSupply.estimateGas(newMinTotalSupply)
         if (this.debug)
-            await contract.callStatic.updateMinTotalSupply(newMinTotalSupply)
-        return await contract.updateMinTotalSupply(newMinTotalSupply).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.updateMinTotalSupply.staticCall(newMinTotalSupply)
+        return await contract.updateMinTotalSupply(newMinTotalSupply).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async permitToken(contract: ethers.Contract, owner: string, spender: string, amount: string | number | bigint, sign: ethers.Signature, estimateGas?: boolean) {
-        const deadline = ethers.constants.MaxUint256
-        if (estimateGas) return await contract.estimateGas.permit(owner, spender, amount, deadline, sign.v, sign.r, sign.s)
+        const deadline = ethers.MaxUint256
+        if (estimateGas) return await contract.permit.estimateGas(owner, spender, amount, deadline, sign.v, sign.r, sign.s)
         if (this.debug)
-            await contract.callStatic.permit(owner, spender, amount, deadline, sign.v, sign.r, sign.s)
-        return await contract.permit(owner, spender, amount, deadline, sign.v, sign.r, sign.s).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.permit.staticCall(owner, spender, amount, deadline, sign.v, sign.r, sign.s)
+        return await contract.permit(owner, spender, amount, deadline, sign.v, sign.r, sign.s).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
     
     //delegation
     public async delegateDEL(validator:string, amount: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateDEL(validator, await this.txOptions({value: amount}))
+        if (estimateGas) return await this.delegation!.contract.delegateDEL.estimateGas(validator, await this.txOptions({value: amount}))
         if (this.debug)
-            await this.delegation!.contract.callStatic.delegateDEL(validator, await this.txOptions({value: amount}))
-        return await this.delegation!.contract.delegateDEL(validator, await this.txOptions({value: amount})).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.delegateDEL.staticCall(validator, await this.txOptions({value: amount}))
+        return await this.delegation!.contract.delegateDEL(validator, await this.txOptions({value: amount})).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async delegateDELHold(validator:string, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateHoldDEL(validator, holdTimestamp, await this.txOptions({value: amount}))
+        if (estimateGas) return await this.delegation!.contract.delegateHoldDEL.estimateGas(validator, holdTimestamp, await this.txOptions({value: amount}))
         if (this.debug)
-            await this.delegation!.contract.callStatic.delegateHoldDEL(validator, holdTimestamp, await this.txOptions({value: amount}))
-        return await this.delegation!.contract.delegateHoldDEL(validator, holdTimestamp, await this.txOptions({value: amount})).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.delegateHoldDEL.staticCall(validator, holdTimestamp, await this.txOptions({value: amount}))
+        return await this.delegation!.contract.delegateHoldDEL(validator, holdTimestamp, await this.txOptions({value: amount})).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
     
     public async delegateToken(validator:string, tokenAddress: string, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign === undefined) {
-            if (estimateGas) return await this.delegation!.contract.estimateGas.delegate(validator, tokenAddress, amount, await this.txOptions())
+            if (estimateGas) return await this.delegation!.contract.delegate.estimateGas(validator, tokenAddress, amount, await this.txOptions())
             if (this.debug)
-                await this.delegation!.contract.callStatic.delegate(validator, tokenAddress, amount, await this.txOptions())
-            return await this.delegation!.contract.delegate(validator, tokenAddress, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+                await this.delegation!.contract.delegate.staticCall(validator, tokenAddress, amount, await this.txOptions())
+            return await this.delegation!.contract.delegate(validator, tokenAddress, amount, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         } else {
-            const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await this.delegation!.contract.estimateGas.delegateByPermit(validator, tokenAddress, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            const deadline = ethers.MaxUint256
+            if (estimateGas) return await this.delegation!.contract.delegateByPermit.estimateGas(validator, tokenAddress, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions())
             if (this.debug)
-                await this.delegation!.contract.callStatic.delegateByPermit(validator, tokenAddress, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await this.delegation!.contract.delegateByPermit(validator, tokenAddress, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+                await this.delegation!.contract.delegateByPermit.staticCall(validator, tokenAddress, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            return await this.delegation!.contract.delegateByPermit(validator, tokenAddress, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         }
     }
 
     public async delegateTokenHold(validator:string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign === undefined) {
-            if (estimateGas) return await this.delegation!.contract.estimateGas.delegateHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions())
+            if (estimateGas) return await this.delegation!.contract.delegateHold.estimateGas(validator, tokenAddress, amount, holdTimestamp, await this.txOptions())
             if (this.debug)
-                await this.delegation!.contract.callStatic.delegateHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions())
-            return await this.delegation!.contract.delegateHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+                await this.delegation!.contract.delegateHold.staticCall(validator, tokenAddress, amount, holdTimestamp, await this.txOptions())
+            return await this.delegation!.contract.delegateHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         } else {
-            const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await this.delegation!.contract.estimateGas.delegateHoldByPermit(validator, tokenAddress, amount, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            const deadline = ethers.MaxUint256
+            if (estimateGas) return await this.delegation!.contract.delegateHoldByPermit.estimateGas(validator, tokenAddress, amount, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions())
             if (this.debug)
-                await this.delegation!.contract.callStatic.delegateHoldByPermit(validator, tokenAddress, amount, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await this.delegation!.contract.delegateHoldByPermit(validator, tokenAddress, amount, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+                await this.delegation!.contract.delegateHoldByPermit.staticCall(validator, tokenAddress, amount, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            return await this.delegation!.contract.delegateHoldByPermit(validator, tokenAddress, amount, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         }
     }
 
     public async transferStakeToken(validator:string, tokenAddress: string, amount: string | number | bigint, newValidator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.transfer(validator, tokenAddress, amount, newValidator, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.transfer.estimateGas(validator, tokenAddress, amount, newValidator, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.transfer(validator, tokenAddress, amount, newValidator, await this.txOptions())
-        return await this.delegation!.contract.transfer(validator, tokenAddress, amount, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.transfer.staticCall(validator, tokenAddress, amount, newValidator, await this.txOptions())
+        return await this.delegation!.contract.transfer(validator, tokenAddress, amount, newValidator, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async transferStakeTokenHold(validator:string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.transferHold(validator, tokenAddress, amount, holdTimestamp, newValidator, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.transferHold.estimateGas(validator, tokenAddress, amount, holdTimestamp, newValidator, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.transferHold(validator, tokenAddress, amount, holdTimestamp, newValidator, await this.txOptions())
-        return await this.delegation!.contract.transferHold(validator, tokenAddress, amount, holdTimestamp, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.transferHold.staticCall(validator, tokenAddress, amount, holdTimestamp, newValidator, await this.txOptions())
+        return await this.delegation!.contract.transferHold(validator, tokenAddress, amount, holdTimestamp, newValidator, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async withdrawStakeToken(validator:string, tokenAddress: string, amount: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.withdraw(validator, tokenAddress, amount, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.withdraw.estimateGas(validator, tokenAddress, amount, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.withdraw(validator, tokenAddress, amount, await this.txOptions())
-        return await this.delegation!.contract.withdraw(validator, tokenAddress, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.withdraw.staticCall(validator, tokenAddress, amount, await this.txOptions())
+        return await this.delegation!.contract.withdraw(validator, tokenAddress, amount, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async withdrawStakeTokenHold(validator:string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.withdrawHold.estimateGas(validator, tokenAddress, amount, holdTimestamp, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.withdrawHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions())
-        return await this.delegation!.contract.withdrawHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.withdrawHold.staticCall(validator, tokenAddress, amount, holdTimestamp, await this.txOptions())
+        return await this.delegation!.contract.withdrawHold(validator, tokenAddress, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async stakeTokenToHold(validator:string, tokenAddress: string, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.hold(validator, tokenAddress, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.hold.estimateGas(validator, tokenAddress, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.hold(validator, tokenAddress, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions())
-        return await this.delegation!.contract.hold(validator, tokenAddress, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.hold.staticCall(validator, tokenAddress, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions())
+        return await this.delegation!.contract.hold(validator, tokenAddress, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async stakeTokenResetHold(validator:string, delegator: string, tokenAddress: string, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.resetHold(validator, delegator, tokenAddress, holdTimestamp, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.resetHold.estimateGas(validator, delegator, tokenAddress, holdTimestamp, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.resetHold(validator, delegator, tokenAddress, holdTimestamp, await this.txOptions())
-        return await this.delegation!.contract.resetHold(validator, delegator, tokenAddress, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async stakeTokenResetHoldDEL(validator:string, delegator: string, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.resetHoldDEL(validator, delegator, holdTimestamp, await this.txOptions())
-        if (this.debug)
-            await this.delegation!.contract.callStatic.resetHoldDEL(validator, delegator, holdTimestamp, await this.txOptions())
-        return await this.delegation!.contract.resetHoldDEL(validator, delegator, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.resetHold.staticCall(validator, delegator, tokenAddress, holdTimestamp, await this.txOptions())
+        return await this.delegation!.contract.resetHold(validator, delegator, tokenAddress, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async withdrawTokenWithReset(validator:string, tokenAddress: string, amount: string | number | bigint, holdTimestampsToReset: number[], estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawWithReset(validator, tokenAddress, amount, holdTimestampsToReset, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.withdrawWithReset.estimateGas(validator, tokenAddress, amount, holdTimestampsToReset, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.withdrawWithReset(validator, tokenAddress, amount, holdTimestampsToReset, await this.txOptions())
-        return await this.delegation!.contract.withdrawWithReset(validator, tokenAddress, amount, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.withdrawWithReset.staticCall(validator, tokenAddress, amount, holdTimestampsToReset, await this.txOptions())
+        return await this.delegation!.contract.withdrawWithReset(validator, tokenAddress, amount, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async transferTokenWithReset(oldValidator:string, tokenAddress: string, amount: string | number | bigint, newValidator:string, holdTimestampsToReset: number[], estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.transferWithReset(oldValidator, tokenAddress, amount, newValidator, holdTimestampsToReset, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.transferWithReset.estimateGas(oldValidator, tokenAddress, amount, newValidator, holdTimestampsToReset, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.transferWithReset(oldValidator, tokenAddress, amount, newValidator, holdTimestampsToReset, await this.txOptions())
-        return await this.delegation!.contract.transferWithReset(oldValidator, tokenAddress, amount, newValidator, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.transferWithReset.staticCall(oldValidator, tokenAddress, amount, newValidator, holdTimestampsToReset, await this.txOptions())
+        return await this.delegation!.contract.transferWithReset(oldValidator, tokenAddress, amount, newValidator, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async holdTokenWithReset(validator:string, tokenAddress: string, amount: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.holdWithReset(validator, tokenAddress, amount, newHoldTimestamp, holdTimestampsToReset, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.holdWithReset.estimateGas(validator, tokenAddress, amount, newHoldTimestamp, holdTimestampsToReset, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.holdWithReset(validator, tokenAddress, amount, newHoldTimestamp, holdTimestampsToReset, await this.txOptions())
-        return await this.delegation!.contract.holdWithReset(validator, tokenAddress, amount, newHoldTimestamp, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async applyPenaltyToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean):Promise<any> {
-        try {
-            if (estimateGas) {
-                return await this.delegation!.contract.estimateGas.applyPenaltyToStake(validator, delegator, tokenAddress, await this.txOptions())
-            }
-            if (this.debug)
-                await this.delegation!.contract.callStatic.applyPenaltyToStake(validator, delegator, tokenAddress, await this.txOptions())
-            const tx = await this.delegation!.contract.applyPenaltyToStake(validator, delegator, tokenAddress, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-            return {tx: tx, error: null} 
-        } catch (err: any) {
-            if (err?.revert?.name != null) {
-                return {tx: null, error: err.revert.name} 
-            }
-            throw new Error(err)
-        }
-    }
-
-    public async applyPenaltiesToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean): Promise<any> {
-        try {
-
-            if (estimateGas) {
-                return await this.delegation!.contract.estimateGas.applyPenaltiesToStake(validator, delegator, tokenAddress, await this.txOptions())
-            }
-            if (this.debug)
-                await this.delegation!.contract.callStatic.applyPenaltiesToStake(validator, delegator, tokenAddress, await this.txOptions())
-            const tx = await this.delegation!.contract.applyPenaltiesToStake(validator, delegator, tokenAddress, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-            return {tx: tx, error: null} 
-        } catch (err: any) {
-            if (err?.revert?.name != null) {
-                return {tx: null, error: err.revert.name} 
-            }
-            throw new Error(err)
-        }
+            await this.delegation!.contract.holdWithReset.staticCall(validator, tokenAddress, amount, newHoldTimestamp, holdTimestampsToReset, await this.txOptions())
+        return await this.delegation!.contract.holdWithReset(validator, tokenAddress, amount, newHoldTimestamp, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async completeStakeToken(indexes:string[] | number[], estimateGas?: boolean): Promise<any> {
         try {
             if (estimateGas) {
-                return await this.delegation!.contract.estimateGas.complete(indexes, await this.txOptions())
+                return await this.delegation!.contract.complete.estimateGas(indexes, await this.txOptions())
             }
             if (this.debug)
-                await this.delegation!.contract.callStatic.complete(indexes, await this.txOptions())
-            const tx = await this.delegation!.contract.complete(indexes, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+                await this.delegation!.contract.complete.staticCall(indexes, await this.txOptions())
+            const tx = await this.delegation!.contract.complete(indexes, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
             return {tx: tx, error: null}
         } catch (err: any) {
             if (err?.revert?.name != null) {
                 return {tx: null, error: err.revert.name}
             }
-            throw new Error(err)
+            throw err
         }
     }
 
     // NFT delegation via main delegation contract (DRC721)
     public async delegateNFT(validator: string, nftContract: string, tokenId: bigint, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateNFT(validator, nftContract, tokenId, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.delegateNFT.estimateGas(validator, nftContract, tokenId, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.delegateNFT(validator, nftContract, tokenId, await this.txOptions())
-        return await this.delegation!.contract.delegateNFT(validator, nftContract, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.delegateNFT.staticCall(validator, nftContract, tokenId, await this.txOptions())
+        return await this.delegation!.contract.delegateNFT(validator, nftContract, tokenId, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async delegateNFTHold(validator: string, nftContract: string, tokenId: bigint, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.delegateNFTHold.estimateGas(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.delegateNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
-        return await this.delegation!.contract.delegateNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.delegateNFTHold.staticCall(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        return await this.delegation!.contract.delegateNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async delegateNFTByPermit(validator: string, nftContract: string, tokenId: bigint, sign: ethers.Signature, estimateGas?: boolean) {
-        const deadline = ethers.constants.MaxUint256
-        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateNFTByPermit(validator, nftContract, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+        const deadline = ethers.MaxUint256
+        if (estimateGas) return await this.delegation!.contract.delegateNFTByPermit.estimateGas(validator, nftContract, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.delegateNFTByPermit(validator, nftContract, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-        return await this.delegation!.contract.delegateNFTByPermit(validator, nftContract, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.delegateNFTByPermit.staticCall(validator, nftContract, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+        return await this.delegation!.contract.delegateNFTByPermit(validator, nftContract, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async withdrawNFT(validator: string, nftContract: string, tokenId: bigint, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawNFT(validator, nftContract, tokenId, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.withdrawNFT.estimateGas(validator, nftContract, tokenId, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.withdrawNFT(validator, nftContract, tokenId, await this.txOptions())
-        return await this.delegation!.contract.withdrawNFT(validator, nftContract, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.withdrawNFT.staticCall(validator, nftContract, tokenId, await this.txOptions())
+        return await this.delegation!.contract.withdrawNFT(validator, nftContract, tokenId, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async withdrawNFTHold(validator: string, nftContract: string, tokenId: bigint, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.withdrawNFTHold.estimateGas(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.withdrawNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
-        return await this.delegation!.contract.withdrawNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.withdrawNFTHold.staticCall(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        return await this.delegation!.contract.withdrawNFTHold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async transferNFTStake(oldValidator: string, nftContract: string, tokenId: bigint, newValidator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.transferNFT(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.transferNFT.estimateGas(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.transferNFT(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
-        return await this.delegation!.contract.transferNFT(oldValidator, nftContract, tokenId, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.transferNFT.staticCall(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
+        return await this.delegation!.contract.transferNFT(oldValidator, nftContract, tokenId, newValidator, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async transferNFTStakeHold(oldValidator: string, nftContract: string, tokenId: bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.transferNFTHold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.transferNFTHold.estimateGas(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.transferNFTHold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
-        return await this.delegation!.contract.transferNFTHold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.transferNFTHold.staticCall(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
+        return await this.delegation!.contract.transferNFTHold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     // NFT delegation via main delegation contract (DRC1155)
     public async delegateNFT1155(validator: string, nftContract: string, tokenId: bigint, amount: bigint, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateNFT1155(validator, nftContract, tokenId, amount, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.delegateNFT1155.estimateGas(validator, nftContract, tokenId, amount, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.delegateNFT1155(validator, nftContract, tokenId, amount, await this.txOptions())
-        return await this.delegation!.contract.delegateNFT1155(validator, nftContract, tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.delegateNFT1155.staticCall(validator, nftContract, tokenId, amount, await this.txOptions())
+        return await this.delegation!.contract.delegateNFT1155(validator, nftContract, tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async delegateNFT1155Hold(validator: string, nftContract: string, tokenId: bigint, amount: bigint, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.delegateNFT1155Hold(validator, nftContract, tokenId, amount, holdTimestamp, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.delegateNFT1155Hold.estimateGas(validator, nftContract, tokenId, amount, holdTimestamp, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.delegateNFT1155Hold(validator, nftContract, tokenId, amount, holdTimestamp, await this.txOptions())
-        return await this.delegation!.contract.delegateNFT1155Hold(validator, nftContract, tokenId, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.delegateNFT1155Hold.staticCall(validator, nftContract, tokenId, amount, holdTimestamp, await this.txOptions())
+        return await this.delegation!.contract.delegateNFT1155Hold(validator, nftContract, tokenId, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async withdrawNFT1155(validator: string, nftContract: string, tokenId: bigint, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawNFT1155(validator, nftContract, tokenId, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.withdrawNFT1155.estimateGas(validator, nftContract, tokenId, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.withdrawNFT1155(validator, nftContract, tokenId, await this.txOptions())
-        return await this.delegation!.contract.withdrawNFT1155(validator, nftContract, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.withdrawNFT1155.staticCall(validator, nftContract, tokenId, await this.txOptions())
+        return await this.delegation!.contract.withdrawNFT1155(validator, nftContract, tokenId, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async withdrawNFT1155Hold(validator: string, nftContract: string, tokenId: bigint, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.withdrawNFT1155Hold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.withdrawNFT1155Hold.estimateGas(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.withdrawNFT1155Hold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
-        return await this.delegation!.contract.withdrawNFT1155Hold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.withdrawNFT1155Hold.staticCall(validator, nftContract, tokenId, holdTimestamp, await this.txOptions())
+        return await this.delegation!.contract.withdrawNFT1155Hold(validator, nftContract, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async transferNFT1155Stake(oldValidator: string, nftContract: string, tokenId: bigint, newValidator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.transferNFT1155(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.transferNFT1155.estimateGas(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.transferNFT1155(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
-        return await this.delegation!.contract.transferNFT1155(oldValidator, nftContract, tokenId, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.transferNFT1155.staticCall(oldValidator, nftContract, tokenId, newValidator, await this.txOptions())
+        return await this.delegation!.contract.transferNFT1155(oldValidator, nftContract, tokenId, newValidator, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async transferNFT1155StakeHold(oldValidator: string, nftContract: string, tokenId: bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegation!.contract.estimateGas.transferNFT1155Hold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
+        if (estimateGas) return await this.delegation!.contract.transferNFT1155Hold.estimateGas(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
         if (this.debug)
-            await this.delegation!.contract.callStatic.transferNFT1155Hold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
-        return await this.delegation!.contract.transferNFT1155Hold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.delegation!.contract.transferNFT1155Hold.staticCall(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions())
+        return await this.delegation!.contract.transferNFT1155Hold(oldValidator, nftContract, tokenId, holdTimestamp, newValidator, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     //nft-center
@@ -636,109 +587,85 @@ export default class Call {
                 collection = 'createDRC1155Reserveless';
             }
         }
+        const meta = {
+            creator: nft.creator,
+            symbol: nft.symbol,
+            name: nft.name,
+            contractURI: nft.contractURI,
+            refundable: nft.refundable ?? false,
+            burnable: nft.burnable,
+        }
         if (estimateGas) {
-            return await this.nftCenter!.contract.estimateGas[collection](nft, await this.txOptions())
+            return await this.nftCenter!.contract[collection].estimateGas(meta, await this.txOptions())
         }
         if (this.debug)
-            await this.nftCenter!.contract.callStatic[collection](nft, await this.txOptions())
-        const tx = await this.nftCenter!.contract[collection](nft, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-        const event = this.parseLog(this.nftCenter!.contract, tx.logs, 'NFTCreated')
+            await this.nftCenter!.contract[collection].staticCall(meta, await this.txOptions())
+        const tx = await this.nftCenter!.contract[collection](meta, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
+        const event = this.parseLog(this.nftCenter!.contract, tx!.logs, 'NFTCreated')
         return {tx: tx, nftCollectionAddress: event.args[0]};
     }
     
 
-    //nft 721Standart && 1155Standart && 721 && 1155
+    //nft 721 && 1155
     public async setApprovalForAllNFT(contract: ethers.Contract, to: string, approved: boolean, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.setApprovalForAll(to, approved, await this.txOptions())
+        if (estimateGas) return await contract.setApprovalForAll.estimateGas(to, approved, await this.txOptions())
         if (this.debug)
-            await contract.callStatic.setApprovalForAll(to, approved, await this.txOptions())
-        return await contract.setApprovalForAll(to, approved, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.setApprovalForAll.staticCall(to, approved, await this.txOptions())
+        return await contract.setApprovalForAll(to, approved, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async transferNFT(contract: ethers.Contract, from: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean) {
         if (amount !== undefined) {
-            if (estimateGas) return await contract.estimateGas.safeTransferFrom(from, to, tokenId, amount, "0x", await this.txOptions())
+            if (estimateGas) return await contract.safeTransferFrom.estimateGas(from, to, tokenId, amount, "0x", await this.txOptions())
             if (this.debug)
-                await contract.callStatic.safeTransferFrom(from, to, tokenId, amount, "0x", await this.txOptions())
-            return await contract.safeTransferFrom(from, to, tokenId, amount, "0x", await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155, 1155Standart
+                await contract.safeTransferFrom.staticCall(from, to, tokenId, amount, "0x", await this.txOptions())
+            return await contract.safeTransferFrom(from, to, tokenId, amount, "0x", await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         } else {
-            if (estimateGas) return await contract.estimateGas["safeTransferFrom(address,address,uint256,bytes)"](from, to, tokenId, "0x", await this.txOptions())
+            if (estimateGas) return await contract["safeTransferFrom(address,address,uint256,bytes)"].estimateGas(from, to, tokenId, "0x", await this.txOptions())
             if (this.debug)
-                await contract.callStatic["safeTransferFrom(address,address,uint256,bytes)"](from, to, tokenId, "0x", await this.txOptions())
-            return await contract["safeTransferFrom(address,address,uint256,bytes)"](from, to, tokenId, "0x", await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 721Standart
+                await contract["safeTransferFrom(address,address,uint256,bytes)"].staticCall(from, to, tokenId, "0x", await this.txOptions())
+            return await contract["safeTransferFrom(address,address,uint256,bytes)"](from, to, tokenId, "0x", await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         }
     }
 
     public async disableMintNFT(contract: ethers.Contract, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.disableMint(await this.txOptions())
+        if (estimateGas) return await contract.disableMint.estimateGas(await this.txOptions())
         if (this.debug)
-            await contract.callStatic.disableMint(await this.txOptions())
-        return await contract.disableMint(await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.disableMint.staticCall(await this.txOptions())
+        return await contract.disableMint(await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async burnNFT(contract: ethers.Contract, tokenId: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean) {
         if (amount !== undefined) {
-            if (estimateGas) return await contract.estimateGas.burn(tokenId, amount, await this.txOptions())
+            if (estimateGas) return await contract.burn.estimateGas(tokenId, amount, await this.txOptions())
             if (this.debug)
-                await contract.callStatic.burn(tokenId, amount, await this.txOptions())
-            return await contract.burn(tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155, 1155Standart
+                await contract.burn.staticCall(tokenId, amount, await this.txOptions())
+            return await contract.burn(tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         } else {
-            if (estimateGas) return await contract.estimateGas.burn(tokenId, await this.txOptions())
-            return await contract.burn(tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 721Standart
+            if (estimateGas) return await contract.burn.estimateGas(tokenId, await this.txOptions())
+            return await contract.burn(tokenId, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         }
     }
 
-    // public async setBaseURINFT(contract: ethers.Contract, baseURI: string, estimateGas?: boolean) {
-    //     if (estimateGas) return await contract.estimateGas.setBaseURI(baseURI)
-    //     return await contract.setBaseURI(baseURI).then((tx: ethers.ContractTransaction) => tx.wait());
-    // }
-
-    public async setTokenURINFT(contract: ethers.Contract, tokenId: string | number | bigint, tokenURI: string, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.setTokenURI(tokenId, tokenURI, await this.txOptions())
-        if (this.debug) await contract.callStatic.setTokenURI(tokenId, tokenURI, await this.txOptions()) 
-        return await contract.setTokenURI(tokenId, tokenURI, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    //nft 721Standart && 1155Standart
-    public async mintNFT(contract: ethers.Contract, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any> {
-        if (tokenId !== undefined && amount !== undefined) {
-            if (estimateGas) {
-                return await contract.estimateGas.mint(to, tokenId, amount, tokenURI, await this.txOptions())
-            }
-            if (this.debug)
-                await contract.callStatic.mint(to, tokenId, amount, tokenURI, await this.txOptions())
-            const tx = await contract.mint(to, tokenId, amount, tokenURI, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155Standart
-            return {tx: tx, tokenId: tokenId};
-        } else {
-            if (estimateGas) {
-                return await contract.estimateGas.mint(to, tokenURI, await this.txOptions())
-            }
-            if (this.debug)
-                await contract.callStatic.mint(to, tokenURI, await this.txOptions())
-            const tx = await contract.mint(to, tokenURI, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721Standart
-            const event = this.parseLog(contract, tx.logs, 'Transfer')
-            return {tx: tx, tokenId: event.args[2]};
-        }
-    }
 
     //nft 721 && 1155
     public async mintNFTWithDELReserve(contract: ethers.Contract, to: string, tokenURI: string, reserve: string | number | bigint, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any> {
         if (tokenId !== undefined && amount !== undefined) {
             if (estimateGas) {
-                return await contract.estimateGas.mintByDEL(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve}))
+                return await contract.mintByDEL.estimateGas(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve}))
             }
             if (this.debug)
-                await contract.callStatic.mintByDEL(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve}))
-            const tx = await contract.mintByDEL(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //1155
+                await contract.mintByDEL.staticCall(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve}))
+            const tx = await contract.mintByDEL(to, tokenId, amount, tokenURI, await this.txOptions({ value: reserve})).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //1155
             return {tx: tx, tokenId: tokenId};
         } else {
             if (estimateGas) {
-                return await contract.estimateGas.mintByDEL(to, tokenURI, await this.txOptions({ value: reserve}))
+                return await contract.mintByDEL.estimateGas(to, tokenURI, await this.txOptions({ value: reserve}))
             }
             if (this.debug)
-                await contract.callStatic.mintByDEL(to, tokenURI, await this.txOptions({ value: reserve}))
-            const tx = await contract.mintByDEL(to, tokenURI, await this.txOptions({ value: reserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //721
-            const event = this.parseLog(contract, tx.logs, 'Transfer')
+                await contract.mintByDEL.staticCall(to, tokenURI, await this.txOptions({ value: reserve}))
+            const tx = await contract.mintByDEL(to, tokenURI, await this.txOptions({ value: reserve})).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //721
+            const event = this.parseLog(contract, tx!.logs, 'Transfer')
             return {tx: tx, tokenId: event.args[2]};
         }
     }
@@ -746,20 +673,20 @@ export default class Call {
     public async mintReserveless(contract: ethers.Contract, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any> {
         if (tokenId !== undefined && amount !== undefined) {
             if (estimateGas) {
-                return await contract.estimateGas.mint(to, tokenId, amount, tokenURI, '0', ethers.constants.AddressZero, await this.txOptions())
+                return await contract.mint.estimateGas(to, tokenId, amount, tokenURI, '0', ethers.ZeroAddress, await this.txOptions())
             }
             if (this.debug)
-                await contract.callStatic.mint(to, tokenId, amount, tokenURI, '0', ethers.constants.AddressZero, await this.txOptions())
-            const tx = await contract.mint(to, tokenId, amount, tokenURI, '0', ethers.constants.AddressZero, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155 approve
+                await contract.mint.staticCall(to, tokenId, amount, tokenURI, '0', ethers.ZeroAddress, await this.txOptions())
+            const tx = await contract.mint(to, tokenId, amount, tokenURI, '0', ethers.ZeroAddress, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //1155 approve
             return {tx: tx, tokenId: tokenId};
         } else {
             if (estimateGas) {
-                return await contract.estimateGas.mint(to, tokenURI, '0', ethers.constants.AddressZero, await this.txOptions())
+                return await contract.mint.estimateGas(to, tokenURI, '0', ethers.ZeroAddress, await this.txOptions())
             }
             if (this.debug)
-                await contract.callStatic.mint(to, tokenURI, '0', ethers.constants.AddressZero, await this.txOptions())
-            const tx = await contract.mint(to, tokenURI, '0', ethers.constants.AddressZero, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721 approve
-            const event = this.parseLog(contract, tx.logs, 'Transfer')
+                await contract.mint.staticCall(to, tokenURI, '0', ethers.ZeroAddress, await this.txOptions())
+            const tx = await contract.mint(to, tokenURI, '0', ethers.ZeroAddress, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //721 approve
+            const event = this.parseLog(contract, tx!.logs, 'Transfer')
             return {tx: tx, tokenId: event.args[2]};
 
         }
@@ -768,243 +695,95 @@ export default class Call {
     public async mintNFTWithTokenReserve(contract: ethers.Contract, to: string, tokenURI: string, reserveAmount: string | number | bigint, reserveToken: string, sign?: ethers.Signature, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean): Promise<any> {
         if (tokenId !== undefined && amount !== undefined) {
             if (sign != undefined) {
-                const deadline = ethers.constants.MaxUint256
+                const deadline = ethers.MaxUint256
                 if (estimateGas) {
-                    return await contract.estimateGas.mintByPermit(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+                    return await contract.mintByPermit.estimateGas(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
                 }
                 if (this.debug)
-                    await contract.callStatic.mintByPermit(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-                const tx = await contract.mintByPermit(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155 permit
+                    await contract.mintByPermit.staticCall(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+                const tx = await contract.mintByPermit(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //1155 permit
                 return {tx: tx, tokenId: tokenId};
             } else {
                 if (estimateGas) {
-                    return await contract.estimateGas.mint(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, await this.txOptions())
+                    return await contract.mint.estimateGas(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, await this.txOptions())
                 }
                 if (this.debug)
-                    await contract.callStatic.mint(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, await this.txOptions())
-                const tx = await contract.mint(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155 approve
+                    await contract.mint.staticCall(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, await this.txOptions())
+                const tx = await contract.mint(to, tokenId, amount, tokenURI, reserveAmount, reserveToken, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //1155 approve
                 return {tx: tx, tokenId: tokenId};
             }
         } else {
             if (sign != undefined) {
-                const deadline = ethers.constants.MaxUint256
+                const deadline = ethers.MaxUint256
                 if (estimateGas) {
-                    return await contract.estimateGas.mintByPermit(to, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+                    return await contract.mintByPermit.estimateGas(to, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
                 }
                 if (this.debug)
-                    await contract.callStatic.mintByPermit(to, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-                const tx = await contract.mintByPermit(to, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721 permit
-                const event = this.parseLog(contract, tx.logs, 'Transfer')
+                    await contract.mintByPermit.staticCall(to, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+                const tx = await contract.mintByPermit(to, tokenURI, reserveAmount, reserveToken, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //721 permit
+                const event = this.parseLog(contract, tx!.logs, 'Transfer')
                 return {tx: tx, tokenId: event.args[2]};
             } else {
                 if (estimateGas) {
-                    return await contract.estimateGas.mint(to, tokenURI, reserveAmount, reserveToken, await this.txOptions())
+                    return await contract.mint.estimateGas(to, tokenURI, reserveAmount, reserveToken, await this.txOptions())
                 }
                 if (this.debug)
-                    await contract.callStatic.mint(to, tokenURI, reserveAmount, reserveToken, await this.txOptions())
-                const tx = await contract.mint(to, tokenURI, reserveAmount, reserveToken, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721 approve
-                const event = this.parseLog(contract, tx.logs, 'Transfer')
+                    await contract.mint.staticCall(to, tokenURI, reserveAmount, reserveToken, await this.txOptions())
+                const tx = await contract.mint(to, tokenURI, reserveAmount, reserveToken, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //721 approve
+                const event = this.parseLog(contract, tx!.logs, 'Transfer')
                 return {tx: tx, tokenId: event.args[2]};
             }
 
         }
     }
     public async addDELReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.addReserveByDEL(tokenId, await this.txOptions({ value: amountReserve}))
+        if (estimateGas) return await contract.addReserveByDEL.estimateGas(tokenId, await this.txOptions({ value: amountReserve}))
         if (this.debug)
-            await contract.callStatic.addReserveByDEL(tokenId, await this.txOptions({ value: amountReserve}))
-        return await contract.addReserveByDEL(tokenId, await this.txOptions({ value: amountReserve})).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155
+            await contract.addReserveByDEL.staticCall(tokenId, await this.txOptions({ value: amountReserve}))
+        return await contract.addReserveByDEL(tokenId, await this.txOptions({ value: amountReserve})).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //721, 1155
     }
 
     public async addTokenReserveNFT(contract: ethers.Contract, tokenId: string | number | bigint, amountReserve: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign === undefined) {
-            if (estimateGas) return await contract.estimateGas.addReserve(tokenId, amountReserve, await this.txOptions())
+            if (estimateGas) return await contract.addReserve.estimateGas(tokenId, amountReserve, await this.txOptions())
             if (this.debug)
-                await contract.callStatic.addReserve(tokenId, amountReserve, await this.txOptions())
-            return await contract.addReserve(tokenId, amountReserve, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155 (for approve)
+                await contract.addReserve.staticCall(tokenId, amountReserve, await this.txOptions())
+            return await contract.addReserve(tokenId, amountReserve, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //721, 1155 (for approve)
         } else {
-            const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await contract.estimateGas.addReserveByPermit(tokenId, amountReserve, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            const deadline = ethers.MaxUint256
+            if (estimateGas) return await contract.addReserveByPermit.estimateGas(tokenId, amountReserve, deadline, sign.v, sign.r, sign.s, await this.txOptions())
             if (this.debug)
-                await contract.callStatic.addReserveByPermit(tokenId, amountReserve, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await contract.addReserveByPermit(tokenId, amountReserve, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //721, 1155 (for permit)
+                await contract.addReserveByPermit.staticCall(tokenId, amountReserve, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            return await contract.addReserveByPermit(tokenId, amountReserve, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait()); //721, 1155 (for permit)
         }
     }
 
     //nft 721
     public async approveNFT721(contract: ethers.Contract, to: string, tokenId: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.approve(to, tokenId, await this.txOptions())
+        if (estimateGas) return await contract.approve.estimateGas(to, tokenId, await this.txOptions())
         if (this.debug)
-            await contract.callStatic.approve(to, tokenId, await this.txOptions())
-        return await contract.approve(to, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.approve.staticCall(to, tokenId, await this.txOptions())
+        return await contract.approve(to, tokenId, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
-    //nft 1155 && 1155Standart
+    //nft 
     public async transferBatchNFT1155(contract: ethers.Contract, from: string, to: string, tokenIds: string[] | number[], amounts: string[] | number[], estimateGas?: boolean) {
-        if (estimateGas) return await contract.estimateGas.safeBatchTransferFrom(from, to, tokenIds, amounts, "0x", await this.txOptions())
+        if (estimateGas) return await contract.safeBatchTransferFrom.estimateGas(from, to, tokenIds, amounts, "0x", await this.txOptions())
         if (this.debug)
-            await contract.callStatic.safeBatchTransferFrom(from, to, tokenIds, amounts, "0x", await this.txOptions())
-        return await contract.safeBatchTransferFrom(from, to, tokenIds, amounts, "0x", await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait()); //1155, 1155Standart
+            await contract.safeBatchTransferFrom.staticCall(from, to, tokenIds, amounts, "0x", await this.txOptions())
+        return await contract.safeBatchTransferFrom(from, to, tokenIds, amounts, "0x", await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     //nft 1155
     
 
-    //delegation nft
-    public async delegateDRC721(validator:string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
-        if (sign == undefined) {
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateDRC721(validator, nftAddress, tokenId, await this.txOptions())
-            if (this.debug)
-                await this.delegationNft!.contract.callStatic.delegateDRC721(validator, nftAddress, tokenId, await this.txOptions())
-            return await this.delegationNft!.contract.delegateDRC721(validator, nftAddress, tokenId, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-        } else {
-            const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateDRC721ByPermit(validator, nftAddress, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            if (this.debug)
-                await this.delegationNft!.contract.callStatic.delegateDRC721ByPermit(validator, nftAddress, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await this.delegationNft!.contract.delegateDRC721ByPermit(validator, nftAddress, tokenId, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-        }
-    }
-
-    public async delegateDRC721Hold(validator:string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, sign?: ethers.Signature, estimateGas?: boolean) {
-        if (sign == undefined) {
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateHoldDRC721(validator, nftAddress, tokenId, holdTimestamp, await this.txOptions())
-            if (this.debug)
-                await this.delegationNft!.contract.callStatic.delegateHoldDRC721(validator, nftAddress, tokenId, holdTimestamp, await this.txOptions())
-            return await this.delegationNft!.contract.delegateHoldDRC721(validator, nftAddress, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-        } else {
-            const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateHoldDRC721ByPermit(validator, nftAddress, tokenId, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            if (this.debug)
-                await this.delegationNft!.contract.callStatic.delegateHoldDRC721ByPermit(validator, nftAddress, tokenId, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await this.delegationNft!.contract.delegateHoldDRC721ByPermit(validator, nftAddress, tokenId, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-        }
-    }
-
-    public async delegateDRC1155(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
-        if (sign == undefined) {
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateDRC1155(validator, nftAddress, tokenId, amount, await this.txOptions())
-            if (this.debug)
-                await this.delegationNft!.contract.callStatic.delegateDRC1155(validator, nftAddress, tokenId, amount, await this.txOptions())
-            return await this.delegationNft!.contract.delegateDRC1155(validator, nftAddress, tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-        } else {
-            const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateDRC1155ByPermit(validator, nftAddress, tokenId, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            if (this.debug)
-                await this.delegationNft!.contract.callStatic.delegateDRC1155ByPermit(validator, nftAddress, tokenId, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await this.delegationNft!.contract.delegateDRC1155ByPermit(validator, nftAddress, tokenId, amount, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-        }
-    }
-
-    public async delegateDRC1155Hold(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, sign?: ethers.Signature, estimateGas?: boolean) {
-        if (sign == undefined) {
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateHoldDRC1155(validator, nftAddress, tokenId, amount, holdTimestamp, await this.txOptions())
-            if (this.debug)
-                await this.delegationNft!.contract.callStatic.delegateHoldDRC1155(validator, nftAddress, tokenId, amount, holdTimestamp, await this.txOptions())
-            return await this.delegationNft!.contract.delegateHoldDRC1155(validator, nftAddress, tokenId, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-        } else {
-            const deadline = ethers.constants.MaxUint256
-            if (estimateGas) return await this.delegationNft!.contract.estimateGas.delegateHoldDRC1155ByPermit(validator, nftAddress, tokenId, amount, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            if (this.debug)
-                await this.delegationNft!.contract.callStatic.delegateHoldDRC1155ByPermit(validator, nftAddress, tokenId, amount, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            return await this.delegationNft!.contract.delegateHoldDRC1155ByPermit(validator, nftAddress, tokenId, amount, holdTimestamp, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-        }
-    }
-
-    public async transferStakeNFT(validator:string, nftAddress: string, tokenId: string | number | bigint, amount:string | number | bigint, newValidator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegationNft!.contract.estimateGas.transfer(validator, nftAddress, tokenId, amount, newValidator, await this.txOptions())
-        if (this.debug)
-            await this.delegationNft!.contract.callStatic.transfer(validator, nftAddress, tokenId, amount, newValidator, await this.txOptions())
-        return await this.delegationNft!.contract.transfer(validator, nftAddress, tokenId, amount, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async transferStakeNFTHold(validator:string, nftAddress: string, tokenId: string | number | bigint, amount:string | number | bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegationNft!.contract.estimateGas.transferHold(validator, nftAddress, tokenId, amount, holdTimestamp, newValidator, await this.txOptions())
-        if (this.debug)
-            await this.delegationNft!.contract.callStatic.transferHold(validator, nftAddress, tokenId, amount, holdTimestamp, newValidator, await this.txOptions())
-        return await this.delegationNft!.contract.transferHold(validator, nftAddress, tokenId, amount, holdTimestamp, newValidator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async withdrawStakeNFT(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegationNft!.contract.estimateGas.withdraw(validator, nftAddress, tokenId, amount, await this.txOptions())
-        if (this.debug)
-            await this.delegationNft!.contract.callStatic.withdraw(validator, nftAddress, tokenId, amount, await this.txOptions())
-        return await this.delegationNft!.contract.withdraw(validator, nftAddress, tokenId, amount, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async withdrawStakeNFTHold(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegationNft!.contract.estimateGas.withdrawHold(validator, nftAddress, tokenId, amount, holdTimestamp, await this.txOptions())
-        if (this.debug)
-            await this.delegationNft!.contract.callStatic.withdrawHold(validator, nftAddress, tokenId, amount, holdTimestamp, await this.txOptions())
-        return await this.delegationNft!.contract.withdrawHold(validator, nftAddress, tokenId, amount, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async stakeNFTToHold(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegationNft!.contract.estimateGas.hold(validator, nftAddress, tokenId, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions())
-        if (this.debug)
-            await this.delegationNft!.contract.callStatic.hold(validator, nftAddress, tokenId, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions())
-        return await this.delegationNft!.contract.hold(validator, nftAddress, tokenId, amount, oldHoldTimestamp, newHoldTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async stakeNFTResetHold(validator:string, delegator: string, tokenAddress: string, tokenId: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
-        if (estimateGas) return await this.delegationNft!.contract.estimateGas.resetHold(validator, delegator, tokenAddress, tokenId, holdTimestamp, await this.txOptions())
-        if (this.debug)
-            await this.delegationNft!.contract.callStatic.resetHold(validator, delegator, tokenAddress, tokenId, holdTimestamp, await this.txOptions())
-        return await this.delegationNft!.contract.resetHold(validator, delegator, tokenAddress, tokenId, holdTimestamp, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async stakeNFTResetHolds(validator:string, delegator: string, tokenAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], estimateGas?: boolean) {
-        if (estimateGas) return await this.delegationNft!.contract.estimateGas.resetHolds(validator, delegator, tokenAddress, tokenId, holdTimestamps, await this.txOptions())
-        if (this.debug)
-            await this.delegationNft!.contract.callStatic.resetHolds(validator, delegator, tokenAddress, tokenId, holdTimestamps, await this.txOptions())
-        return await this.delegationNft!.contract.resetHolds(validator, delegator, tokenAddress, tokenId, holdTimestamps, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async withdrawNFTWithReset(validator:string, tokenAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], estimateGas?: boolean) {
-        if (estimateGas) return await this.delegationNft!.contract.estimateGas.withdrawWithReset(validator, tokenAddress, tokenId, amount, holdTimestampsToReset, await this.txOptions())
-        if (this.debug)
-            await this.delegationNft!.contract.callStatic.withdrawWithReset(validator, tokenAddress, tokenId, amount, holdTimestampsToReset, await this.txOptions())
-        return await this.delegationNft!.contract.withdrawWithReset(validator, tokenAddress, tokenId, amount, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async transferNFTWithReset(oldValidator:string, tokenAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator:string, holdTimestampsToReset: number[], estimateGas?: boolean) {
-        if (estimateGas) return await this.delegationNft!.contract.estimateGas.transferWithReset(oldValidator, tokenAddress, tokenId, amount, newValidator, holdTimestampsToReset, await this.txOptions())
-        if (this.debug)
-            await this.delegationNft!.contract.callStatic.transferWithReset(oldValidator, tokenAddress, tokenId, amount, newValidator, holdTimestampsToReset, await this.txOptions())
-        return await this.delegationNft!.contract.transferWithReset(oldValidator, tokenAddress, tokenId, amount, newValidator, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async holdNFTWithReset(validator:string, tokenAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], estimateGas?: boolean) {
-        if (estimateGas) return await this.delegationNft!.contract.estimateGas.holdWithReset(validator, tokenAddress, tokenId, amountToHold, newHoldTimestamp, holdTimestampsToReset, await this.txOptions())
-        if (this.debug)
-            await this.delegationNft!.contract.callStatic.holdWithReset(validator, tokenAddress, tokenId, amountToHold, newHoldTimestamp, holdTimestampsToReset, await this.txOptions())
-        return await this.delegationNft!.contract.holdWithReset(validator, tokenAddress, tokenId, amountToHold, newHoldTimestamp, holdTimestampsToReset, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-    }
-
-    public async completeStakeNFT(indexes:string[] | number[], estimateGas?: boolean): Promise<any> {
-        try {
-            if (estimateGas) {
-                return await this.delegationNft!.contract.estimateGas.complete(indexes, await this.txOptions())
-            }
-            if (this.debug)
-                await this.delegationNft!.contract.callStatic.complete(indexes, await this.txOptions())
-            const tx = await this.delegationNft!.contract.complete(indexes, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
-            return {tx: tx, error: null} 
-        } catch (err: any) {
-            if (err?.revert?.name != null) {
-                return {tx: null, error: err.revert.name} 
-            }
-            throw new Error(err)
-        }
-    }
-
     //master-validator
     public async addValidatorWithToken(validator: string, meta: string, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean) {
         if (sign == undefined) {
-            if (estimateGas) return await this.masterValidator!.contract.estimateGas.addCandidate(validator, meta, stake, await this.txOptions())
+            if (estimateGas) return await this.masterValidator!.contract.addCandidate.estimateGas(validator, meta, stake, await this.txOptions())
             if (this.debug)
-                await this.masterValidator!.contract.callStatic.addCandidate(validator, meta, stake, await this.txOptions())
-            return await this.masterValidator!.contract.addCandidate(validator, meta, stake, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+                await this.masterValidator!.contract.addCandidate.staticCall(validator, meta, stake, await this.txOptions())
+            return await this.masterValidator!.contract.addCandidate(validator, meta, stake, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         } else {
             //TODO
             throw Error('TODO')
@@ -1012,54 +791,50 @@ export default class Call {
     }
 
     public async addValidatorWithETH(validator: string, meta: string, amount: string | number | bigint, estimateGas?: boolean) {
-        const stake: ValidotorStake = {
-            token: ethers.constants.AddressZero,
-            amount: '0'
-        }
-        if (estimateGas) return await this.masterValidator!.contract.estimateGas.addCandidateDEL(validator, meta, await this.txOptions({value: amount}))
+        if (estimateGas) return await this.masterValidator!.contract.addCandidateDEL.estimateGas(validator, meta, await this.txOptions({value: amount}))
         if (this.debug)
-            await this.masterValidator!.contract.callStatic.addCandidateDEL(validator, meta, await this.txOptions({value: amount}))
-        return await this.masterValidator!.contract.addCandidateDEL(validator, meta, await this.txOptions({value: amount})).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.masterValidator!.contract.addCandidateDEL.staticCall(validator, meta, await this.txOptions({value: amount}))
+        return await this.masterValidator!.contract.addCandidateDEL(validator, meta, await this.txOptions({value: amount})).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async removeValidator(validator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.masterValidator!.contract.estimateGas.removeValidator(validator, await this.txOptions())
+        if (estimateGas) return await this.masterValidator!.contract.removeValidator.estimateGas(validator, await this.txOptions())
         if (this.debug)
-            await this.masterValidator!.contract.callStatic.removeValidator(validator, await this.txOptions())
-        return await this.masterValidator!.contract.removeValidator(validator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.masterValidator!.contract.removeValidator.staticCall(validator, await this.txOptions())
+        return await this.masterValidator!.contract.removeValidator(validator, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async pauseValidator(validator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.masterValidator!.contract.estimateGas.pauseValidator(validator, await this.txOptions())
+        if (estimateGas) return await this.masterValidator!.contract.pauseValidator.estimateGas(validator, await this.txOptions())
         if (this.debug)
-            await this.masterValidator!.contract.callStatic.pauseValidator(validator, await this.txOptions())
-        return await this.masterValidator!.contract.pauseValidator(validator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.masterValidator!.contract.pauseValidator.staticCall(validator, await this.txOptions())
+        return await this.masterValidator!.contract.pauseValidator(validator, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async unpauseValidator(validator: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.masterValidator!.contract.estimateGas.unpauseValidator(validator, await this.txOptions())
+        if (estimateGas) return await this.masterValidator!.contract.unpauseValidator.estimateGas(validator, await this.txOptions())
         if (this.debug)
-            await this.masterValidator!.contract.callStatic.unpauseValidator(validator, await this.txOptions())
-        return await this.masterValidator!.contract.unpauseValidator(validator, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.masterValidator!.contract.unpauseValidator.staticCall(validator, await this.txOptions())
+        return await this.masterValidator!.contract.unpauseValidator(validator, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     public async updateValidatorMeta(validator: string, meta: string, estimateGas?: boolean) {
-        if (estimateGas) return await this.masterValidator!.contract.estimateGas.updateValidatorMeta(validator, meta, await this.txOptions())
+        if (estimateGas) return await this.masterValidator!.contract.updateValidatorMeta.estimateGas(validator, meta, await this.txOptions())
         if (this.debug)
-            await this.masterValidator!.contract.callStatic.updateValidatorMeta(validator, meta, await this.txOptions())
-        return await this.masterValidator!.contract.updateValidatorMeta(validator, meta, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await this.masterValidator!.contract.updateValidatorMeta.staticCall(validator, meta, await this.txOptions())
+        return await this.masterValidator!.contract.updateValidatorMeta(validator, meta, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     //bridgeV2
     public async wrapAndTransferETH(contract: ethers.Contract, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
         const addressToBytes32 = "0x" + to.slice(2).padStart(64, "0")
-        const value = ethers.BigNumber.from(amount).add(ethers.BigNumber.from(serviceFee))
+        const value = BigInt(amount) + BigInt(serviceFee)
         if (estimateGas) {
-            return await contract.estimateGas.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
+            return await contract.wrapAndTransferETH.estimateGas(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
         }
         if (this.debug)
-            await contract.callStatic.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
-        const tx = await contract.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value})).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.wrapAndTransferETH.staticCall(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value}))
+        const tx = await contract.wrapAndTransferETH(addressToBytes32, toChainId, this.bridgeV2Nonce, serviceFee, await this.txOptions({value: value})).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         this.bridgeV2Nonce += 1;
         return tx;
     }
@@ -1067,34 +842,34 @@ export default class Call {
     public async transferTokens(contract: ethers.Contract, tokenAddress: string, to: string, amount: string | number | bigint, serviceFee: string | number | bigint, toChainId: number, estimateGas?: boolean) {
         const addressToBytes32 = "0x" + to.slice(2).padStart(64, "0")
         if (estimateGas) {
-            return await contract.estimateGas.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
+            return await contract.transferTokens.estimateGas(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
         }
         if (this.debug)
-            await contract.callStatic.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
-        const tx = await contract.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee})).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.transferTokens.staticCall(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee}))
+        const tx = await contract.transferTokens(tokenAddress, addressToBytes32, amount, toChainId, this.bridgeV2Nonce, await this.txOptions({value: serviceFee})).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         this.bridgeV2Nonce += 1;
         return tx;
     }
 
     public async completeTransfer(contract: ethers.Contract, encodedVM: string, unwrapWETH: boolean, estimateGas?: boolean) {
         if (estimateGas) {
-            return await contract.estimateGas.completeTransfer(encodedVM, unwrapWETH, await this.txOptions())
+            return await contract.completeTransfer.estimateGas(encodedVM, unwrapWETH, await this.txOptions())
         }
         if (this.debug)
-            await contract.callStatic.completeTransfer(encodedVM, unwrapWETH, await this.txOptions())
-        return await contract.completeTransfer(encodedVM, unwrapWETH, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            await contract.completeTransfer.staticCall(encodedVM, unwrapWETH, await this.txOptions())
+        return await contract.completeTransfer(encodedVM, unwrapWETH, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }   
 
     //checks
     public async createChecksDEL(signers: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean): Promise<any> {
         const nonce = await this.checks!.contract.nonces();
 
-        const value = ethers.BigNumber.from(signers.length).mul(ethers.BigNumber.from(amount))
+        const value = BigInt(signers.length) * BigInt(amount)
         if (estimateGas) {
-            return await this.checks!.contract.estimateGas.createChecksDEL(signers, amount, dueBlock, nonce, await this.txOptions({ value: value }))
+            return await this.checks!.contract.createChecksDEL.estimateGas(signers, amount, dueBlock, nonce, await this.txOptions({ value: value }))
         }
-        const checks = await this.checks!.contract.callStatic.createChecksDEL(signers, amount, dueBlock, nonce, await this.txOptions({ value: value }))
-        const tx = await this.checks!.contract.createChecksDEL(signers, amount, dueBlock, nonce, await this.txOptions({ value: value })).then((tx: ethers.ContractTransaction) => tx.wait());
+        const checks = await this.checks!.contract.createChecksDEL.staticCall(signers, amount, dueBlock, nonce, await this.txOptions({ value: value }))
+        const tx = await this.checks!.contract.createChecksDEL(signers, amount, dueBlock, nonce, await this.txOptions({ value: value })).then((tx: ethers.ContractTransactionResponse) => tx.wait());
         return { tx: tx, checks: checks };
     }
 
@@ -1103,18 +878,18 @@ export default class Call {
 
         if (sign == undefined) {
             if (estimateGas) {
-                return await this.checks!.contract.estimateGas.createChecksToken(signers, amount, dueBlock, nonce, tokenAddress, await this.txOptions())
+                return await this.checks!.contract.createChecksToken.estimateGas(signers, amount, dueBlock, nonce, tokenAddress, await this.txOptions())
             }
-            const checks = await this.checks!.contract.callStatic.createChecksToken(signers, amount, dueBlock, nonce, tokenAddress, await this.txOptions())
-            const tx = await this.checks!.contract.createChecksToken(signers, amount, dueBlock, nonce, tokenAddress, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            const checks = await this.checks!.contract.createChecksToken.staticCall(signers, amount, dueBlock, nonce, tokenAddress, await this.txOptions())
+            const tx = await this.checks!.contract.createChecksToken(signers, amount, dueBlock, nonce, tokenAddress, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
             return {tx: tx, checks: checks};
         } else {
-            const deadline = ethers.constants.MaxUint256
+            const deadline = ethers.MaxUint256
             if (estimateGas) {
-                return await this.checks!.contract.estimateGas.createChecksTokenByPermit(signers, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+                return await this.checks!.contract.createChecksTokenByPermit.estimateGas(signers, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions())
             }
-            const checks = await this.checks!.contract.callStatic.createChecksTokenByPermit(signers, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions())
-            const tx = await this.checks!.contract.createChecksTokenByPermit(signers, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransaction) => tx.wait());
+            const checks = await this.checks!.contract.createChecksTokenByPermit.staticCall(signers, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions())
+            const tx = await this.checks!.contract.createChecksTokenByPermit(signers, amount, dueBlock, nonce, tokenAddress, deadline, sign.v, sign.r, sign.s, await this.txOptions()).then((tx: ethers.ContractTransactionResponse) => tx.wait());
             return {tx: tx, checks: checks};
         }
     }
@@ -1122,19 +897,19 @@ export default class Call {
     public async redeemChecks(signatures: string[], checks: string[], callStatic?: boolean, estimateGas?: boolean) {
         if (callStatic) {
             try {
-                await this.checks!.contract.callStatic.redeemChecks(signatures, checks);
+                await this.checks!.contract.redeemChecks.staticCall(signatures, checks);
                 return null;
             } catch (err: any) {
                 if (err?.revert?.name != null) {
                     return err.revert.name
                 }
-                throw new Error(err)
+                throw err
             }
         }
         if (estimateGas) {
-            return await this.checks!.contract.estimateGas.redeemChecks(signatures, checks);
+            return await this.checks!.contract.redeemChecks.estimateGas(signatures, checks);
         }
-        return await this.checks!.contract.redeemChecks(signatures, checks).then((tx: ethers.ContractTransaction) => tx.wait());
+        return await this.checks!.contract.redeemChecks(signatures, checks).then((tx: ethers.ContractTransactionResponse) => tx.wait());
     }
 
     // -----------view functions----------
@@ -1168,7 +943,7 @@ export default class Call {
     }
 
     public async getSignPermitToken(contract: ethers.Contract, spender: string, amount: string | number | bigint): Promise<ethers.Signature> {
-        const deadline = ethers.constants.MaxUint256
+        const deadline = ethers.MaxUint256
         const nonce = await contract.nonces(this.account.address)
         const permitHash = await contract.permitHash(
             this.account.address,
@@ -1177,8 +952,8 @@ export default class Call {
             nonce,
             deadline
         )
-        const signingKey = new ethers.utils.SigningKey(this.account.privateKey)
-        const sign = signingKey.signDigest(ethers.utils.arrayify(permitHash))
+        const signingKey = new ethers.SigningKey(this.account.privateKey)
+        const sign = signingKey.sign(permitHash)
         return sign
     }
 
@@ -1196,14 +971,14 @@ export default class Call {
 
     //nft-center
     public async getNftType(address:string): Promise<TypeNFT> {
-        const [active, typeNftString] = await this.nftCenter!.contract.getNftMeta(address)
+        const { active, nftType } = await this.nftCenter!.contract.getNFTState(address)
         if (!active) throw new Error("The nft does not exist")
-        const type: string = typeNftString.toString();
-        let typeNFT: TypeNFT = TypeNFT[type as keyof typeof TypeNFT]
-        return typeNFT
+        const typeNFT = Number(nftType)
+        if (TypeNFT[typeNFT] === undefined) throw new Error(`Unknown nft type ${nftType}`)
+        return typeNFT as TypeNFT
     }
 
-    //nft 721Standart && 1155Standart && 721 && 1155
+    //nft 721 && 1155
     public async getAllowMintNFT(contract: ethers.Contract) {
         return await contract.getAllowMint();
     }
@@ -1233,7 +1008,7 @@ export default class Call {
         return await contract.getRefundable();
     }
 
-    //nft 721 & 721Standart
+    //nft 
     public async getApprovedNFT721(contract: ethers.Contract, tokenId: string | number | bigint) {
         return await contract.getApproved(tokenId);
     }
@@ -1246,7 +1021,7 @@ export default class Call {
         return await contract.tokenURI(tokenId);
     }
 
-    //nft 1155 & 1155Standart
+    //nft 
     public async getTokenURINFT1155(contract: ethers.Contract, tokenId: string | number | bigint) {
         return await contract.uri(tokenId);
     }
@@ -1260,15 +1035,6 @@ export default class Call {
     }
 
     //delegation 
-    public async getTokenStakesByMember(account: string): Promise<Stake[]> {
-        return await this.delegation!.contract.getStakesByMember(account);
-    }
-    public async getTokenStakesPageByMember(account: string, size: string | number | bigint, offset: string | number | bigint) {
-        return await this.delegation!.contract.getStakesPageByMember(account, size, offset);
-    }
-    public async getFrozenStakesQueueToken() {
-        return await this.delegation!.contract.getFrozenStakesQueue();
-    }
     public async getFreezeTimeToken() {
         const [
 			freezeTimeWithdraw,
@@ -1330,52 +1096,11 @@ export default class Call {
         return await this.delegation!.contract.getNFTBackedAmount(validator, delegator, token, holdTimestamp);
     }
 
-    //delegation-nft
-
-    public async getNFTStakesByMember(account: string): Promise<Stake[]> {
-        return await this.delegationNft!.contract.getStakesByMember(account);
-    }
-    public async getNFTStakesPageByMember(account: string, size: string | number | bigint, offset: string | number | bigint): Promise<Stake[]> {
-        return await this.delegationNft!.contract.getStakesPageByMember(account, size, offset);
-    }
-    public async getFrozenStakesQueueNFT() {
-        return await this.delegationNft!.contract.getFrozenStakesQueue();
-    }
-    public async getFreezeTimeNFT() {
-        const [
-			freezeTimeWithdraw,
-			freezeTimeTransfer
-		] = await Promise.all([
-			this.delegationNft!.contract.getFreezeTime(FreezeType.Withdraw),
-			this.delegationNft!.contract.getFreezeTime(FreezeType.Transfer),
-
-		])
-        return {
-            "Withdraw": freezeTimeWithdraw,
-            "Transfer": freezeTimeTransfer
-        }
-    }
-    public async getStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint) {
-        return await this.delegationNft!.contract.getStake(validator, delegator, nftAddress, tokenId);
-    }
-    public async getStakeIdNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint): Promise<string> {
-        return await this.delegationNft!.contract.getStakeId(validator, delegator, nftAddress, tokenId);
-    }
-    public async getHoldStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number) {
-        return await this.delegationNft!.contract.getHoldStake(validator, delegator, nftAddress, tokenId, holdTimestamp);
-    }
-    public async getFrozenStakeNFT(index: string | number | bigint) {
-        return await this.delegationNft!.contract.getFrozenStake(index);
-    }
-    public async getFrozenStakesNFT(indexes: string[] | number[]) {
-        return await this.delegationNft!.contract.getFrozenStakes(indexes);
-    }
-
     //master-validator
     public async getValidatorStatus(validator: string): Promise<ValidatorStatus> {
         const status = await this.masterValidator!.contract.getValidatorStatus(validator);
         const statusValidator: string = status.toString();
-        let validatorStatus: ValidatorStatus = ValidatorStatus[statusValidator as keyof typeof ValidatorStatus]
+        const validatorStatus: ValidatorStatus = ValidatorStatus[statusValidator as keyof typeof ValidatorStatus]
         return validatorStatus
 
     }
@@ -1392,25 +1117,23 @@ export default class Call {
     public getDecimalContract(contractName: string, address?: boolean): string | ethers.Contract {
         switch (contractName) {
             case "contract-center":
-                return address ? this.contractCenter!.contract.address : this.contractCenter!.contract
+                return address ? this.contractCenter!.address : this.contractCenter!.contract
             case "token-center":
-                return address ? this.tokenCenter!.contract.address : this.tokenCenter!.contract
+                return address ? this.tokenCenter!.address : this.tokenCenter!.contract
             case "nft-center":
-                return address ? this.nftCenter!.contract.address : this.nftCenter!.contract
+                return address ? this.nftCenter!.address : this.nftCenter!.contract
             case "delegation":
-                return address ? this.delegation!.contract.address : this.delegation!.contract
-            case "delegation-nft":
-                return address ? this.delegationNft!.contract.address : this.delegationNft!.contract
+                return address ? this.delegation!.address : this.delegation!.contract
             case "master-validator":
-                return address ? this.masterValidator!.contract.address : this.masterValidator!.contract
+                return address ? this.masterValidator!.address : this.masterValidator!.contract
             case "multi-call":
-                return address ? this.multiCall!.contract.address : this.multiCall!.contract
+                return address ? this.multiCall!.address : this.multiCall!.contract
             case "multi-sig":
-                return address ? this.multiSend!.contract.address : this.multiSend!.contract
+                return address ? this.multiSend!.address : this.multiSend!.contract
             case "bridge":
-                return address ? this.bridgeV2!.contract.address : this.bridgeV2!.contract
+                return address ? this.bridgeV2!.address : this.bridgeV2!.contract
             case "checks":
-                return address ? this.checks!.contract.address : this.checks!.contract
+                return address ? this.checks!.address : this.checks!.contract
             default:
                 throw new Error(`There is no such contract in the Decimal`)
         }
@@ -1421,7 +1144,7 @@ export default class Call {
         spender: string,
         tokenId: string | number | bigint,
     ): Promise<ethers.Signature>  {
-        const deadline = ethers.constants.MaxUint256
+        const deadline = ethers.MaxUint256
         const typedData = {
             types: {
                 Permit: [
@@ -1436,7 +1159,7 @@ export default class Call {
                 name: await contract.name(),
                 version: "1",
                 chainId: await this.provider.getNetwork().then((n) => n.chainId),
-                verifyingContract: contract.address.toString(),
+                verifyingContract: (contract.target as string).toString(),
             },
             message: {
                 spender,
@@ -1446,20 +1169,20 @@ export default class Call {
             },
         };
 
-        const signature = await this.account._signTypedData(
+        const signature = await this.account.signTypedData(
             typedData.domain,
             { Permit: typedData.types.Permit },
             typedData.message
         );
 
-        return ethers.utils.splitSignature(signature);
+        return ethers.Signature.from(signature);
     }
 
     public async getSignPermitDRC1155(
         contract: ethers.Contract,
         spender: string
     ): Promise<ethers.Signature> {
-        const deadline = ethers.constants.MaxUint256
+        const deadline = ethers.MaxUint256
         const typedData = {
             types: {
                 Permit: [
@@ -1473,7 +1196,7 @@ export default class Call {
                 name: await contract.name(),
                 version: "1",
                 chainId: await this.provider.getNetwork().then((n) => n.chainId),
-                verifyingContract: contract.address.toString(),
+                verifyingContract: (contract.target as string).toString(),
             },
             message: {
                 spender,
@@ -1482,13 +1205,13 @@ export default class Call {
             },
         };
 
-        const signature = await this.account._signTypedData(
+        const signature = await this.account.signTypedData(
             typedData.domain,
             { Permit: typedData.types.Permit },
             typedData.message
         );
 
-        return ethers.utils.splitSignature(signature);
+        return ethers.Signature.from(signature);
     }
 
     //bridgeV2
@@ -1509,19 +1232,19 @@ export default class Call {
         const encodedInitializer = this.safe!.contract.interface.encodeFunctionData("setup", [
             ownersData,
             weightThreshold,
-            ethers.constants.AddressZero,
+            ethers.ZeroAddress,
             "0x",
-            fallbackHandler || ethers.constants.AddressZero,
-            ethers.constants.AddressZero,
+            fallbackHandler || ethers.ZeroAddress,
+            ethers.ZeroAddress,
             0,
-            ethers.constants.AddressZero
+            ethers.ZeroAddress
         ]);
         const saltNumber = Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER - 1)).toString();
         if (estimateGas) {
-            return await this.safeFactory!.contract.estimateGas.createProxyWithNonce(this.safe!.contract.address, encodedInitializer, saltNumber, await this.txOptions());
+            return await this.safeFactory!.contract.createProxyWithNonce.estimateGas(this.safe!.address, encodedInitializer, saltNumber, await this.txOptions());
         }
-        const template = await this.safeFactory!.contract.callStatic.createProxyWithNonce(this.safe!.contract.address, encodedInitializer, saltNumber, await this.txOptions());
-        const tx = await this.safeFactory!.contract.createProxyWithNonce(this.safe!.contract.address, encodedInitializer, saltNumber, await this.txOptions()).then((tx: any) => tx.wait());
+        const template = await this.safeFactory!.contract.createProxyWithNonce.staticCall(this.safe!.address, encodedInitializer, saltNumber, await this.txOptions());
+        const tx = await this.safeFactory!.contract.createProxyWithNonce(this.safe!.address, encodedInitializer, saltNumber, await this.txOptions()).then((tx: any) => tx.wait());
         return {tx: tx, multisigAddress: template};
     }
 

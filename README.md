@@ -1,20 +1,48 @@
-# Usage
+# dsc-js-sdk
 
-## Connecting to Decimal Blockchain
+JavaScript/TypeScript SDK for [Decimal Smart Chain](https://decimalchain.com) (EVM): DEL and tokens,
+NFT collections, delegation (coins, tokens and NFT), validators, multisig wallets, checks, bridge,
+subgraph queries and IPFS uploads. Built on [ethers v6](https://docs.ethers.org/v6/).
 
-You can provide your own Decimal node address to send transactions to the network, or you can use our gateways to do this and much more. Gateway URLs are provided below.
+> **3.0** is a major release: the SDK is EVM-only, all numbers are native `bigint` and the
+> `delegation-nft` contract is no longer used. See [CHANGELOG.md](CHANGELOG.md) for the migration guide.
 
-The following code can be used to generate **mnemonic** or use your mnemonic
+## Installation
+
+```bash
+npm install dsc-js-sdk
+```
+
+Requires Node.js >= 26 (current LTS) or a modern browser (the SDK uses the global `fetch`, `FormData` and `Blob`).
 
 ```js
-const bip39 = require("bip39");
-const mnemonic = bip39.generateMnemonic();
+import { Wallet, DecimalEVM, Subgraph, DecimalNetworks } from 'dsc-js-sdk'
+// or: const { Wallet, DecimalEVM, Subgraph, DecimalNetworks } = require('dsc-js-sdk')
+```
+
+# Usage
+
+## Wallet
+
+```js
+const wallet = new Wallet(mnemonic) // or new Wallet('') to generate a new 24-word mnemonic
+
+wallet.mnemonic         // master mnemonic
+wallet.address          // d0... address of the current account
+wallet.evmAddress       // 0x... address of the current account
+wallet.validatorAddress // d0valoper... address
+
+wallet.generateAccount()                // derive the next account (m/44'/60'/0'/0/<id>) and switch to it
+wallet.generateAndSwitchAccount(5, 2)   // derive accounts up to depth 5 and switch to id 2
+wallet.switchAccount(0)
+
+Wallet.decodeCosmosAccountAddress('d0...') // -> 0x...
+Wallet.encodeCosmosAccountAddress('0x...') // -> d0...
 ```
 
 ## Connect to DecimalEVM
 
 ```js
-const { Wallet, DecimalEVM, DecimalNetworks } = SDK;
 const decimalWallet = new Wallet(mnemonic);
 
 //DecimalNetworks.devnet - is devnet
@@ -31,12 +59,17 @@ await decimalEVM.connect(); // initializes all contacts
 await decimalEVM.connect('contract-center') // initializes only contract-center contact
 await decimalEVM.connect('token-center') // initializes only token-center contact
 await decimalEVM.connect('nft-center') // initializes only nft-center contact
-await decimalEVM.connect('delegation') // initializes only delegation contact (delegation token)
-await decimalEVM.connect('delegation-nft') // initializes only delegation-nft contact (delegation nft)
+await decimalEVM.connect('delegation') // initializes only delegation contact (delegation of DEL, tokens and NFT)
 await decimalEVM.connect('master-validator') // initializes only master-validator contact (master node)
 await decimalEVM.connect('multi-call') // initializes only multi-call contact (multi send)
 await decimalEVM.connect('multi-sig') // initializes only multi-sig contact
+await decimalEVM.connect('gas-center') // initializes only gas-center contact
+await decimalEVM.connect('checks') // initializes only checks contact
 ```
+
+All amounts are `bigint` (wei, 18 decimals); `decimalEVM.parseEther('1')` and `decimalEVM.formatEther(value)`
+convert from/to DEL. Write methods resolve to an ethers `TransactionReceipt`; pass `true` as the last
+argument (`estimateGas`) to get the estimated gas (`bigint`) instead of sending the transaction.
 
 ## DEL
 
@@ -246,7 +279,7 @@ const newNFT: any = {
   name: 'Pirates', // name of nft collection
   contractURI: 'ipfs://ipfs/QmShfT7LRyjN4ZFNyGAK5YftGU7sa9xqTTukzPiYPsrLFk', // uri of nft collection
   refundable: false, // is the reserve returned when burning NFT (true or false)
-  allowMint: true //is mint allowed for the nft collection
+  burnable: true, // can NFT owners burn their tokens
 }
 
 const {nftCollectionAddress} = await decimalEVM.createCollectionDRC721Reserveless(newNFT) // create collection DRC721 without reserve
@@ -261,11 +294,11 @@ const {nftCollectionAddress} = await decimalEVM.createCollectionDRC721Reserveles
 ```js
 const to = decimalWallet.evmAddress
 const tokenURI = "/ipfs/QmShfT7LRyjN4ZFNyGAK5YftGU7sa9xqTTukzPiYPsrLFk"
-const {tokenId} = await decimalEVM.mintNFT(nftCollectionAddress, to, tokenURI) // mint NFT for NFT Collection DRC721 without reserve
+const {tokenId} = await decimalEVM.mintReserveless(nftCollectionAddress, to, tokenURI) // mint NFT for NFT Collection DRC721 without reserve
 
 //const tokenId = 0
 //const amount = 20
-//const {tokenId} = await decimalEVM.mintNFT(nftCollectionAddress, to, tokenURI, tokenId, amount) // mint NFT for NFT Collection DRC1155 without reserve
+//const {tokenId} = await decimalEVM.mintReserveless(nftCollectionAddress, to, tokenURI, tokenId, amount) // mint NFT for NFT Collection DRC1155 without reserve
 ```
 
 #### Mint NFT for NFT Collection with DEL reserve
@@ -377,18 +410,6 @@ await decimalEVM.burnNFT(nftCollectionAddress, tokenId) // for DRC721
 //const amount = 20
 //await decimalEVM.burnNFT(nftCollectionAddress, tokenId, amount) // for DRC1155
 ```
-<!-- ### Set BaseURI for NFT Collection
-```js
-const baseURI = 'https://example.com/'
-await decimalEVM.setBaseURINFT(nftCollectionAddress, baseURI)
-``` -->
-
-### Set TokenURI for NFT
-```js
-const tokenId = 0
-const tokenURI = 'image.png'
-await decimalEVM.setTokenURINFT(nftCollectionAddress, tokenId, tokenURI)
-```
 
 ### Approve NFT
 
@@ -456,7 +477,6 @@ await decimalEVM.delegateTokenHold(validator, tokenAddress, amount, holdTimestam
 ### Transfer stake
 ```js
 const stakes = await subgraph.getStakesByAddress(owner) // Get your stakes from subgraph
-//const stakes = await decimalEVM.getTokenStakesByMember(owner) // Or get your stakes from smart contract
 
 const stake = stakes[0] // first stake (for example)
 const newValidator = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
@@ -468,7 +488,6 @@ await decimalEVM.transferStakeTokenHold(stake.validator, stake.token, stake.amou
 ### Withdraw stake
 ```js
 const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
-//const stakes = await decimalEVM.getTokenStakesByMember(owner) // Or get your stakes from smart contract
 
 const stake = stakes[0] // first stake (for example)
 await decimalEVM.withdrawStakeToken(stake.validator, stake.token, stake.amount)
@@ -478,7 +497,6 @@ await decimalEVM.withdrawStakeToken(stake.validator, stake.token, stake.amount)
 ### Stake to Hold
 ```js
 const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
-//const stakes = await decimalEVM.getTokenStakesByMember(owner) // Or get your stakes from smart contract
 const stake = stakes[0] // first stake (for example)
 
 const oldHoldTimestamp = 0 // if current stake is not a hold
@@ -497,14 +515,6 @@ const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your
 const stake = stakes[0] // first stake (for example)
 
 await decimalEVM.stakeTokenResetHold(stake.validator, stake.delegator, stake.token, stake.holdTimestamp)
-```
-
-### Reset Hold DEL
-```js
-const stakes = await subgraph.getStakesByAddress(owner, first, skip) // Get your stakes from subgraph
-const stake = stakes[0] // first stake (for example)
-
-await decimalEVM.stakeTokenResetHoldDEL(stake.validator, stake.delegator, stake.holdTimestamp)
 ```
 
 ### withdraw Token With Reset
@@ -566,34 +576,6 @@ const newHoldTimestamp = latestBlock!.timestamp + sec;
 await decimalEVM.holdTokenWithReset(stake.validator, stake.token, stake.amount, newHoldTimestamp, holdTimestampsToReset)
 ```
 
-### Apply penalty to stake
-```js
-const stakes = await subgraph.getStakesByAddress(owner) // Get your stakes from subgraph
-//const stakes = await decimalEVM.getTokenStakesByMember(owner) // Or get your stakes from smart contract
-
-const stake = stakes[0] // first stake (for example)
-const result = await decimalEVM.applyPenaltyToStakeToken(stake.validator, stake.delegator, stake.token)
-if (result.error == null) {
-  //successfully transaction: result.tx
-} else {
-  console.log(result.error == 'NothingToBurn' ? 'Nothing to burn, there is no need for applyPenaltyToStakeToken' : result.error)
-}
-```
-
-### Apply penalties to stake
-```js
-const stakes = await subgraph.getStakesByAddress(owner) // Get your stakes from subgraph
-//const stakes = await decimalEVM.getTokenStakesByMember(owner) // Or get your stakes from smart contract
-
-const stake = stakes[0] // first stake (for example)
-const result = await decimalEVM.applyPenaltiesToStakeToken(stake.validator, stake.delegator, stake.token)
-if (result.error == null) {
-  //successfully transaction: result.tx
-} else {
-  console.log(result.error == 'NoPenaltyToApply' ? 'Nothing to burn, there is no need for applyPenaltiesToStakeToken' : result.error)
-}
-```
-
 ### Complete stake after frozen
 ```js
 const stakesFrozen = await subgraph.getTransferStakesByAddress(owner) // get transfer stakes
@@ -613,170 +595,73 @@ if (stakesFrozenFiltered.length > 0) {
 }
 ```
 
-## Delegation NFT 
+## Delegation NFT
 
-### Delegation NFT (approve NFT)
+NFTs (DRC721 and DRC1155) are delegated through the main `delegation` contract.
+Approve the NFT to the delegation contract first (or use a permit signature for DRC721).
+
 ```js
-const tokenId = 0 // tokenId of NFT
-const delegationNftAddress = await decimalEVM.getDecimalContractAddress('delegation-nft')
 const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
-
-//delegate DRC721
-await decimalEVM.approveNFT721(nftCollectionAddress, delegationNftAddress, tokenId)
-await decimalEVM.delegateDRC721(validator, nftCollectionAddress, tokenId)
-// or delegate hold DRC721
+const delegationAddress = await decimalEVM.getDecimalContractAddress('delegation')
 const days = 150
-const sec = days * 86400
 const latestBlock = await decimalEVM.getLatestBlock()
-const holdTimestamp = latestBlock!.timestamp + sec;
-await decimalEVM.delegateDRC721Hold(validator, nftCollectionAddress, tokenId, holdTimestamp)
-
-//delegate DRC1155
-const amount = 1 //1 token
-await decimalEVM.approveForAllNFT(nftCollectionAddress, delegationNftAddress, true)
-await decimalEVM.delegateDRC1155(validator, nftCollectionAddress, tokenId, amount)
-// or delegate hold DRC1155
-const days = 150
-const sec = days * 86400
-const latestBlock = await decimalEVM.getLatestBlock()
-const holdTimestamp = latestBlock!.timestamp + sec;
-await decimalEVM.delegateDRC1155Hold(validator, nftCollectionAddress, tokenId, amount, holdTimestamp)
-
+const holdTimestamp = latestBlock!.timestamp + days * 86400
 ```
 
-### Delegation NFT (permit NFT)
+### Delegate DRC721
 ```js
-const tokenId = 0 // tokenId of NFT
-const delegationNftAddress = await decimalEVM.getDecimalContractAddress('delegation-nft')
-const validator = "0x75BF4906ae6d68A013FD1a6F9D04297cd463222d"
+const tokenId = 0
+await decimalEVM.approveNFT721(nftCollectionAddress, delegationAddress, tokenId)
+await decimalEVM.delegateNFT(validator, nftCollectionAddress, tokenId)
+// or with hold
+await decimalEVM.delegateNFTHold(validator, nftCollectionAddress, tokenId, holdTimestamp)
 
-//delegate DRC721
-const sign = await decimalEVM.getSignPermitDRC721(nftCollectionAddress, delegationNftAddress, tokenId)
-await decimalEVM.delegateDRC721(validator, nftCollectionAddress, tokenId, sign)
-// or delegate hold DRC721
-const days = 150
-const sec = days * 86400
-const latestBlock = await decimalEVM.getLatestBlock()
-const holdTimestamp = latestBlock!.timestamp + sec;
-await decimalEVM.delegateDRC721Hold(validator, nftCollectionAddress, tokenId, holdTimestamp, sign)
-
-//delegate DRC1155
-const amount = 1 //1 token
-const sign = await decimalEVM.getSignPermitDRC1155(nftCollectionAddress, delegationNftAddress)
-await decimalEVM.delegateDRC1155(validator, nftCollectionAddress, tokenId, amount, sign)
-// or delegate hold DRC1155
-const days = 150
-const sec = days * 86400
-const latestBlock = await decimalEVM.getLatestBlock()
-const holdTimestamp = latestBlock!.timestamp + sec;
-await decimalEVM.delegateDRC1155Hold(validator, nftCollectionAddress, tokenId, amount, holdTimestamp, sign)
+// or with permit instead of approve
+const sign = await decimalEVM.getSignPermitDRC721(nftCollectionAddress, delegationAddress, tokenId)
+await decimalEVM.delegateNFTByPermit(validator, nftCollectionAddress, tokenId, sign)
 ```
 
-### Transfer stake NFT
+### Delegate DRC1155
+```js
+const tokenId = 0
+const amount = 1
+await decimalEVM.approveForAllNFT(nftCollectionAddress, delegationAddress, true)
+await decimalEVM.delegateNFT1155(validator, nftCollectionAddress, tokenId, amount)
+// or with hold
+await decimalEVM.delegateNFT1155Hold(validator, nftCollectionAddress, tokenId, amount, holdTimestamp)
+```
+
+### Transfer stake NFT (redelegate)
 ```js
 const newValidator = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
 
-const stakes = await subgraph.getNFTStakesByAddress(owner, 1000, 0) // get nft stakes 
-const stake = stakes[0] // first stake (for example)
+await decimalEVM.transferNFTStake(validator, nftCollectionAddress, tokenId, newValidator) // DRC721
+await decimalEVM.transferNFTStakeHold(validator, nftCollectionAddress, tokenId, holdTimestamp, newValidator)
 
-// transfer stake DRC721 || DRC1155
-await decimalEVM.transferStakeNFT(stake.validator, stake.token, stake.tokenId, stake.amount, newValidator)
-// or transfer stake hold 
-await decimalEVM.transferStakeNFTHold(stake.validator, stake.token, stake.tokenId, stake.amount, stake.holdTimestamp, newValidator)
+await decimalEVM.transferNFT1155Stake(validator, nftCollectionAddress, tokenId, newValidator) // DRC1155
+await decimalEVM.transferNFT1155StakeHold(validator, nftCollectionAddress, tokenId, holdTimestamp, newValidator)
 ```
 
 ### Withdraw stake NFT
 ```js
-const stakes = await subgraph.getNFTStakesByAddress(owner, 1000, 0) // get nft stakes 
+await decimalEVM.withdrawNFT(validator, nftCollectionAddress, tokenId) // DRC721
+await decimalEVM.withdrawNFTHold(validator, nftCollectionAddress, tokenId, holdTimestamp)
 
-const stake = stakes[0] // first stake (for example)
-
-await decimalEVM.withdrawStakeNFT(stake.validator, stake.token, stake.tokenId, stake.amount)
-// or withdraw stake hold 
-await decimalEVM.withdrawStakeNFTHold(stake.validator, stake.token, stake.tokenId, stake.amount, stake.holdTimestamp)
+await decimalEVM.withdrawNFT1155(validator, nftCollectionAddress, tokenId) // DRC1155
+await decimalEVM.withdrawNFT1155Hold(validator, nftCollectionAddress, tokenId, holdTimestamp)
 ```
 
-### Stake to Hold
+### Get NFT stakes
 ```js
-const stakes = await subgraph.getNFTStakesByAddress(owner, 1000, 0) // get nft stakes 
-const stake = stakes[0] // first stake (for example)
+// from the subgraph
+const { data: stakes } = await subgraph.getNFTStakesByAddress(owner, 1000, 0)
+const withdrawals = await subgraph.getWithdrawNFTStakesByAddress(owner, 1000, 0) // stakeIndex, unfreezeTimestamp
+const transfers = await subgraph.getTransferNFTStakesByAddress(owner, 1000, 0)
 
-const oldHoldTimestamp = 0 // if current stake is not a hold
-//const oldHoldTimestamp = stake.holdTimestamp //or increase current hold time
-
-//const days = 150
-//const sec = days * 86400
-//const latestBlock = await decimalEVM.getLatestBlock()
-//const newHoldTimestamp = latestBlock!.timestamp + sec;
-await decimalEVM.stakeNFTToHold(stake.validator, stake.token, stake.tokenId, stake.amount, oldHoldTimestamp, newHoldTimestamp)
-```
-
-### Stake to Hold
-```js
-const stakes = await subgraph.getNFTStakesByAddress(owner, 1000, 0) // get nft stakes 
-const stake = stakes[0] // first stake (for example)
-
-await decimalEVM.stakeNFTResetHold(stake.validator, stake.delegator, stake.token, stake.tokenId, stake.holdTimestamp)
-```
-
-### withdraw NFT With Reset
-```js
-const stakes = await subgraph.getNFTStakesByAddress(owner, first, skip) // get nft stakes 
-const stake1 = stakes[0] // first stake (for example)
-const stake2 = stakes[1] // second stake (for example)
-
-const holdTimestampsToReset = [stake1.holdTimestamp, stake2.holdTimestamp] //array expired holdTimestamps. Where validator, amount, token and tokenId match
-
-await decimalEVM.withdrawNFTWithReset(stake.validator, stake.token, stake.tokenId, stake.amount, holdTimestampsToReset)
-```
-
-### transfer NFT With Reset
-```js
-const stakes = await subgraph.getNFTStakesByAddress(owner, first, skip) // get nft stakes 
-const stake1 = stakes[0] // first stake (for example)
-const stake2 = stakes[1] // second stake (for example)
-
-const holdTimestampsToReset = [stake1.holdTimestamp, stake2.holdTimestamp] //array expired holdTimestamps. Where validator, amount, token and tokenId match
-
-const oldValidator = stake.validator
-const newValidator = '0x...' //new validator
-
-await decimalEVM.transferNFTWithReset(oldValidator, stake.token, stake.tokenId, stake.amount, newValidator, holdTimestampsToReset)
-```
-
-### hold NFT With Reset
-```js
-const stakes = await subgraph.getNFTStakesByAddress(owner, first, skip) // get nft stakes 
-const stake1 = stakes[0] // first stake (for example)
-const stake2 = stakes[1] // second stake (for example)
-
-const holdTimestampsToReset = [stake1.holdTimestamp, stake2.holdTimestamp] //array expired holdTimestamps. Where validator, amount, token and tokenId match
-
-const days = 150
-const sec = days * 86400
-const latestBlock = await decimalEVM.getLatestBlock()
-const newHoldTimestamp = latestBlock!.timestamp + sec;
-
-await decimalEVM.holdNFTWithReset(stake.validator, stake.token, stake.tokenId, stake.amount, newHoldTimestamp, holdTimestampsToReset)
-```
-
-### Complete stake NFT after frozen
-```js
-  // get transfer stakes NFT TODO
-  // or get withdraw stakes NFT TODO
-
-const block = await decimalEVM.getLatestBlock();
-const stakesFrozenFiltered = stakesFrozen.filter(({unfreezeTimestamp}) => unfreezeTimestamp <= block.timestamp)
-if (stakesFrozenFiltered.length > 0) {
-  const stakeFrozen = stakesFrozenFiltered[0] // first stake frozen (for example)
-
-  const result = await decimalEVM.completeStakeNFT([stakeFrozen.stakeIndex])
-  if (result.error == null) {
-      //successfully transaction: result.tx
-  } else {
-      console.log(result.error)
-  }
-}
+// from the contract (holdTimestamp = 0 for a stake without hold)
+const stake = await decimalEVM.getNFTStake(nftCollectionAddress, tokenId, delegator, validator, 0)
+const stakeId = await decimalEVM.getNFTStakeId(nftCollectionAddress, tokenId, delegator, validator, 0)
+const backed = await decimalEVM.getNFTBackedAmount(validator, delegator, reserveToken, 0)
 ```
 
 ## Validators
@@ -871,13 +756,13 @@ const getEstimateGas = true
 const estimateGas = await decimalEVM.createToken(newToken, reserve, getEstimateGas)
 //To calculate the fee, request the current gasPrice and multiply by the received estimateGas
 const feeData = await decimalEVM.getFeeData()
-const resultFee = BigInt(estimateGas.toString())*BigInt(feeData.gasPrice!.toString())
+const resultFee = estimateGas * feeData.gasPrice!
 
 //You can get the current estimateGas from any write function by specifying `true` in the last parameter
 //Another example
 const estimateGas = await decimalEVM.approveToken(tokenAddress, spender, amount, getEstimateGas)
 const feeData = await decimalEVM.getFeeData()
-const resultFeeForApproveToken = BigInt(estimateGas.toString())*BigInt(feeData.gasPrice!.toString())
+const resultFeeForApproveToken = estimateGas * feeData.gasPrice!
 ```
 
 ## Multicall
@@ -1475,21 +1360,10 @@ const result = await decimalEVM.getSupplyNFT1155(nftCollectionAddress, tokenId)
 
 #### Get stakes by address
 ```js
-const account = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
-const result = await decimalEVM.getTokenStakesByMember(account) //TODO delete, not work
-```
-
-#### Get page stakes by address
-```js
-const account = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
-const size = 1000
-const offset = 0 // offset of viewed steaks
-const result = await decimalEVM.getTokenStakesPageByMember(account, size, offset)
-```
-
-#### Get Token frozen stakes queue
-```js
-const result = await decimalEVM.getFrozenStakesQueueToken()
+// stakes are read from the subgraph
+const { data: stakes } = await subgraph.getStakesByAddress(account, 1000, 0)
+const withdrawals = await subgraph.getWithdrawStakesByAddress(account, 1000, 0) // frozen withdrawals: stakeIndex, unfreezeTimestamp
+const transfers = await subgraph.getTransferStakesByAddress(account, 1000, 0)
 ```
 
 #### Get Token freeze time
@@ -1515,34 +1389,17 @@ const result = await decimalEVM.getStakeIdToken(validator, delegator, tokenAddre
 
 ### Delegation NFT
 
-#### Get stakes NFT by address
+#### Get NFT stake
 ```js
-const account = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
-const result = await decimalEVM.getNFTStakesByMember(account)
+// holdTimestamp = 0 for a stake without hold
+const stake = await decimalEVM.getNFTStake(nftCollectionAddress, tokenId, delegator, validator, holdTimestamp)
+const stakeId = await decimalEVM.getNFTStakeId(nftCollectionAddress, tokenId, delegator, validator, holdTimestamp)
 ```
 
-#### Get page stakes NFT by address
+#### Get coin amount backed by delegated NFTs
 ```js
-const account = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
-const size = 1000
-const offset = 0 // offset of viewed steaks
-const result = await decimalEVM.getNFTStakesPageByMember(account, size, offset)
-```
-
-#### Get NFT frozen stakes queue
-```js
-const result = await decimalEVM.getFrozenStakesQueueNFT()
-```
-
-#### Get NFT freeze time
-```js
-const result = await decimalEVM.getFreezeTimeNFT()
-/* the output example:
-{
-  "Withdraw": 2592000n,
-  "Transfer": 604800n
-}
-*/
+const backed = await decimalEVM.getNFTBackedAmount(validator, delegator, reserveToken, holdTimestamp)
+const available = await decimalEVM.getAvailableCoinAmount(validator, delegator, token, holdTimestamp)
 ```
 
 ### Validator
@@ -2057,7 +1914,7 @@ const feeData = await decimalEVM.getFeeData()
 ```js
 // You can call to the contract you need using a instance of the contract
 // Example
-const tokenCenter = decimalEVM.getDecimalContract('token-center')
+const tokenCenter = await decimalEVM.getDecimalContract('token-center')
 const tokenAddress = "0x5c089e1b93fef3d7f7672e8d515eba846f42b924"
 const result = await tokenCenter.isTokenExists(tokenAddress)
 /* Available contracts
@@ -2065,8 +1922,11 @@ const result = await tokenCenter.isTokenExists(tokenAddress)
   token-center
   nft-center
   delegation
-  delegation-nft
   master-validator
+  multi-call
+  multi-sig
+  bridge
+  checks
 */
 ```
 
@@ -2152,4 +2012,14 @@ console.log(sendTransaction)
 // or send just populateTransaction
 //const sendTransaction = await contract.sendTransaction(populateTransaction)
 //console.log(sendTransaction)
+```
+## Development
+
+```bash
+npm install
+npm run build        # dist/index.js (UMD) + type declarations
+npm run typecheck
+npm run lint
+npm test             # offline unit tests
+DSC_TEST_MNEMONIC="..." npm run test:testnet   # end-to-end tests on testnet, sends real testnet transactions
 ```

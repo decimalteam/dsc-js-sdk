@@ -38,7 +38,7 @@ export default class Subgraph {
     getValidator(address: string): Promise<Validator>;
     getValidatorPenalties(validator: string, first: number, skip: number): Promise<Penalty[]>;
     getValidatorPenaltiesFromBlock(validator: string, blockNumber: string | number, first: number, skip: number): Promise<Penalty[]>;
-    getSumAmountToPenalty(): Promise<{}>;
+    getSumAmountToPenalty(): Promise<object>;
     getNftCollections(first: number, skip: number): Promise<NFTCollection[]>;
     getNftCollectionsByCreator(address: string, first: number, skip: number): Promise<NFTCollection[]>;
     getNftCollectionByAddress(address: string): Promise<NFTCollection>;

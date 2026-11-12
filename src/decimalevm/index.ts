@@ -1,5 +1,5 @@
 
-import { BigNumberish, ethers, Wallet as HDNodeWallet } from "ethers";
+import { BigNumberish, ethers, HDNodeWallet } from "ethers";
 import {
     getWeb3Endpoint,
     getNewApiEndpoint,
@@ -20,12 +20,11 @@ import { ValidatorMeta, ValidatorStatus } from "./interfaces/validator";
 import Subgraph from "../subgraph";
 import { DecimalContract } from "../subgraph/interfaces/contracts";
 import IPFS from "./ipfs";
-import {
-	abi as multiCallAbi
-} from "./abi/Multicall.json";
-import {
-    abi as checksAbi
-} from "./abi/Checks.json";
+import multiCallJson from "./abi/Multicall.json";
+import checksJson from "./abi/Checks.json";
+
+const multiCallAbi = multiCallJson.abi;
+const checksAbi = checksJson.abi;
 import {
   buildSafeTransaction,
   safeApproveHash,
@@ -34,7 +33,6 @@ import {
   MetaTransaction
 } from "./multisig/execution";
 import { buildMultiSendSafeTx } from "./multisig/multisend";
-import { Blob } from "buffer";
 
 export default class DecimalEVM {
 
@@ -45,20 +43,20 @@ export default class DecimalEVM {
   private readonly ipfs: IPFS;
   private call?: Call;
   private contractAddesses?: DecimalContract[];
-  public provider: ethers.providers.JsonRpcProvider;
+  public provider: ethers.JsonRpcProvider;
   public account: HDNodeWallet;
-  public providerETH?: ethers.providers.JsonRpcProvider;
+  public providerETH?: ethers.JsonRpcProvider;
   public accountETH?: HDNodeWallet;
-  public providerBSC?: ethers.providers.JsonRpcProvider;
+  public providerBSC?: ethers.JsonRpcProvider;
   public accountBSC?: HDNodeWallet;
   private contracts: { [address: string]: DecimalContractEVM } = {}
   private abis: { 
-    token?: ethers.ContractInterface,
-    tokenReserveless?: ethers.ContractInterface,
-    drc721?: ethers.ContractInterface,
-    drc1155?: ethers.ContractInterface,
-    drc721Reserveless?: ethers.ContractInterface,
-    drc1155Reserveless?: ethers.ContractInterface,
+    token?: ethers.InterfaceAbi,
+    tokenReserveless?: ethers.InterfaceAbi,
+    drc721?: ethers.InterfaceAbi,
+    drc1155?: ethers.InterfaceAbi,
+    drc721Reserveless?: ethers.InterfaceAbi,
+    drc1155Reserveless?: ethers.InterfaceAbi,
   } = {
     token: undefined,
     drc721: undefined,
@@ -82,12 +80,8 @@ export default class DecimalEVM {
     buildTxSendNFT: (safeAddress: string, tokenAddress: string, to: string, tokenId: string | number | bigint, amount?: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>
     buildTxDelegateDEL: (safeAddress: string, validator: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxDelegateToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxDelegateDRC721: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxDelegateDRC1155: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxTransferStakeToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxTransferStakeNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxWithdrawStakeToken: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxWithdrawStakeNFT: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxDelegateDELHold: (safeAddress: string, validator: string, amount: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxDelegateTokenHold: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxTransferStakeTokenHold: (safeAddress: string, validator: string, tokenAddress: string, amount: string | number | bigint, holdTimestamp: number, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
@@ -98,15 +92,6 @@ export default class DecimalEVM {
     buildTxWithdrawNFT1155: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxTransferNFTStake: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxTransferNFT1155Stake: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxTransferStakeNFTHold: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, newValidator: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxWithdrawStakeNFTHold: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxStakeNFTToHold: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxWithdrawNFTWithReset: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxTransferNFTWithReset: (safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, holdTimestampsToReset: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxHoldNFTWithReset: (safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxStakeNFTResetHold: (safeAddress: string, validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxStakeNFTResetHolds: (safeAddress: string, validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
-    buildTxCompleteStakeNFT: (safeAddress: string, indexes: string[] | number[], nonce?: BigNumberish) => Promise<SafeTransaction>;
     buildTxSetFallbackHandler: (safeAddress: string, handlerAddress?: string, nonce?: BigNumberish) => Promise<SafeTransaction>;
     signTx: (safeAddress: string, safeTx: SafeTransaction) => Promise<SafeSignature>;
     approveHash: (safeAddress: string, safeTx: SafeTransaction) => Promise<{ safeTransaction: SafeSignature, tx: any }>;
@@ -134,12 +119,8 @@ export default class DecimalEVM {
     buildTxSendNFT: this.buildMultiSigTxSendNFT.bind(this),
     buildTxDelegateDEL: this.buildMultiSigTxDelegateDEL.bind(this),
     buildTxDelegateToken: this.buildMultiSigTxDelegateToken.bind(this),
-    buildTxDelegateDRC721: this.buildMultiSigTxDelegateDRC721.bind(this),
-    buildTxDelegateDRC1155: this.buildMultiSigTxDelegateDRC1155.bind(this),
     buildTxTransferStakeToken: this.buildMultiSigTxTransferStakeToken.bind(this),
-    buildTxTransferStakeNFT: this.buildMultiSigTxTransferStakeNFT.bind(this),
     buildTxWithdrawStakeToken: this.buildMultiSigTxWithdrawStakeToken.bind(this),
-    buildTxWithdrawStakeNFT: this.buildMultiSigTxWithdrawStakeNFT.bind(this),
     buildTxDelegateDELHold: this.buildMultiSigTxDelegateDELHold.bind(this),
     buildTxDelegateTokenHold: this.buildMultiSigTxDelegateTokenHold.bind(this),
     buildTxTransferStakeTokenHold: this.buildMultiSigTxTransferStakeTokenHold.bind(this),
@@ -150,15 +131,6 @@ export default class DecimalEVM {
     buildTxWithdrawNFT1155: this.buildMultiSigTxWithdrawNFT1155.bind(this),
     buildTxTransferNFTStake: this.buildMultiSigTxTransferNFTStake.bind(this),
     buildTxTransferNFT1155Stake: this.buildMultiSigTxTransferNFT1155Stake.bind(this),
-    buildTxTransferStakeNFTHold: this.buildMultiSigTxTransferStakeNFTHold.bind(this),
-    buildTxWithdrawStakeNFTHold: this.buildMultiSigTxWithdrawStakeNFTHold.bind(this),
-    buildTxStakeNFTToHold: this.buildMultiSigTxStakeNFTToHold.bind(this),
-    buildTxWithdrawNFTWithReset: this.buildMultiSigTxWithdrawNFTWithReset.bind(this),
-    buildTxTransferNFTWithReset: this.buildMultiSigTxTransferNFTWithReset.bind(this),
-    buildTxHoldNFTWithReset: this.buildMultiSigTxHoldNFTWithReset.bind(this),
-    buildTxStakeNFTResetHold: this.buildMultiSigTxStakeNFTResetHold.bind(this),
-    buildTxStakeNFTResetHolds: this.buildMultiSigTxStakeNFTResetHolds.bind(this),
-    buildTxCompleteStakeNFT: this.buildMultiSigTxCompleteStakeNFT.bind(this),
     buildTxSetFallbackHandler: this.buildMultiSigTxSetFallbackHandler.bind(this),
     signTx: this.signMultiSigTx.bind(this),
     approveHash: this.approveHashMultiSig.bind(this),
@@ -178,8 +150,8 @@ export default class DecimalEVM {
   ) {
       this.wallet = wallet;
       this.network = network;
-      this.provider = new ethers.providers.JsonRpcProvider(getWeb3Endpoint(network));
-      this.account = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.provider);
+      this.provider = new ethers.JsonRpcProvider(getWeb3Endpoint(network));
+      this.account = HDNodeWallet.fromPhrase(this.wallet.mnemonic!, undefined, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.provider);
       this.apiUrl = getNewApiEndpoint(this.network);
       this.subgraph = new Subgraph(this.network)
       this.ipfs = new IPFS(this.network)
@@ -205,7 +177,6 @@ export default class DecimalEVM {
       await this.checkConnect('token-center')
       await this.checkConnect('nft-center')
       await this.checkConnect('delegation')
-      await this.checkConnect('delegation-nft')
       await this.checkConnect('master-validator')
       await this.checkConnect('multi-call')
       await this.checkConnect('multi-sig')
@@ -284,12 +255,6 @@ export default class DecimalEVM {
           this.call.setDecimalContractEVM(delegation, 'delegation')
         }
         break;
-      case 'delegation-nft':
-        if (!this.call.delegationNft) {
-          const delegationNft = await this.initFromImplementation('delegation-nft');
-          this.call.setDecimalContractEVM(delegationNft, 'delegationNft')
-        }
-        break;
       case 'master-validator':
         if (!this.call.masterValidator) {
           const masterValidator = await this.initFromImplementation('master-validator');
@@ -325,10 +290,10 @@ export default class DecimalEVM {
           const bridgeV2 = await this.getContract(bridgeContracts.id, abi);
           this.call.setDecimalContractEVM(bridgeV2, 'bridgeV2')
 
-          this.providerETH = new ethers.providers.JsonRpcProvider(getWeb3NodeETH(this.network));
-          this.accountETH = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.providerETH);
-          this.providerBSC = new ethers.providers.JsonRpcProvider(getWeb3NodeBSC(this.network));
-          this.accountBSC = HDNodeWallet.fromMnemonic(this.wallet.mnemonic!, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.providerBSC);
+          this.providerETH = new ethers.JsonRpcProvider(getWeb3NodeETH(this.network));
+          this.accountETH = HDNodeWallet.fromPhrase(this.wallet.mnemonic!, undefined, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.providerETH);
+          this.providerBSC = new ethers.JsonRpcProvider(getWeb3NodeBSC(this.network));
+          this.accountBSC = HDNodeWallet.fromPhrase(this.wallet.mnemonic!, undefined, `m/44'/60'/0'/0/${this.wallet.wallet.id}`).connect(this.providerBSC);
         }
         break;
       case 'gas-center':
@@ -360,14 +325,14 @@ export default class DecimalEVM {
   public async parseMemo(txHash: string): Promise<string | undefined> {
     await this.checkConnect('multi-call') 
     const tx = await this.provider.getTransaction(txHash);
-    if (tx.data && tx.data !== '0x') {
+    if (tx && tx.data && tx.data !== '0x') {
       try {
         const decodedInput = this.call!.multiCall?.contract.interface.decodeFunctionData("aggregate", tx.data);
         if (decodedInput) {
           const calls = decodedInput[0];
 
-          const call = calls.find((call: any) => call.target == ethers.constants.AddressZero && call.value == "0" && call.callData != "0x")
-          if (call) return ethers.utils.toUtf8String(call.callData);
+          const call = calls.find((call: any) => call.target == ethers.ZeroAddress && call.value == "0" && call.callData != "0x")
+          if (call) return ethers.toUtf8String(call.callData);
         }
         return
       } catch (error) {
@@ -385,19 +350,20 @@ export default class DecimalEVM {
     params: any;
   }[], memo?: string, estimateGas?: boolean) {
     await this.checkConnect('multi-call')
-    let calls: {
+    const calls: {
       target: string;
       value: string;
       callData: string;
     }[] = [];
-    let valueSum: ethers.BigNumber = ethers.BigNumber.from(0);
+    let valueSum = BigInt(0);
     for (let i = 0; i < callData.length; i++) {
       let data: string;
-      if (!!callData[i].iface) {
-        const iFace = new ethers.utils.Interface([callData[i].iface]);
-        const func = iFace.functions[Object.keys(iFace.functions)[0]]
-        if (callData[i].params.length != Object.keys(func.inputs).length) throw Error(`The length of 'params' does not match the length of 'iface'`);
-        data = iFace.encodeFunctionData(func.name, callData[i].params)
+      if (callData[i].iface) {
+        const iFace = new ethers.Interface([callData[i].iface]);
+        const func = iFace.fragments.find((f): f is ethers.FunctionFragment => f.type === 'function')
+        if (!func) throw Error(`'iface' must describe a function`);
+        if (callData[i].params.length != func.inputs.length) throw Error(`The length of 'params' does not match the length of 'iface'`);
+        data = iFace.encodeFunctionData(func, callData[i].params)
       } else {
         if (callData[i].params.length != 0) throw Error(`The length of 'params' does not match the length of 'iface'`);
         data = "0x";
@@ -407,12 +373,12 @@ export default class DecimalEVM {
         value: callData[i].value.toString(),
         callData: data
       })
-      valueSum = valueSum.add(ethers.BigNumber.from(callData[i].value))
+      valueSum += BigInt(callData[i].value)
     }
     if (memo) {
-      const memoHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(memo));
+      const memoHex = ethers.hexlify(ethers.toUtf8Bytes(memo));
       calls.push({
-        target: ethers.constants.AddressZero,
+        target: ethers.ZeroAddress,
         value: "0",
         callData: memoHex
       })
@@ -427,8 +393,8 @@ export default class DecimalEVM {
   }[], memo?: string, estimateGas?: boolean) {
     const owner = this.account.address
     const spender = await this.getDecimalContractAddress('multi-call')
-    let amountSum: {[token:string]: ethers.BigNumber} = {}
-    let callDatas: {
+    const amountSum: {[token:string]: bigint} = {}
+    const callDatas: {
       target: string;
       value: string | number | bigint | BigNumberish;
       iface: string;
@@ -437,12 +403,12 @@ export default class DecimalEVM {
     for (let i = 0; i < multiData.length; i++) {
       const tokenAddress = multiData[i].token;
       if (tokenAddress == 'del') continue;
-      if (!amountSum[tokenAddress]) amountSum[tokenAddress] = ethers.BigNumber.from(0);
-      amountSum[tokenAddress] = amountSum[tokenAddress].add(ethers.BigNumber.from(multiData[i].amount))
+      if (!amountSum[tokenAddress]) amountSum[tokenAddress] = BigInt(0);
+      amountSum[tokenAddress] += BigInt(multiData[i].amount)
     }
     for (const tokenAddress of Object.keys(amountSum)) {
       const sign = await this.getSignPermitToken(tokenAddress, spender, amountSum[tokenAddress].toString())
-      const deadline = ethers.constants.MaxUint256
+      const deadline = ethers.MaxUint256
       callDatas.push({
         target: tokenAddress,
         value: 0,
@@ -485,11 +451,11 @@ export default class DecimalEVM {
     return await this.account.sendTransaction({
       to: address,
       value: amount
-    }).then((tx: ethers.ContractTransaction) => tx.wait());
+    }).then((tx) => tx.wait());
   }
 
   public async burnDEL(amount: string | number | bigint | BigNumberish, estimateGas?: boolean) {
-    return this.sendDEL(ethers.constants.AddressZero, amount, estimateGas)
+    return this.sendDEL(ethers.ZeroAddress, amount, estimateGas)
   }
 
   public async createToken(payload: Token, reserve: string | number | bigint, estimateGas?: boolean) {
@@ -558,7 +524,7 @@ export default class DecimalEVM {
 
   public async convertToDEL(owner: string, token: string, amount: string | number | bigint, estimateGas: string | number | bigint, sign: ethers.Signature, estimateGasUsage?: boolean) {
     await this.checkConnect('gas-center');
-    const deadline = ethers.constants.MaxUint256;
+    const deadline = ethers.MaxUint256;
     return await this.call!.convertToDEL(owner, token, amount, estimateGas, sign, estimateGasUsage);
 }
 
@@ -633,7 +599,7 @@ export default class DecimalEVM {
   public async approveNFT721(nftCollectionAddress: string, to: string, tokenId: string | number | bigint, estimateGas?: boolean) {
     await this.checkConnect('nft-center');
     const typeNFT = await this.getNftType(nftCollectionAddress) 
-    if (/*typeNFT != TypeNFT.DRC721Standart && */ typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721 and DRC721Standart`);
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     return await this.call!.approveNFT721(nft.contract, to, tokenId, estimateGas)
   }
@@ -644,24 +610,6 @@ export default class DecimalEVM {
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     return await this.call!.setApprovalForAllNFT(nft.contract, to, approved, estimateGas)
   }
-/*
-  public async mintNFT(nftCollectionAddress: string, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean) {
-    if (!this.call) throw this.isNotConnected;
-    const typeNFT = await this.getNftType(nftCollectionAddress)
-    const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      case TypeNFT.DRC721:
-      case TypeNFT.DRC1155:
-        throw new Error(`The ${typeNFT} type is not supported by the mintNFT() method. Try mintNFTWithDELReserve() or mintNFTWithTokenReserve()`)
-      case TypeNFT.DRC721Standart:
-        return await this.call.mintNFT(nft.contract, to, tokenURI, undefined, undefined, estimateGas)
-      case TypeNFT.DRC1155Standart:
-        return await this.call.mintNFT(nft.contract, to, tokenURI, tokenId, amount, estimateGas)
-      default:
-          throw new Error(`The ${typeNFT} type does not exist`)
-    }
-  }
-*/
   public async mintReserveless(nftCollectionAddress: string, to: string, tokenURI: string, tokenId?: string | number | bigint, amount?: string | number | bigint, estimateGas?: boolean) {
     await this.checkConnect('nft-center');
     const typeNFT = await this.getNftType(nftCollectionAddress)
@@ -681,9 +629,6 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.DRC721Standart:
-      //case TypeNFT.DRC1155Standart:
-      //  throw new Error(`The ${typeNFT} type is not supported by the mintNFTWithDELReserve() and mintNFTWithTokenReserve() methods. Try mintNFT()`)
       case TypeNFT.DRC721:
         return await this.call!.mintNFTWithDELReserve(nft.contract, to, tokenURI, reserve, undefined, undefined, estimateGas)
       case TypeNFT.DRC1155:
@@ -698,9 +643,6 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.DRC721Standart:
-      //case TypeNFT.DRC1155Standart:
-      //  throw new Error(`The ${typeNFT} type is not supported by the mintNFTWithDELReserve() and mintNFTWithTokenReserve() methods. Try mintNFT()`)
       case TypeNFT.DRC721:
         return await this.call!.mintNFTWithTokenReserve(nft.contract, to, tokenURI, reserveAmount, reserveToken, sign, undefined, undefined, estimateGas)
       case TypeNFT.DRC1155:
@@ -715,9 +657,6 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.DRC721Standart:
-      //case TypeNFT.DRC1155Standart:
-      //  throw new Error(`The ${typeNFT} type is not supported by the addDELReserveNFT() and addTokenReserveNFT() methods.`)
       case TypeNFT.DRC721:
       case TypeNFT.DRC1155:
         return await this.call!.addDELReserveNFT(nft.contract, tokenId, amountReserve, estimateGas)
@@ -731,9 +670,6 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.DRC721Standart:
-      //case TypeNFT.DRC1155Standart:
-      //  throw new Error(`The ${typeNFT} type is not supported by the addDELReserveNFT() and addTokenReserveNFT() methods.`)
       case TypeNFT.DRC721:
       case TypeNFT.DRC1155:
         return await this.call!.addTokenReserveNFT(nft.contract, tokenId, amountReserve, sign, estimateGas)
@@ -747,10 +683,8 @@ export default class DecimalEVM {
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.DRC721Standart:
       case TypeNFT.DRC721:
         return await this.call!.transferNFT(nft.contract, from, to, tokenId, undefined, estimateGas)
-      //case TypeNFT.DRC1155Standart:
       case TypeNFT.DRC1155:
         return await this.call!.transferNFT(nft.contract, from, to, tokenId, amount, estimateGas)
       default:
@@ -762,7 +696,7 @@ export default class DecimalEVM {
     await this.checkConnect('nft-center');
     const typeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    if (/*typeNFT != TypeNFT.DRC1155Standart &&*/ typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155 and DRC1155Standart`);
+    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
     return await this.call!.transferBatchNFT1155(nft.contract, from, to, tokenIds, amounts, estimateGas)
   }
 
@@ -778,10 +712,8 @@ export default class DecimalEVM {
     const typeNFT: TypeNFT = await this.getNftType(nftCollectionAddress)
     const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.DRC721Standart:
       case TypeNFT.DRC721:
         return await this.call!.burnNFT(nft.contract, tokenId, undefined, estimateGas)
-      //case TypeNFT.DRC1155Standart:
       case TypeNFT.DRC1155:
         return await this.call!.burnNFT(nft.contract, tokenId, amount, estimateGas)
       default:
@@ -789,19 +721,6 @@ export default class DecimalEVM {
     }
   }
 
-  // public async setBaseURINFT(nftCollectionAddress: string, baseURI: string, estimateGas?: boolean) {
-  //   await this.checkConnect('nft-center');
-  //   const typeNFT = await this.getNftType(nftCollectionAddress)
-  //   const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-  //   return await this.call!.setBaseURINFT(nft.contract, baseURI, estimateGas)
-  // }
-
-  public async setTokenURINFT(nftCollectionAddress: string, tokenId: string | number | bigint, tokenURI: string, estimateGas?: boolean) {
-    await this.checkConnect('nft-center');
-    const typeNFT = await this.getNftType(nftCollectionAddress)
-    const nft = await this.getNFTContract(nftCollectionAddress, typeNFT)
-    return await this.call!.setTokenURINFT(nft.contract, tokenId, tokenURI, estimateGas)
-  }
 
   public async delegateDEL(validator:string, amount: string | number | bigint, estimateGas?: boolean) {
     await this.checkConnect('delegation');
@@ -853,11 +772,6 @@ export default class DecimalEVM {
     return await this.call!.stakeTokenResetHold(validator, delegator, tokenAddress, holdTimestamp, estimateGas)
   }
 
-  public async stakeTokenResetHoldDEL(validator:string, delegator: string, holdTimestamp: number, estimateGas?: boolean) {
-    await this.checkConnect('delegation');
-    return await this.call!.stakeTokenResetHoldDEL(validator, delegator, holdTimestamp, estimateGas)
-  }
-
   public async withdrawTokenWithReset(validator:string, tokenAddress: string, amount: string | number | bigint, holdTimestampsToReset: number[], estimateGas?: boolean) {
     await this.checkConnect('delegation');
     return await this.call!.withdrawTokenWithReset(validator, tokenAddress, amount, holdTimestampsToReset, estimateGas)
@@ -874,15 +788,6 @@ export default class DecimalEVM {
 
   }
 
-  public async applyPenaltyToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean) {
-    await this.checkConnect('delegation');
-    return await this.call!.applyPenaltyToStakeToken(validator, delegator, tokenAddress, estimateGas)
-  }
-
-  public async applyPenaltiesToStakeToken(validator:string, delegator: string, tokenAddress: string, estimateGas?: boolean) {
-    await this.checkConnect('delegation');
-    return await this.call!.applyPenaltiesToStakeToken(validator, delegator, tokenAddress, estimateGas)
-  }
   public async completeStakeToken(indexes:string[] | number[], estimateGas?: boolean) {
     await this.checkConnect('delegation');
     return await this.call!.completeStakeToken(indexes, estimateGas)
@@ -994,110 +899,6 @@ export default class DecimalEVM {
     return await this.call!.transferNFT1155StakeHold(oldValidator, nftAddress, BigInt(tokenId), holdTimestamp, newValidator, estimateGas);
   }
 
-  // Old delegation-nft methods (deprecated - use delegateNFT/delegateNFT1155 instead)
-  public async delegateDRC721(validator:string, nftAddress: string, tokenId: string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
-    return await this.call!.delegateDRC721(validator, nftAddress, tokenId, sign, estimateGas)
-  }
-
-  public async delegateDRC721Hold(validator:string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, sign?: ethers.Signature, estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
-    return await this.call!.delegateDRC721Hold(validator, nftAddress, tokenId, holdTimestamp, sign, estimateGas)
-  }
-
-  public async delegateDRC1155(validator:string, nftAddress: string, tokenId: string | number | bigint, amount:string | number | bigint, sign?: ethers.Signature, estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
-    return await this.call!.delegateDRC1155(validator, nftAddress, tokenId, amount, sign, estimateGas)
-  }
-
-  public async delegateDRC1155Hold(validator:string, nftAddress: string, tokenId: string | number | bigint, amount:string | number | bigint, holdTimestamp: number, sign?: ethers.Signature, estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
-    return await this.call!.delegateDRC1155Hold(validator, nftAddress, tokenId, amount, holdTimestamp, sign, estimateGas)
-  }
-
-  public async transferStakeNFT(validator:string, nftAddress: string, tokenId: string | number | bigint, amount:string | number | bigint, newValidator: string, estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
-    return await this.call!.transferStakeNFT(validator, nftAddress, tokenId, amount, newValidator, estimateGas)
-  }
-
-  public async transferStakeNFTHold(validator:string, nftAddress: string, tokenId: string | number | bigint, amount:string | number | bigint, holdTimestamp: number, newValidator: string, estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
-    return await this.call!.transferStakeNFTHold(validator, nftAddress, tokenId, amount, holdTimestamp, newValidator, estimateGas)
-  }
-
-  public async withdrawStakeNFT(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
-    return await this.call!.withdrawStakeNFT(validator, nftAddress, tokenId, amount, estimateGas)
-  }
-
-  public async withdrawStakeNFTHold(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
-    return await this.call!.withdrawStakeNFTHold(validator, nftAddress, tokenId, amount, holdTimestamp, estimateGas)
-  }
-
-  public async stakeNFTToHold(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
-    return await this.call!.stakeNFTToHold(validator, nftAddress, tokenId, amount, oldHoldTimestamp, newHoldTimestamp, estimateGas)
-  }
-
-  public async stakeNFTResetHold(validator:string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
-    return await this.call!.stakeNFTResetHold(validator, delegator, nftAddress, tokenId, holdTimestamp, estimateGas)
-  }
-
-  public async stakeNFTResetHolds(validator:string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
-    return await this.call!.stakeNFTResetHolds(validator, delegator, nftAddress, tokenId, holdTimestamps, estimateGas)
-  }
-
-  public async withdrawNFTWithReset(validator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
-    return await this.call!.withdrawNFTWithReset(validator, nftAddress, tokenId, amount, holdTimestampsToReset, estimateGas)
-  }
-
-  public async transferNFTWithReset(oldValidator:string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator:string, holdTimestampsToReset: number[], estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
-    return await this.call!.transferNFTWithReset(oldValidator, nftAddress, tokenId, amount, newValidator, holdTimestampsToReset, estimateGas)
-  }
-
-  public async holdNFTWithReset(validator:string, nftAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    const typeNFT = await this.getNftType(nftAddress)
-    if (typeNFT != TypeNFT.DRC721 && typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC721 and DRC1155`);
-    return await this.call!.holdNFTWithReset(validator, nftAddress, tokenId, amountToHold, newHoldTimestamp, holdTimestampsToReset, estimateGas)
-  }
-
-  public async completeStakeNFT(indexes:string[] | number[], estimateGas?: boolean) {
-    await this.checkConnect('delegation-nft');
-    return await this.call!.completeStakeNFT(indexes, estimateGas)
-  }
-
   public async addValidatorWithToken(meta: ValidatorMeta, stake: ValidotorStake, sign?: ethers.Signature, estimateGas?: boolean) {
     await this.checkConnect('master-validator');
     const validator = meta.operator_address
@@ -1144,7 +945,7 @@ export default class DecimalEVM {
   private async buildMultiSigTxSendToken(safeAddress: string, tokenAddress: string, to: string, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const iFace = new ethers.utils.Interface(["function transfer(address to, uint256 value)"]);
+    const iFace = new ethers.Interface(["function transfer(address to, uint256 value)"]);
     const data = iFace.encodeFunctionData('transfer', [to, amount])
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: tokenAddress, nonce: actualNonce });
@@ -1153,7 +954,7 @@ export default class DecimalEVM {
   private async buildMultiSigTxBurnToken(safeAddress: string, tokenAddress: string, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
     await this.checkConnect('multi-sig');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const iFace = new ethers.utils.Interface(["function burn(uint256 amount)"]);
+    const iFace = new ethers.Interface(["function burn(uint256 amount)"]);
     const data = iFace.encodeFunctionData('burn', [amount])
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: tokenAddress, nonce: actualNonce });
@@ -1164,10 +965,10 @@ export default class DecimalEVM {
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     let data: string;
     if (amount === undefined) {
-      const iFace = new ethers.utils.Interface(["function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)"]);
+      const iFace = new ethers.Interface(["function safeTransferFrom(address from, address to, uint256 tokenId, bytes data)"]);
       data = iFace.encodeFunctionData('safeTransferFrom', [safeAddress, to, tokenId, "0x"])
     } else {
-      const iFace = new ethers.utils.Interface(["function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes data)"]);
+      const iFace = new ethers.Interface(["function safeTransferFrom(address from, address to, uint256 tokenId, uint256 value, bytes data)"]);
       data = iFace.encodeFunctionData('safeTransferFrom', [safeAddress, to, tokenId, amount, "0x"])
     }
     const actualNonce = nonce ?? await safe.contract.nonce();
@@ -1180,7 +981,7 @@ export default class DecimalEVM {
     await this.checkConnect('delegation');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
-    const iFace = new ethers.utils.Interface(["function delegateDEL(address validator)"]);
+    const iFace = new ethers.Interface(["function delegateDEL(address validator)"]);
     const data = iFace.encodeFunctionData('delegateDEL', [validator]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationAddress, value: amount, nonce: actualNonce });
@@ -1192,48 +993,12 @@ export default class DecimalEVM {
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
 
-    const approveIFace = new ethers.utils.Interface(["function approve(address spender, uint256 amount)"]);
-    const delegateIFace = new ethers.utils.Interface(["function delegate(address validator, address token, uint256 amount)"]);
+    const approveIFace = new ethers.Interface(["function approve(address spender, uint256 amount)"]);
+    const delegateIFace = new ethers.Interface(["function delegate(address validator, address token, uint256 amount)"]);
 
     const txs: MetaTransaction[] = [
       { to: tokenAddress, value: 0, data: approveIFace.encodeFunctionData('approve', [delegationAddress, amount]), operation: 0 },
       { to: delegationAddress, value: 0, data: delegateIFace.encodeFunctionData('delegate', [validator, tokenAddress, amount]), operation: 0 }
-    ];
-
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return await buildMultiSendSafeTx(this.call!.multiSend!.contract, txs, actualNonce);
-  }
-
-  private async buildMultiSigTxDelegateDRC721(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-
-    const approveIFace = new ethers.utils.Interface(["function approve(address to, uint256 tokenId)"]);
-    const delegateIFace = new ethers.utils.Interface(["function delegateDRC721(address validator, address nftAddress, uint256 tokenId)"]);
-
-    const txs: MetaTransaction[] = [
-      { to: nftAddress, value: 0, data: approveIFace.encodeFunctionData('approve', [delegationNftAddress, tokenId]), operation: 0 },
-      { to: delegationNftAddress, value: 0, data: delegateIFace.encodeFunctionData('delegateDRC721', [validator, nftAddress, tokenId]), operation: 0 }
-    ];
-
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return await buildMultiSendSafeTx(this.call!.multiSend!.contract, txs, actualNonce);
-  }
-
-  private async buildMultiSigTxDelegateDRC1155(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-
-    const approveIFace = new ethers.utils.Interface(["function setApprovalForAll(address operator, bool approved)"]);
-    const delegateIFace = new ethers.utils.Interface(["function delegateDRC1155(address validator, address nftAddress, uint256 tokenId, uint256 amount)"]);
-
-    const txs: MetaTransaction[] = [
-      { to: nftAddress, value: 0, data: approveIFace.encodeFunctionData('setApprovalForAll', [delegationNftAddress, true]), operation: 0 },
-      { to: delegationNftAddress, value: 0, data: delegateIFace.encodeFunctionData('delegateDRC1155', [validator, nftAddress, tokenId, amount]), operation: 0 }
     ];
 
     const actualNonce = nonce ?? await safe.contract.nonce();
@@ -1246,21 +1011,10 @@ export default class DecimalEVM {
     await this.checkConnect('delegation');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
-    const iFace = new ethers.utils.Interface(["function transfer(address validator, address token, uint256 amount, address newValidator)"]);
+    const iFace = new ethers.Interface(["function transfer(address validator, address token, uint256 amount, address newValidator)"]);
     const data = iFace.encodeFunctionData('transfer', [validator, tokenAddress, amount, newValidator]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationAddress, nonce: actualNonce });
-  }
-
-  private async buildMultiSigTxTransferStakeNFT(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function transfer(address validator, address nftAddress, uint256 tokenId, uint256 amount, address newValidator)"]);
-    const data = iFace.encodeFunctionData('transfer', [validator, nftAddress, tokenId, amount, newValidator]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
   }
 
   // Withdraw (unbond)
@@ -1269,122 +1023,10 @@ export default class DecimalEVM {
     await this.checkConnect('delegation');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
-    const iFace = new ethers.utils.Interface(["function withdraw(address validator, address token, uint256 amount)"]);
+    const iFace = new ethers.Interface(["function withdraw(address validator, address token, uint256 amount)"]);
     const data = iFace.encodeFunctionData('withdraw', [validator, tokenAddress, amount]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationAddress, nonce: actualNonce });
-  }
-
-  private async buildMultiSigTxWithdrawStakeNFT(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function withdraw(address validator, address nftAddress, uint256 tokenId, uint256 amount)"]);
-    const data = iFace.encodeFunctionData('withdraw', [validator, nftAddress, tokenId, amount]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
-  }
-
-  // === Hold / reset / complete variants for NFT stake via delegation-nft contract ===
-
-  private async buildMultiSigTxTransferStakeNFTHold(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, newValidator: string, nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function transferHold(address validator, address nftAddress, uint256 tokenId, uint256 amount, uint256 holdTimestamp, address newValidator)"]);
-    const data = iFace.encodeFunctionData('transferHold', [validator, nftAddress, tokenId, amount, holdTimestamp, newValidator]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
-  }
-
-  private async buildMultiSigTxWithdrawStakeNFTHold(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function withdrawHold(address validator, address nftAddress, uint256 tokenId, uint256 amount, uint256 holdTimestamp)"]);
-    const data = iFace.encodeFunctionData('withdrawHold', [validator, nftAddress, tokenId, amount, holdTimestamp]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
-  }
-
-  private async buildMultiSigTxStakeNFTToHold(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, oldHoldTimestamp: number, newHoldTimestamp: number, nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function hold(address validator, address nftAddress, uint256 tokenId, uint256 amountToHold, uint256 oldHoldTimestamp, uint256 newHoldTimestamp)"]);
-    const data = iFace.encodeFunctionData('hold', [validator, nftAddress, tokenId, amount, oldHoldTimestamp, newHoldTimestamp]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
-  }
-
-  private async buildMultiSigTxWithdrawNFTWithReset(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, holdTimestampsToReset: number[], nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function withdrawWithReset(address validator, address nftAddress, uint256 tokenId, uint256 amount, uint256[] holdTimestampsToReset)"]);
-    const data = iFace.encodeFunctionData('withdrawWithReset', [validator, nftAddress, tokenId, amount, holdTimestampsToReset]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
-  }
-
-  private async buildMultiSigTxTransferNFTWithReset(safeAddress: string, oldValidator: string, nftAddress: string, tokenId: string | number | bigint, amount: string | number | bigint, newValidator: string, holdTimestampsToReset: number[], nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function transferWithReset(address oldValidator, address nftAddress, uint256 tokenId, uint256 amount, address newValidator, uint256[] holdTimestampsToReset)"]);
-    const data = iFace.encodeFunctionData('transferWithReset', [oldValidator, nftAddress, tokenId, amount, newValidator, holdTimestampsToReset]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
-  }
-
-  private async buildMultiSigTxHoldNFTWithReset(safeAddress: string, validator: string, nftAddress: string, tokenId: string | number | bigint, amountToHold: string | number | bigint, newHoldTimestamp: number, holdTimestampsToReset: number[], nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function holdWithReset(address validator, address nftAddress, uint256 tokenId, uint256 amountToHold, uint256 newHoldTimestamp, uint256[] holdTimestampsToReset)"]);
-    const data = iFace.encodeFunctionData('holdWithReset', [validator, nftAddress, tokenId, amountToHold, newHoldTimestamp, holdTimestampsToReset]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
-  }
-
-  private async buildMultiSigTxStakeNFTResetHold(safeAddress: string, validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number, nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function resetHold(address validator, address delegator, address nftAddress, uint256 tokenId, uint256 holdTimestamp)"]);
-    const data = iFace.encodeFunctionData('resetHold', [validator, delegator, nftAddress, tokenId, holdTimestamp]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
-  }
-
-  private async buildMultiSigTxStakeNFTResetHolds(safeAddress: string, validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamps: number[], nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function resetHolds(address validator, address delegator, address nftAddress, uint256 tokenId, uint256[] holdTimestamps)"]);
-    const data = iFace.encodeFunctionData('resetHolds', [validator, delegator, nftAddress, tokenId, holdTimestamps]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
-  }
-
-  private async buildMultiSigTxCompleteStakeNFT(safeAddress: string, indexes: string[] | number[], nonce?: BigNumberish): Promise<SafeTransaction> {
-    await this.checkConnect('multi-sig');
-    await this.checkConnect('delegation-nft');
-    const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
-    const delegationNftAddress = this.call!.getDecimalContract('delegation-nft', true) as string;
-    const iFace = new ethers.utils.Interface(["function complete(uint256[] indexes)"]);
-    const data = iFace.encodeFunctionData('complete', [indexes]);
-    const actualNonce = nonce ?? await safe.contract.nonce();
-    return buildSafeTransaction({ data, to: delegationNftAddress, nonce: actualNonce });
   }
 
   // === Hold variants for delegate/transfer/withdraw via delegation contract ===
@@ -1394,7 +1036,7 @@ export default class DecimalEVM {
     await this.checkConnect('delegation');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
-    const iFace = new ethers.utils.Interface(["function delegateHoldDEL(address validator, uint256 holdTimestamp)"]);
+    const iFace = new ethers.Interface(["function delegateHoldDEL(address validator, uint256 holdTimestamp)"]);
     const data = iFace.encodeFunctionData('delegateHoldDEL', [validator, holdTimestamp]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationAddress, value: amount, nonce: actualNonce });
@@ -1406,8 +1048,8 @@ export default class DecimalEVM {
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
 
-    const approveIFace = new ethers.utils.Interface(["function approve(address spender, uint256 amount)"]);
-    const delegateIFace = new ethers.utils.Interface(["function delegateHold(address validator, address token, uint256 amount, uint256 holdTimestamp)"]);
+    const approveIFace = new ethers.Interface(["function approve(address spender, uint256 amount)"]);
+    const delegateIFace = new ethers.Interface(["function delegateHold(address validator, address token, uint256 amount, uint256 holdTimestamp)"]);
 
     const txs: MetaTransaction[] = [
       { to: tokenAddress, value: 0, data: approveIFace.encodeFunctionData('approve', [delegationAddress, amount]), operation: 0 },
@@ -1423,7 +1065,7 @@ export default class DecimalEVM {
     await this.checkConnect('delegation');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
-    const iFace = new ethers.utils.Interface(["function transferHold(address validator, address token, uint256 amount, uint256 holdTimestamp, address newValidator)"]);
+    const iFace = new ethers.Interface(["function transferHold(address validator, address token, uint256 amount, uint256 holdTimestamp, address newValidator)"]);
     const data = iFace.encodeFunctionData('transferHold', [validator, tokenAddress, amount, holdTimestamp, newValidator]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationAddress, nonce: actualNonce });
@@ -1434,7 +1076,7 @@ export default class DecimalEVM {
     await this.checkConnect('delegation');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
-    const iFace = new ethers.utils.Interface(["function withdrawHold(address validator, address token, uint256 amount, uint256 holdTimestamp)"]);
+    const iFace = new ethers.Interface(["function withdrawHold(address validator, address token, uint256 amount, uint256 holdTimestamp)"]);
     const data = iFace.encodeFunctionData('withdrawHold', [validator, tokenAddress, amount, holdTimestamp]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationAddress, nonce: actualNonce });
@@ -1448,8 +1090,8 @@ export default class DecimalEVM {
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
 
-    const approveIFace = new ethers.utils.Interface(["function approve(address to, uint256 tokenId)"]);
-    const delegateIFace = new ethers.utils.Interface(["function delegateNFT(address validator, address nftAddress, uint256 tokenId)"]);
+    const approveIFace = new ethers.Interface(["function approve(address to, uint256 tokenId)"]);
+    const delegateIFace = new ethers.Interface(["function delegateNFT(address validator, address nftAddress, uint256 tokenId)"]);
 
     const txs: MetaTransaction[] = [
       { to: nftAddress, value: 0, data: approveIFace.encodeFunctionData('approve', [delegationAddress, tokenId]), operation: 0 },
@@ -1466,8 +1108,8 @@ export default class DecimalEVM {
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
 
-    const approveIFace = new ethers.utils.Interface(["function setApprovalForAll(address operator, bool approved)"]);
-    const delegateIFace = new ethers.utils.Interface(["function delegateNFT1155(address validator, address nftAddress, uint256 tokenId, uint256 amount)"]);
+    const approveIFace = new ethers.Interface(["function setApprovalForAll(address operator, bool approved)"]);
+    const delegateIFace = new ethers.Interface(["function delegateNFT1155(address validator, address nftAddress, uint256 tokenId, uint256 amount)"]);
 
     const txs: MetaTransaction[] = [
       { to: nftAddress, value: 0, data: approveIFace.encodeFunctionData('setApprovalForAll', [delegationAddress, true]), operation: 0 },
@@ -1483,7 +1125,7 @@ export default class DecimalEVM {
     await this.checkConnect('delegation');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
-    const iFace = new ethers.utils.Interface(["function withdrawNFT(address validator, address nftAddress, uint256 tokenId)"]);
+    const iFace = new ethers.Interface(["function withdrawNFT(address validator, address nftAddress, uint256 tokenId)"]);
     const data = iFace.encodeFunctionData('withdrawNFT', [validator, nftAddress, tokenId]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationAddress, nonce: actualNonce });
@@ -1494,7 +1136,7 @@ export default class DecimalEVM {
     await this.checkConnect('delegation');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
-    const iFace = new ethers.utils.Interface(["function withdrawNFT1155(address validator, address nftAddress, uint256 tokenId)"]);
+    const iFace = new ethers.Interface(["function withdrawNFT1155(address validator, address nftAddress, uint256 tokenId)"]);
     const data = iFace.encodeFunctionData('withdrawNFT1155', [validator, nftAddress, tokenId]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationAddress, nonce: actualNonce });
@@ -1505,7 +1147,7 @@ export default class DecimalEVM {
     await this.checkConnect('delegation');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
-    const iFace = new ethers.utils.Interface(["function transferNFT(address oldValidator, address nftAddress, uint256 tokenId, address newValidator)"]);
+    const iFace = new ethers.Interface(["function transferNFT(address oldValidator, address nftAddress, uint256 tokenId, address newValidator)"]);
     const data = iFace.encodeFunctionData('transferNFT', [oldValidator, nftAddress, tokenId, newValidator]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationAddress, nonce: actualNonce });
@@ -1516,7 +1158,7 @@ export default class DecimalEVM {
     await this.checkConnect('delegation');
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const delegationAddress = this.call!.getDecimalContract('delegation', true) as string;
-    const iFace = new ethers.utils.Interface(["function transferNFT1155(address oldValidator, address nftAddress, uint256 tokenId, address newValidator)"]);
+    const iFace = new ethers.Interface(["function transferNFT1155(address oldValidator, address nftAddress, uint256 tokenId, address newValidator)"]);
     const data = iFace.encodeFunctionData('transferNFT1155', [oldValidator, nftAddress, tokenId, newValidator]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: delegationAddress, nonce: actualNonce });
@@ -1587,7 +1229,7 @@ export default class DecimalEVM {
     const safe = await this.getContract(safeAddress, this.call!.safe!.contract.interface)
     const handler = handlerAddress || getMultiSigAddresses(this.network).tokenCallbackHandler;
     if (!handler) throw new Error("TokenCallbackHandler address is not configured for this network");
-    const iFace = new ethers.utils.Interface(["function setFallbackHandler(address handler)"]);
+    const iFace = new ethers.Interface(["function setFallbackHandler(address handler)"]);
     const data = iFace.encodeFunctionData('setFallbackHandler', [handler]);
     const actualNonce = nonce ?? await safe.contract.nonce();
     return buildSafeTransaction({ data, to: safeAddress, nonce: actualNonce });
@@ -1617,11 +1259,11 @@ export default class DecimalEVM {
       transactions: <SafeTransaction[]>transactionData.map((trancastion: any) => {
         return {
           ...trancastion,
-          safeTxGas: ethers.BigNumber.from(trancastion.safeTxGas),
-          baseGas: ethers.BigNumber.from(trancastion.baseGas),
-          gasPrice: ethers.BigNumber.from(trancastion.gasPrice),
-          nonce: ethers.BigNumber.from(trancastion.nonce),
-          value: ethers.BigNumber.from(trancastion.value),
+          safeTxGas: BigInt(trancastion.safeTxGas),
+          baseGas: BigInt(trancastion.baseGas),
+          gasPrice: BigInt(trancastion.gasPrice),
+          nonce: BigInt(trancastion.nonce),
+          value: BigInt(trancastion.value),
           operation: Number(trancastion.operation == 'Call' ? 0 : 1),
         }
       }),
@@ -1677,18 +1319,6 @@ export default class DecimalEVM {
       newValidator: resultTransferStakeToken[3]
     }
 
-    // Transfer (redelegate) NFT: 5 params
-    const resultTransferStakeNFT = this.decodeData("function transfer(address validator, address nftAddress, uint256 tokenId, uint256 amount, address newValidator)", safeTx.data)
-    if (resultTransferStakeNFT) return {
-      action: 'redelegate',
-      tokenType: 'DRC1155',
-      token: resultTransferStakeNFT[1],
-      to: resultTransferStakeNFT[0],
-      tokenId: resultTransferStakeNFT[2].toString(),
-      amount: resultTransferStakeNFT[3].toString(),
-      newValidator: resultTransferStakeNFT[4]
-    }
-
     // Withdraw (unbond) token: 3 params
     const resultWithdrawToken = this.decodeData("function withdraw(address validator, address token, uint256 amount)", safeTx.data)
     if (resultWithdrawToken) return {
@@ -1697,17 +1327,6 @@ export default class DecimalEVM {
       token: resultWithdrawToken[1],
       to: resultWithdrawToken[0],
       amount: resultWithdrawToken[2].toString()
-    }
-
-    // Withdraw (unbond) NFT: 4 params
-    const resultWithdrawNFT = this.decodeData("function withdraw(address validator, address nftAddress, uint256 tokenId, uint256 amount)", safeTx.data)
-    if (resultWithdrawNFT) return {
-      action: 'unbond',
-      tokenType: 'DRC1155',
-      token: resultWithdrawNFT[1],
-      to: resultWithdrawNFT[0],
-      tokenId: resultWithdrawNFT[2].toString(),
-      amount: resultWithdrawNFT[3].toString()
     }
 
     // Send token (DRC20 transfer)
@@ -1742,7 +1361,7 @@ export default class DecimalEVM {
       tokenType: 'DRC1155',
       token: safeTx.to,
       to: resultTransferDRC1155[1],
-      tokenId: resultTransferDRC1155[2],
+      tokenId: resultTransferDRC1155[2].toString(),
       amount: resultTransferDRC1155[3].toString()
     }
 
@@ -1844,26 +1463,6 @@ export default class DecimalEVM {
       to: resultDelegateToken[0],
       amount: resultDelegateToken[2].toString()
     }
-    // Delegate DRC721
-    const resultDelegateDRC721 = this.decodeData("function delegateDRC721(address validator, address nftAddress, uint256 tokenId)", tx.data)
-    if (resultDelegateDRC721) return {
-      action: 'delegate',
-      tokenType: 'DRC721',
-      token: resultDelegateDRC721[1],
-      to: resultDelegateDRC721[0],
-      tokenId: resultDelegateDRC721[2].toString()
-    }
-    // Delegate DRC1155
-    const resultDelegateDRC1155 = this.decodeData("function delegateDRC1155(address validator, address nftAddress, uint256 tokenId, uint256 amount)", tx.data)
-    if (resultDelegateDRC1155) return {
-      action: 'delegate',
-      tokenType: 'DRC1155',
-      token: resultDelegateDRC1155[1],
-      to: resultDelegateDRC1155[0],
-      tokenId: resultDelegateDRC1155[2].toString(),
-      amount: resultDelegateDRC1155[3].toString()
-    }
-
     // Delegate Token Hold (inner of MultiSend after approve)
     const resultDelegateTokenHold = this.decodeData("function delegateHold(address validator, address token, uint256 amount, uint256 holdTimestamp)", tx.data)
     if (resultDelegateTokenHold) return {
@@ -1901,21 +1500,21 @@ export default class DecimalEVM {
 
   private decodeMultiSend(data: string): MetaTransaction[] {
     try {
-      const multiSendIFace = new ethers.utils.Interface(["function multiSend(bytes transactions)"]);
+      const multiSendIFace = new ethers.Interface(["function multiSend(bytes transactions)"]);
       const decoded = multiSendIFace.decodeFunctionData('multiSend', data);
-      const txsBytes = ethers.utils.arrayify(decoded[0]);
+      const txsBytes = ethers.getBytes(decoded[0]);
       const txs: MetaTransaction[] = [];
       let offset = 0;
       while (offset < txsBytes.length) {
         const operation = txsBytes[offset];
         offset += 1;
-        const to = ethers.utils.getAddress(ethers.utils.hexlify(txsBytes.slice(offset, offset + 20)));
+        const to = ethers.getAddress(ethers.hexlify(txsBytes.slice(offset, offset + 20)));
         offset += 20;
-        const value = ethers.BigNumber.from(txsBytes.slice(offset, offset + 32));
+        const value = ethers.toBigInt(txsBytes.slice(offset, offset + 32));
         offset += 32;
-        const dataLength = ethers.BigNumber.from(txsBytes.slice(offset, offset + 32)).toNumber();
+        const dataLength = Number(ethers.toBigInt(txsBytes.slice(offset, offset + 32)));
         offset += 32;
-        const txData = ethers.utils.hexlify(txsBytes.slice(offset, offset + dataLength));
+        const txData = ethers.hexlify(txsBytes.slice(offset, offset + dataLength));
         offset += dataLength;
         txs.push({ operation, to, value, data: txData });
       }
@@ -1927,9 +1526,9 @@ export default class DecimalEVM {
 
   private decodeData(interFace: string, data: string) {
     try {
-      const iFace = new ethers.utils.Interface([interFace]);
-      const func = iFace.functions[Object.keys(iFace.functions)[0]]
-      return iFace.decodeFunctionData(func.name, data)
+      const iFace = new ethers.Interface([interFace]);
+      const func = iFace.fragments[0] as ethers.FunctionFragment
+      return iFace.decodeFunctionData(func, data)
     } catch {
       return undefined
     }
@@ -1979,7 +1578,7 @@ export default class DecimalEVM {
         const bridgeBSC = await this.subgraph.getBridgeBSCContracts()
         return {bridgeAddress: bridgeBSC.id, account: this.accountBSC};
       case 75:
-        return {bridgeAddress: this.call!.bridgeV2!.contract.address, account: this.account};
+        return {bridgeAddress: this.call!.bridgeV2!.address, account: this.account};
     default:
       throw new Error(`Unknown chainId '${chain}'`);
     }
@@ -1989,7 +1588,7 @@ export default class DecimalEVM {
     if (!password || typeof password !== 'string') {
       throw new Error('Password must be a non-empty string');
     }
-    return ethers.utils.id(password);
+    return ethers.id(password);
   }
 
   public async createChecksDEL(passwords: string[], amount: string | number | bigint, dueBlock: string | number | bigint, estimateGas?: boolean) {
@@ -2011,15 +1610,15 @@ export default class DecimalEVM {
     const privateKeys = passwords.map(pwd => this.passwordToPrivateKey(pwd));
     const redeemerAddress = this.account.address;
 
-    let signatures = await Promise.all(
+    const signatures = await Promise.all(
       privateKeys.map((privateKey, index) => {
         const signer = new ethers.Wallet(privateKey);
         // Hash checkHash with redeemer address before signing to match Solidity contract verification
-        const messageToSign = ethers.utils.solidityKeccak256(
+        const messageToSign = ethers.solidityPackedKeccak256(
           ['bytes32', 'address'],
           [checks[index], redeemerAddress]
         );
-        return signer.signMessage(ethers.utils.arrayify(messageToSign));
+        return signer.signMessage(ethers.getBytes(messageToSign));
       })
     );
 
@@ -2049,9 +1648,13 @@ export default class DecimalEVM {
 
   public async getNftType(address: string): Promise<TypeNFT> {
     const type = await this.subgraph.getNftCollectionType(address)
-    if (type == null) throw new Error("The nft collection does not exist")
-    let typeNFT: TypeNFT = TypeNFT[type as keyof typeof TypeNFT]
-    return typeNFT
+    if (type != null) return TypeNFT[type as keyof typeof TypeNFT]
+    // the subgraph lags behind the chain: fall back to the nft-center contract
+    try {
+      return await this.getNftTypeFromContract(address)
+    } catch {
+      throw new Error("The nft collection does not exist")
+    }
   }
 
   public async getNftTypeFromContract(address: string) {
@@ -2118,7 +1721,7 @@ export default class DecimalEVM {
   public async getApprovedNFT721(address: string, tokenId: string | number | bigint) {
     await this.checkConnect('nft-center');
     const typeNFT = await this.getNftType(address)
-    if (/*typeNFT != TypeNFT.DRC721Standart &&*/ typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721 and DRC721Standart`);
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
     const nft = await this.getNFTContract(address, typeNFT)
     return await this.call!.getApprovedNFT721(nft.contract, tokenId) 
   }
@@ -2140,7 +1743,7 @@ export default class DecimalEVM {
   public async ownerOfNFT721(address: string, tokenId: string | number | bigint) {
     await this.checkConnect('nft-center');
     const typeNFT = await this.getNftType(address)
-    if (/*typeNFT != TypeNFT.DRC721Standart &&*/ typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721 and DRC721Standart`);
+    if (typeNFT != TypeNFT.DRC721) throw new Error(`Only for DRC721`);
     const nft = await this.getNFTContract(address, typeNFT)
     return await this.call!.ownerOfNFT721(nft.contract, tokenId) 
   }
@@ -2150,10 +1753,8 @@ export default class DecimalEVM {
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.DRC721Standart:
       case TypeNFT.DRC721:
         return await this.call!.getTokenURINFT721(nft.contract, tokenId)
-      //case TypeNFT.DRC1155Standart:
       case TypeNFT.DRC1155:
         return await this.call!.getTokenURINFT1155(nft.contract, tokenId)
       default:
@@ -2166,10 +1767,8 @@ export default class DecimalEVM {
     const typeNFT: TypeNFT = await this.getNftType(address)
     const nft = await this.getNFTContract(address, typeNFT)
     switch (+TypeNFT[TypeNFT[typeNFT] as keyof typeof TypeNFT]) {
-      //case TypeNFT.DRC721Standart:
       case TypeNFT.DRC721:
         return await this.call!.balanceOfNFT(nft.contract, account)
-      //case TypeNFT.DRC1155Standart:
       case TypeNFT.DRC1155:
         if (tokenId === undefined) throw new Error(`You need to specify the tokenId`)
         return await this.call!.balanceOfNFT(nft.contract, account, tokenId)
@@ -2220,21 +1819,6 @@ export default class DecimalEVM {
     const nft = await this.getNFTContract(address, typeNFT)
     if (typeNFT != TypeNFT.DRC1155) throw new Error(`Only for DRC1155`);
     return await this.call!.getSupplyNFT1155(nft.contract, tokenId) 
-  }
-
-  public async getTokenStakesByMember(account:string) {
-    await this.checkConnect('delegation');
-    return this.call!.getTokenStakesByMember(account)
-  }
-  
-  public async getTokenStakesPageByMember(account: string, size: string | number | bigint, offset: string | number | bigint) {
-    await this.checkConnect('delegation');
-    return await this.call!.getTokenStakesPageByMember(account, size, offset)
-  }
-
-  public async getFrozenStakesQueueToken() {
-    await this.checkConnect('delegation');
-    return await this.call!.getFrozenStakesQueueToken()
   }
 
   public async getFreezeTimeToken() {
@@ -2294,52 +1878,6 @@ export default class DecimalEVM {
     return await this.call!.getNFTBackedAmount(validator, delegator, token, holdTimestamp);
   }
 
-  // Old delegation-nft view methods (deprecated)
-  public async getNFTStakesByMember(account:string) {
-    await this.checkConnect('delegation-nft');
-    return this.call!.getNFTStakesByMember(account)
-  }
-  
-  public async getNFTStakesPageByMember(account: string, size: string | number | bigint, offset: string | number | bigint) {
-    await this.checkConnect('delegation-nft');
-    return await this.call!.getNFTStakesPageByMember(account, size, offset)
-  }
-
-  public async getFrozenStakesQueueNFT() {
-    await this.checkConnect('delegation-nft');
-    return await this.call!.getFrozenStakesQueueNFT()
-  }
-
-  public async getFreezeTimeNFT() {
-    await this.checkConnect('delegation-nft');
-    return await this.call!.getFreezeTimeNFT()
-  }
-
-  public async getStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint) {
-    await this.checkConnect('delegation-nft');
-    return await this.call!.getStakeNFT(validator, delegator, nftAddress, tokenId)
-  }
-
-  public async getStakeIdNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint) {
-    await this.checkConnect('delegation-nft');
-    return await this.call!.getStakeIdNFT(validator, delegator, nftAddress, tokenId)
-  }
-
-  public async getHoldStakeNFT(validator: string, delegator: string, nftAddress: string, tokenId: string | number | bigint, holdTimestamp: number) {
-    await this.checkConnect('delegation-nft');
-    return await this.call!.getHoldStakeNFT(validator, delegator, nftAddress, tokenId, holdTimestamp)
-  }
-
-  public async getFrozenStakeNFT(index: string | number | bigint) {
-    await this.checkConnect('delegation-nft');
-    return await this.call!.getFrozenStakeNFT(index)
-  }
-
-  public async getFrozenStakesNFT(indexes: string[] | number[]) {
-    await this.checkConnect('delegation-nft');
-    return await this.call!.getFrozenStakesNFT(indexes)
-  }
-
   public async getSignPermitDRC721(address: string, spender: string, tokenId: string | number | bigint): Promise<ethers.Signature> {
     await this.checkConnect('nft-center');
     const typeNFT: TypeNFT = await this.getNftType(address)
@@ -2378,31 +1916,27 @@ export default class DecimalEVM {
 
   //utils
   public parseEther(amount: string | number | bigint | BigNumberish){
-    return ethers.utils.parseEther(amount.toString()).toString()
+    return ethers.parseEther(amount.toString()).toString()
   }
   public formatEther(amount: string | number | bigint | BigNumberish){
-    const amountETH = ethers.utils.formatEther(amount.toString()).toString()
+    const amountETH = ethers.formatEther(amount.toString()).toString()
     const decimals = amountETH.split(".")[1]
     return decimals == "0" ? amountETH.split(".")[0] : amountETH
   }
   public getAddress(address: string){
-    return ethers.utils.getAddress(address)
+    return ethers.getAddress(address)
   }
 
   public getRandomPassword(count: number, length: number): string[] {
     const passwords = [];
     for (let i = 0; i < count; i++) {
-      passwords.push(ethers.utils.hexlify(ethers.utils.randomBytes(length)).slice(2))
+      passwords.push(ethers.hexlify(ethers.randomBytes(length)).slice(2))
     }
     return passwords;
   }
 
   private async getNFTContract(address: string, typeNFT: TypeNFT) {
     switch (typeNFT as TypeNFT) {
-      //case TypeNFT.DRC721Standart:
-      //  return await this.getContract(address)
-      //case TypeNFT.DRC1155Standart:
-      //  return await this.getContract(address)
       case TypeNFT.DRC721:
         return await this.getContract(address, this.abis?.drc721)
       case TypeNFT.DRC1155:
@@ -2432,7 +1966,7 @@ export default class DecimalEVM {
     return TokenType;
   }
 
-  public async connectToContract(address: string, abi?: ethers.ContractInterface): Promise<DecimalContractEVM> {
+  public async connectToContract(address: string, abi?: ethers.InterfaceAbi): Promise<DecimalContractEVM> {
     return await DecimalContractEVM.getContract(this.network, this.apiUrl, this.account, address, abi)
   }
 
@@ -2457,31 +1991,32 @@ export default class DecimalEVM {
   public async getFeeData() {
     const feeData = await this.provider.getFeeData()
     if (this.network != NETWORKS.TESTNET) return feeData
-    return <ethers.providers.FeeData>{
-      gasPrice: feeData.gasPrice!.add(1),
-      maxFeePerGas: feeData.maxFeePerGas,
-      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
-    }
+    return new ethers.FeeData(
+      feeData.gasPrice! + BigInt(1),
+      feeData.maxFeePerGas,
+      feeData.maxPriorityFeePerGas
+    )
   }
 
   //ipfs
   public async uploadNFTBase64ToIPFS(base64: string, fileName:string, name:string, description:string) {
-    var base64Image;
+    let base64Image;
     if (base64.includes(';base64,')) {
       base64Image = base64.split(';base64,').pop();
     } else {
       base64Image = base64;
     }
-    const buffer = Buffer.from(base64Image!, 'base64');
-    const blob = new Blob([buffer], { type: base64.split(';base64,')[0].split(':')[1] })
+    const bytes = ethers.decodeBase64(base64Image!);
+    const mimeType = base64.includes(';base64,') ? base64.split(';base64,')[0].split(':')[1] : undefined
+    const blob = new Blob([bytes as BlobPart], { type: mimeType })
     return await this.ipfs.uploadNFTBlobToIPFS(blob, fileName, name, description);
   }
 
-  public async uploadNFTBufferToIPFS(buffer:Buffer, fileName:string, name:string, description:string) {
+  public async uploadNFTBufferToIPFS(buffer: Uint8Array, fileName:string, name:string, description:string) {
     return await this.ipfs.uploadNFTBufferToIPFS(buffer, fileName, name, description);
   }
 
-  public async uploadTokenBufferToIPFS(buffer:Buffer, fileName:string) {
+  public async uploadTokenBufferToIPFS(buffer: Uint8Array, fileName:string) {
     return await this.ipfs.uploadTokenBufferToIPFS(buffer, fileName);
   }
 
@@ -2489,11 +2024,11 @@ export default class DecimalEVM {
     return this.ipfs.getBlobMetadata(name, description);
   }
 
-  public async uploadNFTFormToIPFS(form: any) {
+  public async uploadNFTFormToIPFS(form: FormData) {
     return await this.ipfs.upload(form, true);
   }
 
-  public async uploadTokenFormToIPFS(form: any) {
+  public async uploadTokenFormToIPFS(form: FormData) {
     return await this.ipfs.upload(form, false);
   }
 

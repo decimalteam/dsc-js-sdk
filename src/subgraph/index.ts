@@ -38,7 +38,7 @@ export default class Subgraph {
 
     public async getTokensByCreator(address: string, first: number, skip: number): Promise<Token[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { creator: "${verifyAddress}"}, first: ${first}, skip: ${skip})`
         return await this.query.getTokens(options)
     }
@@ -49,7 +49,7 @@ export default class Subgraph {
     }
 
     public async getTokenByAddress(address: string): Promise<Token> {
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { address: "${verifyAddress}"} )`
         return await this.query.getToken(options)
     }
@@ -62,13 +62,13 @@ export default class Subgraph {
 
     public async getTokensReservelessByCreator(address: string, first: number, skip: number): Promise<TokenReserveless[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { creator: "${verifyAddress}"}, first: ${first}, skip: ${skip})`
         return await this.query.getTokensReserveless(options)
     }
 
     public async getTokenReservelessByAddress(address: string): Promise<TokenReserveless> {
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { address: "${verifyAddress}"} )`
         const [token] = await this.query.getTokensReserveless(options)
         return token;
@@ -76,14 +76,14 @@ export default class Subgraph {
     
     public async getAddressBalances(address: string, first: number, skip: number): Promise<AddressBalance[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { user_: { address: "${verifyAddress}" } }, first: ${first}, skip: ${skip})`
         return await this.query.getAddressBalances(options)
     }
 
     public async getAddressBalancesReserveless(address: string, first: number, skip: number): Promise<AddressBalance[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { user_: { address: "${verifyAddress}" } }, first: ${first}, skip: ${skip})`
         return await this.query.getAddressBalancesReserveless(options)
     }
@@ -97,14 +97,14 @@ export default class Subgraph {
     
     public async getStakesByAddress(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { tokenType_in: [DRC20, DEL], delegator: "${verifyAddress}" }, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
 
     public async getStakesByValidotor(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { tokenType_in: [DRC20, DEL], validator: "${verifyAddress.toLowerCase()}" }, first: ${first}, skip: ${skip})`
         return await this.query.getStakes(options)
     }
@@ -117,7 +117,7 @@ export default class Subgraph {
     
     public async getTransferStakesByAddress(address: string, first: number, skip: number): Promise<TransferStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [DRC20, DEL]}, first: ${first}, skip: ${skip})`
         return await this.query.getTransferStakes(options)
     }
@@ -130,7 +130,7 @@ export default class Subgraph {
 
     public async getWithdrawStakesByAddress(address: string, first: number, skip: number): Promise<WithdrawStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [DRC20, DEL]}, first: ${first}, skip: ${skip})`
         return await this.query.getWithdrawStakes(options)
     }
@@ -146,7 +146,7 @@ export default class Subgraph {
 
     public async getNFTStakesByAddress(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const nftStakesOptions = `(where: { delegator: "${verifyAddress}", isActive: true }, first: ${first}, skip: ${skip})`
         const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getNFTStakes(nftStakesOptions, options)
@@ -154,7 +154,7 @@ export default class Subgraph {
 
     public async getNFTStakesByValidotor(address: string, first: number, skip: number): Promise<SubgraphResponse<Stake[]>> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const nftStakesOptions = `(where: { validator: "${verifyAddress.toLowerCase()}", isActive: true }, first: ${first}, skip: ${skip})`
         const options = `(where: { validator: "${verifyAddress.toLowerCase()}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getNFTStakes(nftStakesOptions, options)
@@ -167,7 +167,7 @@ export default class Subgraph {
     }
     public async getTransferNFTStakesByAddress(address: string, first: number, skip: number): Promise<TransferStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getTransferStakes(options)
     }
@@ -178,7 +178,7 @@ export default class Subgraph {
     }
     public async getWithdrawNFTStakesByAddress(address: string, first: number, skip: number): Promise<WithdrawStake[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { delegator: "${verifyAddress}", tokenType_in: [DRC721, DRC1155]}, first: ${first}, skip: ${skip})`
         return await this.query.getWithdrawStakes(options) 
     }
@@ -189,7 +189,7 @@ export default class Subgraph {
     }
 
     public async getValidator(address: string): Promise<Validator> {
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         return await this.query.getValidator(verifyAddress)
     }
 
@@ -205,7 +205,7 @@ export default class Subgraph {
         return await this.query.getPenalties(options)
     }
 
-    public async getSumAmountToPenalty(): Promise<{}> {
+    public async getSumAmountToPenalty(): Promise<object> {
         return await this.query.getSumAmountToPenalty()
     }
 
@@ -218,13 +218,13 @@ export default class Subgraph {
 
     public async getNftCollectionsByCreator(address:string, first: number, skip: number): Promise<NFTCollection[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { creator: "${verifyAddress}"}, first: ${first}, skip: ${skip})`
         return await this.query.getNftCollections(options)
     }
 
     public async getNftCollectionByAddress(address: string): Promise<NFTCollection> {
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { address: "${verifyAddress}"})`
         return await this.query.getNftCollection(options)
     }
@@ -237,20 +237,20 @@ export default class Subgraph {
 
     public async getNftsByCollection(address: string, first: number, skip: number): Promise<NFTToken[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { collection: "${verifyAddress.toLowerCase()}"}, first: ${first}, skip: ${skip})`
         return await this.query.getNfts(options)
     }
 
     public async getNftByCollectionAndTokenId(address: string, tokenId: string | number): Promise<NFTToken> {
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { tokenId: "${tokenId}", collection: "${verifyAddress.toLowerCase()}"})`
         return (await this.query.getNfts(options))[0]
     }
 
     public async getAddressBalancesNfts(address: string, first: number, skip: number): Promise<NFTToken[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { balances_: { 
             user: "${verifyAddress.toLowerCase()}",
             amount_not: "0"
@@ -260,8 +260,8 @@ export default class Subgraph {
 
     public async getAddressBalancesNftsByCollection(address: string, addressCollection: string, first: number, skip: number): Promise<NFTToken[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
-        const verifyAddressCollection = ethers.utils.getAddress(addressCollection)
+        const verifyAddress = ethers.getAddress(address)
+        const verifyAddressCollection = ethers.getAddress(addressCollection)
         const options = `(where: { 
             collection: "${verifyAddressCollection.toLowerCase()}", 
             balances_: { 
@@ -274,7 +274,7 @@ export default class Subgraph {
 
     public async getNftCollectionByCreatorAndUser(address: string, first: number, skip: number): Promise<NFTCollection[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: {
             or: [
                 { creator: "${verifyAddress.toLowerCase()}" },
@@ -292,7 +292,7 @@ export default class Subgraph {
     // 
     public async getNftCollectionByUser(address: string, first: number, skip: number): Promise<NFTCollection[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { balances_: { 
             user: "${verifyAddress.toLowerCase()}",
             amount_not: "0"
@@ -301,14 +301,14 @@ export default class Subgraph {
     }
 
     public async getNftCollectionType(address: string): Promise<string | null> {
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(id: "${verifyAddress.toLowerCase()}" )`
         return await this.query.getNftCollectionType(options)
     }
 
     public async getNftTransfersByUser(user: string, first: number, skip: number): Promise<NFTTransfer[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(user)
+        const verifyAddress = ethers.getAddress(user)
         const options = `(where: {
             or: [
                 { to: "${verifyAddress.toLowerCase()}" },
@@ -321,8 +321,8 @@ export default class Subgraph {
 
     public async getNftTransfersByNftAndUser(collection: string, tokenId: string | number, user: string, first: number, skip: number): Promise<NFTTransfer[]> {
         this.checkFirstAndSkip(first, skip)
-        collection = ethers.utils.getAddress(collection).toLowerCase()
-        user = ethers.utils.getAddress(user).toLowerCase()
+        collection = ethers.getAddress(collection).toLowerCase()
+        user = ethers.getAddress(user).toLowerCase()
         const options = `(where: {
             and: [
                 {
@@ -362,7 +362,7 @@ export default class Subgraph {
     }
 
     public async getBridgeTokenByAddress(address: string): Promise<BridgeToken> {
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const addressToBytes32 = "0x" + verifyAddress.slice(2).padStart(64, "0")
         const options = `(where: { address: "${addressToBytes32.toLowerCase()}"})`
         return await this.query.getBridgeToken(options)
@@ -381,14 +381,14 @@ export default class Subgraph {
 
     public async getBridgeTransfersByFrom(address: string, first: number, skip: number): Promise<BridgeTransfer[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const options = `(where: { from: "${verifyAddress.toLowerCase()}"}, first: ${first}, skip: ${skip})`
         return await this.query.getBridgeTransfers(options)
     }
 
     public async getBridgeTransfersByTo(address: string, first: number, skip: number): Promise<BridgeTransfer[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const addressToBytes32 = "0x" + verifyAddress.slice(2).padStart(64, "0")
         const options = `(where: { to: "${addressToBytes32.toLowerCase()}"}, first: ${first}, skip: ${skip})`
         return await this.query.getBridgeTransfers(options)
@@ -396,7 +396,7 @@ export default class Subgraph {
 
     public async getBridgeTransfersByToken(address: string, first: number, skip: number): Promise<BridgeTransfer[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(address)
+        const verifyAddress = ethers.getAddress(address)
         const addressToBytes32 = "0x" + verifyAddress.slice(2).padStart(64, "0")
         const options = `(where: {token_: {address: "${addressToBytes32.toLowerCase()}"}}, first: ${first}, skip: ${skip})`
         return await this.query.getBridgeTransfers(options)
@@ -415,7 +415,7 @@ export default class Subgraph {
     }
     public async getMultisigWalletsByParticipant(addressParticipant: string, first: number, skip: number): Promise<MultisigWallets[]> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(addressParticipant)
+        const verifyAddress = ethers.getAddress(addressParticipant)
         const options = `(where: {participants_: {address: "${verifyAddress.toLowerCase()}"}}, first: ${first}, skip: ${skip})`
         return await this.query.getMultisigWallets(options)
     }
@@ -425,7 +425,7 @@ export default class Subgraph {
         approvers: string[]
     }> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(addressMultisig)
+        const verifyAddress = ethers.getAddress(addressMultisig)
         const options = `(where: {transactionData_: {nonce_gte: "${nonce.toString()}"}, wallet_: {address: "${verifyAddress.toLowerCase()}"}}, first: ${first}, skip: ${skip})`
         return await this.query.getMultisigApproveTransactions(options)
     }
@@ -434,7 +434,7 @@ export default class Subgraph {
         approvers: string[]
     }> {
         this.checkFirstAndSkip(first, skip)
-        const verifyAddress = ethers.utils.getAddress(addressMultisig)
+        const verifyAddress = ethers.getAddress(addressMultisig)
         const options = `(where: {transactionData_: {nonce_not: "${nonce.toString()}"}, wallet_: {address: "${verifyAddress.toLowerCase()}"}}, first: ${first}, skip: ${skip})`
         return await this.query.getMultisigApproveTransactions(options)
     }

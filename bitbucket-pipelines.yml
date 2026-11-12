@@ -1,4 +1,4 @@
-image: node:16
+image: node:26
 
 pipelines:
   branches:
@@ -11,8 +11,10 @@ pipelines:
             # Generates a .npmrc file configured for installing private modules:
             - printf "//`node -p \"require('url').parse('https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
             # install modules
-            - npm install
+            - npm ci
             # build dist
-            - npm run build 
+            - npm run build
+            # offline unit tests
+            - npm test
             # public to NPM
             - npm publish

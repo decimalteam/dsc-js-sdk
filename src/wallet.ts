@@ -1,26 +1,18 @@
-import { createWalletFromMnemonic } from "@tendermint/sig";
-import * as bip39 from "bip39";
-import { publicKeyCreate } from "secp256k1";
+import { HDNodeWallet, Mnemonic, getBytes, hexlify, randomBytes } from "ethers";
 
-import proposalAdresses from "./proposalAddresses.json";
-import { PrivKey, PubKey } from "./types/ethermint/crypto/v1/ethsecp256k1/keys";
 import {
+  ADDRESS_PREFIX,
   encodeAddresses,
   encodeCosmosAccountAddress,
   decodeCosmosAccountAddress,
   getAndUseGeneratedWallets,
-  getTimestamp,
   sendAndSaveGeneratedWallets,
-  encodePubKey,
-  createPublicKey,
-  txEncoderDecoder,
 } from "./utils/walletUtils";
 
 // constants
-const ADDRESS_PREFIX = "d0";
 const VALIDATOR_ADDRESS_PREFIX = "d0valoper";
 const MASTER_DERIVATION_PATH = "m/44'/60'/0'/0/0";
-const MNEMONIC_STRENGTH = 256;
+const MNEMONIC_ENTROPY_BYTES = 32; // 256 bits -> 24 words
 const MAX_ACCOUNTS_NUMBER = 20;
 
 // generate derivation path for depth method
@@ -34,51 +26,45 @@ export function generateDerivationPath(depth: number) {
   return `m/44'/60'/0'/0/${correctDepth}`;
 }
 
-// generate random mnemonic method
+// generate random 24-word mnemonic
 export function generateMnemonic(): string {
-  return bip39.generateMnemonic(MNEMONIC_STRENGTH);
+  return Mnemonic.fromEntropy(randomBytes(MNEMONIC_ENTROPY_BYTES)).phrase;
 }
 
 // validate mnemonic method
 export function validateMnemonic(mnemonic: string): boolean {
-  return bip39.validateMnemonic(mnemonic);
+  return Mnemonic.isValidMnemonic(mnemonic);
 }
 
-// mnemonic to seed method
-export function mnemonicToSeedSync(mnemonic: string): Buffer {
+// mnemonic to BIP-39 seed
+export function mnemonicToSeedSync(mnemonic: string): Uint8Array {
   if (!validateMnemonic(mnemonic)) {
     throw new Error("Invalid mnemonic phrase");
   }
-  return bip39.mnemonicToSeedSync(mnemonic);
+  return getBytes(Mnemonic.fromPhrase(mnemonic).computeSeed());
 }
 
 export function createDecimalWalletFromMnemonic(
   mnemonic: string,
   addressPrefix = ADDRESS_PREFIX,
-  derivation_path = MASTER_DERIVATION_PATH,
+  derivationPath = MASTER_DERIVATION_PATH,
   id = 0
 ): generatedWallet {
-  const { privateKey, publicKey } = createWalletFromMnemonic(
-    mnemonic,
-    addressPrefix,
-    derivation_path
-  );
+  const node = HDNodeWallet.fromPhrase(mnemonic, undefined, derivationPath);
+  const privateKey = getBytes(node.privateKey);
+  const publicKey = getBytes(node.publicKey); // compressed, 33 bytes
 
-  const { evmAccountAddress, cosmosAccountAddress } = encodeAddresses(
-    publicKey,
-    addressPrefix
-  );
+  const { evmAccountAddress, cosmosAccountAddress } = encodeAddresses(publicKey, addressPrefix);
 
-  const wallet = {
+  return {
     privateKey,
     publicKey,
     address: cosmosAccountAddress,
     evmAddress: evmAccountAddress,
     id,
   };
-
-  return wallet;
 }
+
 export interface generatedWallet {
   privateKey: Uint8Array;
   address: string;
@@ -86,11 +72,14 @@ export interface generatedWallet {
   id: number;
   evmAddress?: string;
 }
-// create wallet from mnemonic phrase
+
+/**
+ * HD wallet of the Decimal chain. Holds the master mnemonic and the derived accounts
+ * (`m/44'/60'/0'/0/<id>`); `address` is the bech32 (d0...) form, `evmAddress` the 0x form.
+ */
 export default class Wallet {
   public mnemonic: string;
-  public isNodeDirectMode: boolean;
-  public validatorAddress: any;
+  public validatorAddress: string | undefined;
   public wallet: generatedWallet;
   public depth: number;
   public id: number;
@@ -98,19 +87,19 @@ export default class Wallet {
   public publicKey: Uint8Array;
   public evmAddress: string | undefined;
   public address: string;
-  public readonly availableProposalSubmit: boolean;
   private gateUrl: string;
-  private nodeRestUrl: string;
   public wallets: generatedWallet[];
-  public currentNonce: number | null;
-  public currentNonceValidUntil: any;
 
+  /**
+   * @param mnemonic master mnemonic; an empty string generates a new one
+   * @param address with `publicKey` creates a read-only wallet (no private key)
+   * @param publicKey public key of the read-only wallet
+   */
   public constructor(
     mnemonic: string,
     address?: string | null,
     publicKey?: Uint8Array | null
   ) {
-    this.isNodeDirectMode = false;
     this.depth = 1; // current wallet depth
     this.id = 0; // current wallet account id
 
@@ -123,64 +112,33 @@ export default class Wallet {
         address,
         evmAddress: decodeCosmosAccountAddress(address) ?? address,
         id: this.id,
-      }; // current wallet
+      };
     } else {
-      // current mnemonic
       const _mnemonic = mnemonic || generateMnemonic();
 
       if (!validateMnemonic(_mnemonic)) {
         throw new Error("Invalid mnemonic");
       }
 
-      // generate master wallet
-      const wallet = createDecimalWalletFromMnemonic(_mnemonic);
-
-      // master fields
-      this.mnemonic = _mnemonic; // master mnemonic to generate
+      this.mnemonic = _mnemonic;
+      // does not change with the derivation path
       this.validatorAddress = createDecimalWalletFromMnemonic(
         _mnemonic,
         VALIDATOR_ADDRESS_PREFIX,
         MASTER_DERIVATION_PATH
-      ).address; // do not need to change with derivation path update
-
-      // current wallet
-      this.wallet = wallet; // current wallet
+      ).address;
+      this.wallet = createDecimalWalletFromMnemonic(_mnemonic);
     }
 
-    // current private, public keys, address
-    this.privateKey = this.wallet.privateKey; // current private key
-    this.publicKey = this.wallet.publicKey; // current public key
+    this.privateKey = this.wallet.privateKey;
+    this.publicKey = this.wallet.publicKey;
+    this.evmAddress = this.wallet.evmAddress;
+    this.address = this.wallet.address;
 
-    this.evmAddress = this.wallet.evmAddress; // current evm address
-    this.address = this.wallet.address; // current address
-
-    // is available proposal submit
-    this.availableProposalSubmit = !!proposalAdresses.addresses.find(
-      (address) => address === this.wallet.address
-    );
-
-    // gate url
     this.gateUrl = "";
-    this.nodeRestUrl = "";
 
-    // get generated wallets including master wallet
+    // generated wallets including master wallet
     this.wallets = [this.wallet];
-
-    // current nonce for sending transactions and lifetime of the current nonce, valid for 6 secs
-    this.currentNonce = null;
-    this.currentNonceValidUntil = null;
-  }
-
-  public setNodeDirectMode(isNodeDirectMode: boolean): void {
-    this.isNodeDirectMode = isNodeDirectMode;
-  }
-
-  public setNodeRestUrl(nodeRestUrl: string): void {
-    this.nodeRestUrl = nodeRestUrl;
-  }
-
-  public getNodeRestUrl(): string {
-    return this.nodeRestUrl;
   }
 
   public setGateUrl(gateUrl: string): void {
@@ -190,117 +148,74 @@ export default class Wallet {
   public getGateUrl(): string {
     return this.gateUrl;
   }
-  // get private key in hex
-  public getPrivateKeyString(): string {
-    return this.privateKey.toString();
-  }
+
+  /** Private key of the current account as 0x-prefixed hex. */
   public getPrivateKeyHex(): string {
-    return "0x" + Buffer.from(this.getPrivateKey().key).toString("hex");
+    return hexlify(this.privateKey);
   }
 
-  // get public key in hex
-  public getPublicKeyString(): string {
-    return this.publicKey.toString();
+  /** Compressed public key of the current account as 0x-prefixed hex. */
+  public getPublicKeyHex(): string {
+    return hexlify(this.publicKey);
   }
 
-  public getPrivateKey(): PrivKey {
-    return PrivKey.fromPartial({
-      key: this.wallet.privateKey,
-    });
-  }
-
-  public getPublicKey(compressed = false): PubKey {
-    try {
-      return PubKey.fromPartial({
-        key: publicKeyCreate(this.wallet.privateKey, compressed),
-      });
-    } catch (e) {
-      return PubKey.fromPartial({
-        key: this.wallet.publicKey,
-      });
-    }
-  }
-
-  // switch to account by id private method
+  // switch to account by id
   public switchAccount(id: number) {
     try {
-      // if id does not exist
       if (typeof id === "undefined" || !Number.isInteger(id)) {
         throw new Error("Id must be of type number");
       }
 
-      // if id more then generated accounts
       if (id > this.depth) {
         throw new Error(`You have not generated an account with ${id} id`);
       }
 
-      // current wallet
       const wallet = this.wallets[id];
 
-      // update current wallet
       this.wallet = wallet;
       this.id = id;
-
-      // update current private, public keys, address
-      this.privateKey = wallet.privateKey; // current private key
-      this.publicKey = wallet.publicKey; // current public key
-
-      this.evmAddress = wallet.evmAddress; // current evm address
-      this.address = wallet.address; // current address
-
-      // update current nonce for sending transactions and lifetime of the current nonce
-      this.updateNonce(null);
+      this.privateKey = wallet.privateKey;
+      this.publicKey = wallet.publicKey;
+      this.evmAddress = wallet.evmAddress;
+      this.address = wallet.address;
     } catch (e) {
       console.error(e);
     }
   }
 
-  // generate next account and switch to last
+  // generate next account and switch to it
   public generateAccount() {
     try {
-      // current depth
       const depth = this.depth + 1;
 
-      // if depth more then max available amount
       if (depth >= MAX_ACCOUNTS_NUMBER) {
         throw new Error(
           `You can not generate more then ${MAX_ACCOUNTS_NUMBER} accounts`
         );
       }
 
-      // current derivation path
-      const derivationPath = generateDerivationPath(depth);
-
-      // current wallet
       const wallet = createDecimalWalletFromMnemonic(
         this.mnemonic,
         ADDRESS_PREFIX,
-        derivationPath,
+        generateDerivationPath(depth),
         depth - 1
       );
 
-      // update current wallet
       this.depth = depth;
-
-      // update wallets
       this.wallets = [...this.wallets, wallet];
-
-      // update wallet
       this.switchAccount(depth - 1);
     } catch (e) {
       console.error(e);
     }
   }
 
-  // generate accounts and switch if necessary
+  // generate accounts up to `depth` and switch to `id`
   public generateAndSwitchAccount(depth: number, id: number) {
     try {
-      // if depth does not exist
       if (typeof depth === "undefined" || !Number.isInteger(depth)) {
         throw new Error("Depth must be of type number");
       }
 
-      // id depth more then max available amount
       if (depth >= MAX_ACCOUNTS_NUMBER) {
         throw new Error(
           `You can not generate more then ${MAX_ACCOUNTS_NUMBER} accounts`
@@ -309,85 +224,60 @@ export default class Wallet {
 
       let _id = id;
 
-      // if id does not exist
       if (typeof id === "undefined" || !Number.isInteger(id)) {
         _id = Math.max(depth, this.depth) - 1;
       }
 
-      // if id more then max depth
       if (_id >= Math.max(depth, this.depth)) {
         throw new Error(
           `You can not switch to account, more then ${depth - 1} id`
         );
       }
 
-      // if depth less or equal to current depth
       if (depth <= this.depth) {
-        // swith account
         this.switchAccount(_id);
       }
 
-      // generate accounts to depth amount
       for (let _depth = this.depth + 1; _depth <= depth; _depth += 1) {
-        let hasWalletInArrayWallets = true;
-
-        // if wallet is already in this.wallets array
-        this.wallets.forEach((wallet) => {
-          if (wallet.id === _depth - 1) {
-            hasWalletInArrayWallets = false;
-          }
-        });
-        if (hasWalletInArrayWallets) {
-          // current derivation path
-          const derivationPath = generateDerivationPath(_depth);
-
-          // current wallet
+        const alreadyGenerated = this.wallets.some((wallet) => wallet.id === _depth - 1);
+        if (!alreadyGenerated) {
           const wallet = createDecimalWalletFromMnemonic(
             this.mnemonic,
             ADDRESS_PREFIX,
-            derivationPath,
+            generateDerivationPath(_depth),
             _depth - 1
           );
-
-          // update current wallet
           this.depth = _depth;
-
-          // update wallets
           this.wallets = [...this.wallets, wallet];
         }
       }
 
-      // swith account
       this.switchAccount(_id);
     } catch (e) {
       console.error(e);
     }
   }
 
+  /** Restores accounts previously saved with `sendAndSaveGeneratedWallets` (needs `setGateUrl`). */
   public async getAndUseGeneratedWallets() {
     try {
       const masterWallet = this.wallet;
 
-      const ids = await getAndUseGeneratedWallets(
-        this.gateUrl,
-        masterWallet.address
-      );
+      const ids = await getAndUseGeneratedWallets(this.gateUrl, masterWallet.address);
 
       if (ids && ids.length) {
         this.wallets = [masterWallet];
         this.switchAccount(masterWallet.id);
         ids.forEach((id: number) => {
           if (id !== masterWallet.id) {
-            const derivationPath = generateDerivationPath(id + 1);
-            const wallet = {
+            this.wallets.push({
               ...createDecimalWalletFromMnemonic(
                 this.mnemonic,
                 ADDRESS_PREFIX,
-                derivationPath
+                generateDerivationPath(id + 1)
               ),
               id,
-            };
-            this.wallets.push(wallet);
+            });
           }
         });
 
@@ -398,60 +288,28 @@ export default class Wallet {
         console.info("[GET-GENERATED-WALLETS-STATUS]: FALSE");
       }
     } catch (e: any) {
-      console.error(
-        "An error occurred during wallet synchronization",
-        e.message
-      );
-
+      console.error("An error occurred during wallet synchronization", e.message);
       console.warn("[GET-GENERATED-WALLETS-STATUS]: FALSE");
     }
   }
 
+  /** Saves ids of the generated accounts in the gate API (needs `setGateUrl`). */
   public async sendAndSaveGeneratedWallets() {
     try {
       const ids = this.wallets.map((wallet) => wallet.id);
-
-      const updated = await sendAndSaveGeneratedWallets(
-        this.gateUrl,
-        this.wallets,
-        ids
-      );
-
-      console.info(
-        `[SAVE-GENERATED-WALLETS-STATUS]: ${updated.toString().toUpperCase()}`
-      );
+      const updated = await sendAndSaveGeneratedWallets(this.gateUrl, this.wallets, ids);
+      console.info(`[SAVE-GENERATED-WALLETS-STATUS]: ${updated.toString().toUpperCase()}`);
     } catch (e: any) {
       console.error("An error occurred during wallets's id adding", e.message);
-
       console.warn("[SAVE-GENERATED-WALLETS-STATUS]: FALSE");
     }
   }
 
-  public updateNonce(nonce: number | null): void {
-    this.currentNonce = nonce;
-    this.currentNonceValidUntil = nonce ? getTimestamp() : null;
-  }
-
-  public static encodeCosmosAccountAddress(
-    address: string,
-    prefix = "d0"
-  ): string {
+  public static encodeCosmosAccountAddress(address: string, prefix = ADDRESS_PREFIX): string {
     return encodeCosmosAccountAddress(address, prefix);
   }
 
   public static decodeCosmosAccountAddress(address: string): string | null {
     return decodeCosmosAccountAddress(address);
-  }
-
-  public static createPublicKey(pubKey: Uint8Array): PubKey {
-    return createPublicKey(pubKey);
-  }
-
-  public static encodePubKey(pubKeyCompressed: PubKey): any {
-    return encodePubKey(pubKeyCompressed);
-  }
-
-  public static txEncoderDecoder(msgAny: any, memo: string): Uint8Array {
-    return txEncoderDecoder(msgAny, memo);
   }
 }

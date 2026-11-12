@@ -11,7 +11,6 @@ import { Token, AddressBalance, BridgeToken, BridgeTransfer, TokenReserveless } 
 import { Stake, NFTStake, TransferStake, WithdrawStake, Validator, Penalty, SumAmountToPenalty } from "./interfaces/delegation";
 import { NFTCollection, NFTToken, NFTTransfer } from "./interfaces/nfts";
 import { MultisigWallets, TransactionData } from "./interfaces/multisig";
-import fetch from "node-fetch";
 import { SubgraphResponse } from "./interfaces/subgraph";
 
 export default class Queries {
