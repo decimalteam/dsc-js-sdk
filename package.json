@@ -6,7 +6,6 @@
   "types": "dist/index.d.ts",
   "module": "dist/index.js",
   "files": [
-    "CHANGELOG.md",
     "dist"
   ],
   "engines": {

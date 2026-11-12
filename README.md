@@ -5,7 +5,7 @@ NFT collections, delegation (coins, tokens and NFT), validators, multisig wallet
 subgraph queries and IPFS uploads. Built on [ethers v6](https://docs.ethers.org/v6/).
 
 > **3.0** is a major release: the SDK is EVM-only, all numbers are native `bigint` and the
-> `delegation-nft` contract is no longer used. See [CHANGELOG.md](CHANGELOG.md) for the migration guide.
+> `delegation-nft` contract is no longer used.
 
 ## Installation
 
